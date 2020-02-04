@@ -5,20 +5,8 @@
  *      Author: trieu
  */
 
-/* RTOS header files */
-#include <FreeRTOS.h>
-#include <queue.h>
-#include <stdbool.h>
 #include "sensor_queue.h"
 
-#define SUCCESS         0
-#define FAILURE         1
-#define TIME_DATA       0x10000000
-#define SENSOR_DATA     0x20000000
-#define qLENGTH         32
-#define qITEMSIZE       8
-
-extern QueueHandle_t msgQ;
 // xQueueCreate( UBaseType_t uxQueueLength, UBaseType_t uxItemSize );
 
 // This queue will be MISO/FIFO.

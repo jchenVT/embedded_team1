@@ -8,6 +8,18 @@
 #ifndef SENSOR_QUEUE_H_
 #define SENSOR_QUEUE_H_
 
+/* RTOS header files */
+#include <FreeRTOS.h>
+#include <queue.h>
+#include <stdbool.h>
+
+#define TIME_DATA       0x10000000
+#define SENSOR_DATA     0x20000000
+#define qLENGTH         32
+#define qITEMSIZE       8
+
+extern QueueHandle_t msgQ;
+
 struct qData {
     bool success;
     int type;
