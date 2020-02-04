@@ -43,12 +43,16 @@ bool createQ1() {
 
 int sendTimeMsgToQ1(unsigned int timeVal) {
 
-    return 1;
+    long long int newMsg = TIME_DATA | timeVal;
+
+    return xQueueSendToBackFromISR( msgQ, &newMsg, 0 );
 }
 
 int sendSensorMsgToQ1(int mmDist) {
 
-    return 1;
+    long long int newMsg = SENSOR_DATA | mmDist;
+
+    return xQueueSendToBackFromISR( msgQ, &newMsg, 0 );
 }
 
 /*
