@@ -8,31 +8,37 @@
 /* RTOS header files */
 #include <FreeRTOS.h>
 #include <queue.h>
+#include <stdbool.h>
+#include "sensor_queue.h"
 
 #define SUCCESS         0
 #define FAILURE         1
-#define TIME_DATA       0
-#define SENSOR_DATA     1
-#define QUEUE_LENGTH    32
-#define QUEUE_ITEMSIZE  8
+#define TIME_DATA       0x10000000
+#define SENSOR_DATA     0x20000000
+#define qLENGTH         32
+#define qITEMSIZE       8
 
-QueueHandle_t msgQ;
+extern QueueHandle_t msgQ;
 // xQueueCreate( UBaseType_t uxQueueLength, UBaseType_t uxItemSize );
 
-int createQ1() {
+// This queue will be MISO/FIFO.
 
-     // msgQ = xQueueCreate( UBaseType_t uxQueueLength, UBaseType_t uxItemSize );
+bool createQ1() {
 
-    return 1;
+    msgQ = xQueueCreate( qLENGTH, qITEMSIZE);
+
+    return msgQ == NULL ? false : true;
 }
 
 /*
- * BaseType_t xQueueSendToBackFromISR( QueueHandle_t xQueue,
+   BaseType_t xQueueSendToBackFromISR( QueueHandle_t xQueue,
          const void * pvItemToQueue,
          TickType_t xTicksToWait );
 
     refer to page 110
-    value to use --> portMAX_DELAY
+
+    These two sending functions will be called from the callbacks,
+    meaning they are outside the control of the OS.
  */
 
 int sendTimeMsgToQ1(unsigned int timeVal) {
@@ -40,30 +46,62 @@ int sendTimeMsgToQ1(unsigned int timeVal) {
     return 1;
 }
 
-int sendSensorMsgToQ1() {
+int sendSensorMsgToQ1(int mmDist) {
 
     return 1;
 }
 
 /*
- * BaseType_t xQueueReceiveFromISR( QueueHandle_t xQueue,
+   BaseType_t xQueueReceive( QueueHandle_t xQueue,
          void * const pvBuffer,
          TickType_t xTicksToWait );
 
     refer to page 113
+    value to use --> portMAX_DELAY
+
+    The receive however, is being called from other threads within
+    the OS and thus will NOT have the FromISR.
+
+    This function should be the one blocking.
  */
 
-unsigned long long int receiveFromQ1() {
+void receiveFromQ1(struct qData *oldData) {
 
-    return 1;
+    long long int *msg = NULL;
+
+    xQueueReceive( msgQ, msg, portMAX_DELAY );
+
+    if (msg == NULL) {
+        oldData->success = false;
+    }
+
+    oldData->type = *msg & 0xff00;
+    oldData->value = *msg & 0x00ff;
+
 }
-
+/*
 void *queueThread(void *arg0) {
-    /*
-    createQ1();
-    */
 
-    while (1) {}
+    bool qCreated;
+    qData curData;
+
+    createQ1();
+
+    if (!qCreated) {
+        1) Suspend all tasks
+        2) Disable all interrupts
+        3) Express error code
+    }
+
+
+    while (1) {
+
+        // receiveFromQ1(&curData);
+
+        // FSM stuff...
+
+    }
 
     return (NULL);
 }
+*/
