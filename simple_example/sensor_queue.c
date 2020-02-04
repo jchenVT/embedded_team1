@@ -5,24 +5,17 @@
  *      Author: trieu
  */
 
-/* RTOS header files */
-#include <FreeRTOS.h>
-#include <queue.h>
-#include <stdbool.h>
 #include "sensor_queue.h"
 
-#define SUCCESS         0
-#define FAILURE         1
-#define TIME_DATA       0x10000000
-#define SENSOR_DATA     0x20000000
-#define qLENGTH         32
-#define qITEMSIZE       8
-
-extern QueueHandle_t msgQ;
-// xQueueCreate( UBaseType_t uxQueueLength, UBaseType_t uxItemSize );
-
-// This queue will be MISO/FIFO.
-
+/*
+ *  @function   createQ1
+ *              Wrapper for the RTOS function to create a queue. Uses
+ *              the queue variables from sensor_queue.h to define the
+ *              amount of memory the queue will use.
+ *
+ *  @params     None
+ *  @return     bool - indicates whether the message queue was created
+ */
 bool createQ1() {
 
     msgQ = xQueueCreate( qLENGTH, qITEMSIZE);
@@ -31,16 +24,14 @@ bool createQ1() {
 }
 
 /*
-   BaseType_t xQueueSendToBackFromISR( QueueHandle_t xQueue,
-         const void * pvItemToQueue,
-         TickType_t xTicksToWait );
-
-    refer to page 110
-
-    These two sending functions will be called from the callbacks,
-    meaning they are outside the control of the OS.
+ *  @function   sendTimeMsgToQ1
+ *              Wrapper for the RTOS function to send time data through
+ *              the queue. Should be called from the callbacks (via ISR).
+ *              Refer to page 110 of RTOS doc.
+ *
+ *  @params     timeVal - value from timers
+ *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-
 int sendTimeMsgToQ1(unsigned int timeVal) {
 
     long long int newMsg = TIME_DATA | timeVal;
@@ -48,6 +39,15 @@ int sendTimeMsgToQ1(unsigned int timeVal) {
     return xQueueSendToBackFromISR( msgQ, &newMsg, 0 );
 }
 
+/*
+ *  @function   sendSensorMsgToQ1
+ *              Wrapper for the RTOS function to send sensor data through
+ *              the queue. Should be called from the callbacks (via ISR).
+ *              Refer to page 110 of RTOS doc.
+ *
+ *  @params     mmDist - distance values
+ *  @return     pdPASS or errQUEUE_FULL - successfully added or not
+ */
 int sendSensorMsgToQ1(int mmDist) {
 
     long long int newMsg = SENSOR_DATA | mmDist;
@@ -56,19 +56,13 @@ int sendSensorMsgToQ1(int mmDist) {
 }
 
 /*
-   BaseType_t xQueueReceive( QueueHandle_t xQueue,
-         void * const pvBuffer,
-         TickType_t xTicksToWait );
-
-    refer to page 113
-    value to use --> portMAX_DELAY
-
-    The receive however, is being called from other threads within
-    the OS and thus will NOT have the FromISR.
-
-    This function should be the one blocking.
+ *  @function   receiveFromQ1
+ *              Wrapper for the RTOS function to data from the queue.
+ *              This function will block. Refer to page 113 of RTOS doc.
+ *
+ *  @params     oldData - `reference to the struct holding the old data
+ *  @return     None
  */
-
 void receiveFromQ1(struct qData *oldData) {
 
     long long int *msg = NULL;
