@@ -6,6 +6,8 @@
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/UART.h>
 
+#include <stdbool.h>
+
 #include "ti_drivers_config.h"
 
 // Debug Output Location Macros Definition

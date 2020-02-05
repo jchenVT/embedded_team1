@@ -23,6 +23,7 @@
 /* Driver Header files */
 #include <ti/drivers/ADC.h>
 
+#include "debug.h"
 #include "sensor_queue.h"
 
 #define TIMER_PERIOD 75000
