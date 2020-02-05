@@ -77,29 +77,3 @@ void receiveFromQ1(struct qData *oldData) {
     oldData->value = *msg & 0x00ff;
 
 }
-/*
-void *queueThread(void *arg0) {
-
-    bool qCreated;
-    qData curData;
-
-    createQ1();
-
-    if (!qCreated) {
-        1) Suspend all tasks
-        2) Disable all interrupts
-        3) Express error code
-    }
-
-
-    while (1) {
-
-        // receiveFromQ1(&curData);
-
-        // FSM stuff...
-
-    }
-
-    return (NULL);
-}
-*/
