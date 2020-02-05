@@ -26,7 +26,7 @@ extern QueueHandle_t msgQ;
 /* Struct used in RETURNING message from queue */
 struct qData {
     bool success;
-    int type;
+    long long int type;
     int value;
 };
 
