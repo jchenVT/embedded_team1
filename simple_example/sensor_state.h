@@ -19,6 +19,6 @@ struct fsmData {
     int sensorAvg;
 };
 
-int updateFSM(struct fsmData fsm, int timeInc, int sensorVal);
+int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal);
 
 #endif /* SENSOR_STATE_H_ */

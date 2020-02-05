@@ -33,7 +33,7 @@ void *mainThread(void *arg0)
         receiveFromQ1(&data);
 
         // check for success
-        if (data.success) {
+        if (!data.success) {
             // error handle
         }
 
@@ -50,8 +50,10 @@ void *mainThread(void *arg0)
         }
 
         // change fsm (in sensor_states)
-        updateFSM(fsm, timeInc, sensorVal);
+        updateFSM(&fsm, timeInc, sensorVal);
     }
+
+    // error handle failed queue creation
 
     return 0;
 }
