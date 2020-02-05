@@ -21,7 +21,7 @@ void *mainTimerTwoThread(void *arg0) {
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = timer75Callback;
 
-    timer2 = Timer_open(CONFIG_TIMER_0, &params);
+    timer2 = Timer_open(CONFIG_TIMER_1, &params);
 
     if (timer2 == NULL) {
         /* Failed to initialized timer */
@@ -64,7 +64,11 @@ void timer75Callback() {
     res /= 10;
 
     if (res == ADC_STATUS_SUCCESS) {
-        adcValueUv = ADC_convertToMicroVolts(adc, adcValue);
+        // send to UART
+        unsigned char UARTbuf[10];
+        snprintf(buffer, 10, "%d", res);
+
+        //adcValueUv = ADC_convertToMicroVolts(adc, adcValue);
     }
 
     /* Converting to millimeters */
