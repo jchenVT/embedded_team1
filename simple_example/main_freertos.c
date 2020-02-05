@@ -48,8 +48,9 @@
 
 /* Driver configuration */
 #include <ti/drivers/Board.h>
+#include "timertwo.h"
 
-extern void *mainThread(void *arg0);
+extern void *mainTimerTwoThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -85,7 +86,7 @@ int main(void)
         while (1) {}
     }
 
-    retc = pthread_create(&thread, &attrs, mainThread, NULL);
+    retc = pthread_create(&thread, &attrs, mainTimerTwoThread, NULL);
     if (retc != 0) {
         /* pthread_create() failed */
         while (1) {}

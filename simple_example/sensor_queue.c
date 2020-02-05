@@ -7,6 +7,8 @@
 
 #include "sensor_queue.h"
 
+QueueHandle_t msgQ = NULL;
+
 /*
  *  @function   createQ1
  *              Wrapper for the RTOS function to create a queue. Uses

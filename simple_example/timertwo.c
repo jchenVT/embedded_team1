@@ -8,7 +8,7 @@
 
 #include "timertwo.h"
 
-void *mainTimerTwoThread() {
+void *mainTimerTwoThread(void *arg0) {
     Timer_Handle timer2;
     Timer_Params params;
 
@@ -48,6 +48,8 @@ void timer75Callback() {
     uint32_t adcValueUv;
     int i;
 
+    createQ1();
+
     ADC_init();
 
     ADC_Params_init(&params);
@@ -69,10 +71,8 @@ void timer75Callback() {
     }
 
     /* Converting to millimeters */
-    if (sendSensorMsgToQ1(convertToMM(adcValueUv))) {
-        /*fail out*/
-        return;
-    }
+
+    sendSensorMsgToQ1(convertToMM(adcValueUv));
 
     ADC_close(adc);
 }

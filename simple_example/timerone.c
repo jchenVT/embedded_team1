@@ -9,7 +9,7 @@
 
 #define TIMER_LENGTH 1000
 
-void * mainTimerOneThread() {
+void *mainTimerOneThread(void *arg0) {
     Timer_Handle timer1;
     Timer_Params params;
 
