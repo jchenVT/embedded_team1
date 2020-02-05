@@ -29,7 +29,7 @@ void dbgUARTVal(unsigned char outVal)
         initialized = true;
     }
     
-    UART_write(uart, outVal, sizeof(outVal));
+    UART_write(uart, (const void *) outVal, sizeof(outVal));
 }
 
 void stop_all()

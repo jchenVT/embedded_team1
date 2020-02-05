@@ -12,8 +12,13 @@ void *mainTimerTwoThread(void *arg0) {
     Timer_Handle timer2;
     Timer_Params params;
 
+    GPIO_init();
     Timer_init();
     ADC_init();
+
+    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
+
     Timer_Params_init(&params);
 
     params.periodUnits = Timer_PERIOD_US;
@@ -64,11 +69,11 @@ void timer75Callback() {
     res /= 10;
 
     if (res == ADC_STATUS_SUCCESS) {
+        GPIO_toggle(CONFIG_GPIO_LED_0);
         // send to UART
         char UARTbuf[10];
         int retnum;
         retnum = snprintf(UARTbuf, 10, "%d", res);
-        int i;
 
         for (i = 0; i < retnum; ++i) {
             dbgUARTVal((unsigned char) UARTbuf[i]);
@@ -78,7 +83,7 @@ void timer75Callback() {
 
     /* Converting to millimeters */
 
-    sendSensorMsgToQ1(convertToMM(adcValueUv));
+    //sendSensorMsgToQ1(convertToMM(adcValueUv));
 
     ADC_close(adc);
 }
