@@ -30,7 +30,7 @@
 #define MMCONVERSION1 538.48
 #define MMCONVERSION2 -1.172
 
-void timer75Callback();
+void timer75Callback(x);
 int convertToMM(uint32_t mV);
 
 #endif /* TIMERTWO_H_ */

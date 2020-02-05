@@ -13,6 +13,7 @@ void *mainTimerTwoThread(void *arg0) {
     Timer_Params params;
 
     Timer_init();
+    ADC_init();
     Timer_Params_init(&params);
 
     params.periodUnits = Timer_PERIOD_US;
@@ -47,10 +48,6 @@ void timer75Callback() {
     uint16_t adcValue;
     uint32_t adcValueUv;
     int i;
-
-    createQ1();
-
-    ADC_init();
 
     ADC_Params_init(&params);
     adc = ADC_open(CONFIG_ADC_0, &params);
