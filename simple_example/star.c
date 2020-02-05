@@ -20,9 +20,13 @@ void *mainThread(void *arg0)
     // create queue
     bool q = createQ1();
 
-    struct qData data = {true,0,0};
+    // sensor queue
+    struct qData data = {true, 0, 0};
     int sensorVal = 0;
     int timeInc = 0;
+
+    // sensor FSM
+    struct fsmData fsm = {Init, 0, 0, 0, 0};
 
     while(1 && q) {
         // wait for message (blocking)
@@ -46,7 +50,7 @@ void *mainThread(void *arg0)
         }
 
         // change fsm (in sensor_states)
-        updateFSM(timeInc, sensorVal);
+        updateFSM(fsm, timeInc, sensorVal);
     }
 
     return 0;
