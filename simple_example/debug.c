@@ -10,7 +10,7 @@ void dbgUARTVal(unsigned char outVal)
 {
     static UART_Handle uart;
     static UART_Params uartParams;
-    static bool initalized = false;
+    static bool initialized = false;
 
     if (!initialized)
     {
