@@ -16,7 +16,7 @@
 /* Masks for variable type */
 #define TIME_DATA       0x1000000000000000
 #define SENSOR_DATA     0x2000000000000000
-/* Queue varialbes */
+/* Queue variables */
 #define qLENGTH         32
 #define qITEMSIZE       8
 
@@ -26,7 +26,7 @@ extern QueueHandle_t msgQ;
 /* Struct used in RETURNING message from queue */
 struct qData {
     bool success;
-    int type;
+    long long int type;
     int value;
 };
 

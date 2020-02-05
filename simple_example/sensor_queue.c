@@ -7,6 +7,8 @@
 
 #include "sensor_queue.h"
 
+QueueHandle_t msgQ = NULL;
+
 /*
  *  @function   createQ1
  *              Wrapper for the RTOS function to create a queue. Uses
@@ -73,33 +75,7 @@ void receiveFromQ1(struct qData *oldData) {
         oldData->success = false;
     }
 
-    oldData->type = *msg & 0xff00;
-    oldData->value = *msg & 0x00ff;
+    oldData->type = *msg & 0xFFFFFFFF00000000;
+    oldData->value = *msg & 0x00000000FFFFFFFF;
 
 }
-/*
-void *queueThread(void *arg0) {
-
-    bool qCreated;
-    qData curData;
-
-    createQ1();
-
-    if (!qCreated) {
-        1) Suspend all tasks
-        2) Disable all interrupts
-        3) Express error code
-    }
-
-
-    while (1) {
-
-        // receiveFromQ1(&curData);
-
-        // FSM stuff...
-
-    }
-
-    return (NULL);
-}
-*/
