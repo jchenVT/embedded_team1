@@ -65,9 +65,14 @@ void timer75Callback() {
 
     if (res == ADC_STATUS_SUCCESS) {
         // send to UART
-        unsigned char UARTbuf[10];
-        snprintf(UARTbuf, 10, "%d", res);
+        char UARTbuf[10];
+        int retnum;
+        retnum = snprintf(UARTbuf, 10, "%d", res);
+        int i;
 
+        for (i = 0; i < retnum; ++i) {
+            dbgUARTVal((unsigned char) UARTbuf[i]);
+        }
         //adcValueUv = ADC_convertToMicroVolts(adc, adcValue);
     }
 
