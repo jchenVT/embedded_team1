@@ -75,7 +75,7 @@ void receiveFromQ1(struct qData *oldData) {
         oldData->success = false;
     }
 
-    oldData->type = *msg & 0xFFFFFFFF00000000;
-    oldData->value = *msg & 0x00000000FFFFFFFF;
+    oldData->type = *msg & TYPE_MASK;
+    oldData->value = *msg & VALUE_MASK;
 
 }
