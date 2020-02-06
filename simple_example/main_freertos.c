@@ -65,7 +65,9 @@ extern void *mainTimerTwoThread(void *arg0);
  */
 int main(void)
 {
-    pthread_t           thread;
+    pthread_t           thread1;
+    pthread_t           thread2;
+    pthread_t           thread3;
     pthread_attr_t      attrs;
     struct sched_param  priParam;
     int                 retcStar;
@@ -100,9 +102,9 @@ int main(void)
         while (1) {}
     }
 
-    retcStar = pthread_create(&thread, &attrs, mainThread, NULL);
-    retcTimer1 = pthread_create(&thread, &attrs, mainTimerOneThread, NULL);
-    retcTimer2 = pthread_create(&thread, &attrs, mainTimerTwoThread, NULL);
+    retcStar = pthread_create(&thread1, &attrs, mainThread, NULL);
+    retcTimer1 = pthread_create(&thread2, &attrs, mainTimerOneThread, NULL);
+    retcTimer2 = pthread_create(&thread3, &attrs, mainTimerTwoThread, NULL);
     if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
         /* pthread_create() failed */
         while (1) {}
