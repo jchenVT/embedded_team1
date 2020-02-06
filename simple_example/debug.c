@@ -77,12 +77,13 @@ void dbgUARTVal(unsigned char outVal)
 
 void stop_all()
 {
-    //taskDISABLE_INTERRUPTS();
+    taskDISABLE_INTERRUPTS();
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
     /*****************************/
     dbgOutputLoc(UART_CLOSING);
+    dbgOutputLoc(FAILURE);
     /*****************************/
     UART_close(uart);
 

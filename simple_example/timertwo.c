@@ -90,9 +90,10 @@ void timer75Callback(Timer_Handle myHandle) {
         for (i = 0; i < retnum; ++i) {
             dbgUARTVal((unsigned char) UARTbuf[i]);
         }
+        dbgUARTVal((unsigned char) 'a');
         //adcValueUv = ADC_convertToMicroVolts(adc, adcValue);
     }
-
+    //GPIO_toggle(CONFIG_GPIO_LED_0);
     /* Converting to millimeters */
 
     //sendSensorMsgToQ1(convertToMM(adcValueUv));
