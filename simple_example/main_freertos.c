@@ -87,6 +87,8 @@ int main(void)
     /* Call driver init functions */
     Board_init();
     debug_setup();
+    Timer_init();
+    ADC_init();
     if (!createQ1()) {
         stop_all();
     }

@@ -12,9 +12,6 @@ void *mainTimerTwoThread(void *arg0) {
     Timer_Handle timer2;
     Timer_Params params;
 
-    Timer_init();
-    ADC_init();
-
     /**************************/
     dbgOutputLoc(T2_TIMER_INITIALIZE);
     /**************************/
@@ -26,7 +23,7 @@ void *mainTimerTwoThread(void *arg0) {
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = timer75Callback;
 
-    timer2 = Timer_open(CONFIG_TIMER_0, &params);
+    timer2 = Timer_open(CONFIG_TIMER_1, &params);
 
     /**************************/
     dbgOutputLoc(T2_TIMER_OPENED);

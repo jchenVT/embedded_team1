@@ -18,7 +18,6 @@ void *mainTimerOneThread(void *arg0) {
     dbgOutputLoc(T1_TIMER_INITIALIZE);
     /**************************/
 
-    Timer_init();
     Timer_Params_init(&params);
 
     params.periodUnits = Timer_PERIOD_HZ;
