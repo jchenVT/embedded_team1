@@ -12,21 +12,17 @@ void *mainTimerTwoThread(void *arg0) {
     Timer_Handle timer2;
     Timer_Params params;
 
-    GPIO_init();
     Timer_init();
     ADC_init();
-
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
 
     Timer_Params_init(&params);
 
     params.periodUnits = Timer_PERIOD_US;
-    params.period = TIMER_PERIOD;
+    params.period = TIMER_PERIOD*10;
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = timer75Callback;
 
-    timer2 = Timer_open(CONFIG_TIMER_1, &params);
+    timer2 = Timer_open(CONFIG_TIMER_0, &params);
 
     if (timer2 == NULL) {
         /* Failed to initialized timer */
@@ -46,7 +42,7 @@ int convertToMM(uint32_t mV) {
     return mm;
 }
 
-void timer75Callback() {
+void timer75Callback(Timer_Handle myHandle) {
     ADC_Handle adc;
     ADC_Params params;
     int_fast16_t res = 0;
@@ -69,7 +65,6 @@ void timer75Callback() {
     res /= 10;
 
     if (res == ADC_STATUS_SUCCESS) {
-        GPIO_toggle(CONFIG_GPIO_LED_0);
         // send to UART
         char UARTbuf[10];
         int retnum;
