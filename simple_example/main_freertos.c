@@ -48,9 +48,13 @@
 
 /* Driver configuration */
 #include <ti/drivers/Board.h>
+#include "star.h"
+#include "timerone.h"
 #include "timertwo.h"
 #include "debug.h"
 
+extern void *mainThread(void *arg0);
+extern void *mainTimerOneThread(void *arg0);
 extern void *mainTimerTwoThread(void *arg0);
 
 /* Stack size in bytes */
@@ -64,7 +68,9 @@ int main(void)
     pthread_t           thread;
     pthread_attr_t      attrs;
     struct sched_param  priParam;
-    int                 retc;
+    int                 retcStar;
+    int                 retcTimer1;
+    int                 retcTimer2;
 
     /* initialize the system locks */
 #ifdef __ICCARM__
@@ -80,16 +86,24 @@ int main(void)
 
     /* Set priority, detach state, and stack size attributes */
     priParam.sched_priority = 1;
-    retc = pthread_attr_setschedparam(&attrs, &priParam);
-    retc |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
-    retc |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
-    if (retc != 0) {
+    retcStar = pthread_attr_setschedparam(&attrs, &priParam);
+    retcStar |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
+    retcStar |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
+    retcTimer1 = pthread_attr_setschedparam(&attrs, &priParam);
+    retcTimer1 |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
+    retcTimer1 |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
+    retcTimer2 = pthread_attr_setschedparam(&attrs, &priParam);
+    retcTimer2 |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
+    retcTimer2 |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
+    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
         /* failed to set attributes */
         while (1) {}
     }
 
-    retc = pthread_create(&thread, &attrs, mainTimerTwoThread, NULL);
-    if (retc != 0) {
+    retcStar = pthread_create(&thread, &attrs, mainThread, NULL);
+    retcTimer1 = pthread_create(&thread, &attrs, mainTimerOneThread, NULL);
+    retcTimer2 = pthread_create(&thread, &attrs, mainTimerTwoThread, NULL);
+    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
         /* pthread_create() failed */
         while (1) {}
     }
