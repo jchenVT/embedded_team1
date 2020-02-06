@@ -18,6 +18,10 @@
  */
 void *mainThread(void *arg0)
 {
+    /**********************************/
+    dbgOutputLoc(STAR_MAIN_START); 
+    /**********************************/
+
     // create queue
     bool q = createQ1();
 
@@ -31,10 +35,20 @@ void *mainThread(void *arg0)
 
     // ADD DEBUG: WHILE
     while(1 && q) {
+        /**********************************/
+        dbgOutputLoc(STAR_WHILE_BEGIN); 
+        /**********************************/
+
         // wait for message (blocking)
         // ADD DEBUG: BEFORE RECEIVING FROM QUEUE (NOT ISR)
+        /**********************************/
+        dbgOutputLoc(STAR_WAIT_MESSAGE); 
+        /**********************************/
         receiveFromQ1(&data);
         // ADD DEBUG: AFTER RECEIVING FROM QUEUE (NOT ISR)
+        /**********************************/
+        dbgOutputLoc(STAR_RECEIVED_MESSAGE); 
+        /**********************************/
 
         // check for success
         if (!data.success) {
@@ -54,7 +68,9 @@ void *mainThread(void *arg0)
         }
 
         // change fsm (in sensor_states)
-        // ADD DEBUG: TASK
+        /**********************************/
+        dbgOutputLoc(STAR_UPDATE_TASK); 
+        /**********************************/
         updateFSM(&fsm, timeInc, sensorVal);
     }
 

@@ -49,6 +49,7 @@
 /* Driver configuration */
 #include <ti/drivers/Board.h>
 #include "timertwo.h"
+#include "debug.h"
 
 extern void *mainTimerTwoThread(void *arg0);
 
@@ -72,6 +73,7 @@ int main(void)
 
     /* Call driver init functions */
     Board_init();
+    debug_setup();
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs);

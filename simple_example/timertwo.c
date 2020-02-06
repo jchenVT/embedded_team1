@@ -15,6 +15,10 @@ void *mainTimerTwoThread(void *arg0) {
     Timer_init();
     ADC_init();
 
+    /**************************/
+    dbgOutputLoc(T2_TIMER_INITIALIZE);
+    /**************************/
+
     Timer_Params_init(&params);
 
     params.periodUnits = Timer_PERIOD_US;
@@ -24,14 +28,18 @@ void *mainTimerTwoThread(void *arg0) {
 
     timer2 = Timer_open(CONFIG_TIMER_0, &params);
 
+    /**************************/
+    dbgOutputLoc(T1_TIMER_OPENED);
+    /**************************/
+
     if (timer2 == NULL) {
         /* Failed to initialized timer */
-        while (1) {}
+        stop_all();
     }
 
     if (Timer_start(timer2) == Timer_STATUS_ERROR) {
         /* Failed to start timer */
-        while (1) {}
+        stop_all();
     }
     return (NULL);
 }
@@ -50,17 +58,26 @@ void timer75Callback(Timer_Handle myHandle) {
     uint32_t adcValueUv;
     int i;
 
+
+    /**************************/
+    dbgOutputLoc(T2_CALLBACK_BEGIN);
+    /**************************/
+
     ADC_Params_init(&params);
     adc = ADC_open(CONFIG_ADC_0, &params);
 
     if (adc == NULL) {
-        while (1) {}
+        stop_all();
     }
 
     /* sampling 10 times */
     for (i = 0; i < 10; ++i) {
         res += ADC_convert(adc, &adcValue);
     }
+
+    /**************************/
+    dbgOutputLoc(T2_CALLBACK_ADC_READ);
+    /**************************/
 
     res /= 10;
 

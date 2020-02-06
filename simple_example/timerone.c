@@ -13,6 +13,10 @@ void *mainTimerOneThread(void *arg0) {
     Timer_Handle timer1;
     Timer_Params params;
 
+    /**************************/
+    dbgOutputLoc(T1_TIMER_INITIALIZE);
+    /**************************/
+
     Timer_init();
     Timer_Params_init(&params);
 
@@ -23,19 +27,28 @@ void *mainTimerOneThread(void *arg0) {
 
     timer1 = Timer_open(CONFIG_TIMER_0, &params);
 
+    /**************************/
+    dbgOutputLoc(T1_TIMER_OPENED);
+    /**************************/
+
     if (timer1 == NULL) {
         /* Failed to initialized timer */
-        while (1) {}
+        stop_all();
     }
 
     if (Timer_start(timer1) == Timer_STATUS_ERROR) {
         /* Failed to start timer */
-        while (1) {}
+        stop_all();
     }
 
     return (NULL);
 }
 
 void timerSecondCallback() {
+
+    /**************************/
+    dbgOutputLoc(T1_CALLBACK);
+    /**************************/
+
     sendTimeMsgToQ1(TIMER_LENGTH);
 }

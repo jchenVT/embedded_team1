@@ -16,6 +16,7 @@
 
 #include "ti_drivers_config.h"
 #include "sensor_queue.h"
+#include "debug.h"
 
 void timerSecondCallback();
 
