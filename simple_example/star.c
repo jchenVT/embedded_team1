@@ -6,7 +6,6 @@
  */
 
 #include "star.h"
-#include "debug.h"
 
 /*
  *  @function   mainThread
@@ -47,7 +46,7 @@ void *mainThread(void *arg0)
         receiveFromQ1(&data);
         // ADD DEBUG: AFTER RECEIVING FROM QUEUE (NOT ISR)
         /**********************************/
-        dbgOutputLoc(STAR_RECEIVED_MESSAGE); 
+        dbgOutputLoc(STAR_RECEIVE_MESSAGE);
         /**********************************/
 
         // check for success

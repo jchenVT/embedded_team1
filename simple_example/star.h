@@ -10,6 +10,7 @@
 
 #include "sensor_queue.h"
 #include "sensor_state.h"
+#include "debug.h"
 
 void *mainThread(void *arg0);
 
