@@ -5,6 +5,7 @@
  *      Author: trieu, giffen
  */
 
+#include "debug.h"
 #include "sensor_state.h"
 
 /*
@@ -34,6 +35,9 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 // print uart sensor =
+                const char sensorOut[20];
+                snprintf(sensorOut, 20, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
+                UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
                 fsm->curState = WaitingForTime2;
@@ -49,6 +53,9 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 // print uart sensor=
+                const char sensorOut[20];
+                snprintf(sensorOut, 20, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
+                UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
                 fsm->curState = WaitingForTime3;
@@ -65,6 +72,9 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 // print uart sensor =
                 // print uart time =
+                const char sensorOut[20];
+                snprintf(sensorOut, 20, "CurTime=%d\n", fsm->curTime/1000);
+                UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
                 fsm->curState = WaitingForTime1;

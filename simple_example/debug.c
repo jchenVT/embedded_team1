@@ -1,6 +1,6 @@
 #include "debug.h"
 
-UART_Handle uart;
+UART_Handle uart = NULL;
 UART_Params uartParams;
 
 void debug_setup()
@@ -69,10 +69,13 @@ void dbgUARTVal(unsigned char outVal)
     if (uart == NULL)
         stop_all();
 
-    const char e[1] = outVal;
+    const char e[5];
+    snprintf(e, 5, "%u\n", outVal);
+
     /*****************************/
     dbgOutputLoc(UART_WRITING); 
     /*****************************/
+
     UART_write(uart, e, sizeof(e));
 }
 

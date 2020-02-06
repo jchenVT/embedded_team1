@@ -72,9 +72,6 @@ int main(void)
     pthread_attr_t      attrs1;
     pthread_attr_t      attrs2;
     pthread_attr_t      attrs3;
-    struct sched_param  priParam1;
-    struct sched_param  priParam2;
-    struct sched_param  priParam3;
     int                 retcStar;
     int                 retcTimer1;
     int                 retcTimer2;
@@ -102,7 +99,7 @@ int main(void)
     retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
     retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
 
-    if (/*retcStar != 0 &&*/ retcTimer1 != 0 && retcTimer2 != 0) {
+    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
         /* pthread_create() failed */
         while (1) {}
     }

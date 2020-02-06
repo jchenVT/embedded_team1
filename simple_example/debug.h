@@ -7,7 +7,7 @@
 #include <ti/drivers/UART.h>
 
 #include <stdbool.h>
-
+#include <stdio.h>
 #include "ti_drivers_config.h"
 
 // Debug Output Location Macros Definition
@@ -44,6 +44,7 @@
 #define UART_WRITING 0x62
 #define UART_CLOSING 0x63
 
+extern UART_Handle uart;
 // Set up function
 void debug_setup();
 
