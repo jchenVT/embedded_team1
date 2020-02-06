@@ -6,6 +6,7 @@
  */
 
 #include "star.h"
+#include "debug.h"
 
 /*
  *  @function   mainThread
@@ -28,13 +29,16 @@ void *mainThread(void *arg0)
     // sensor FSM
     struct fsmData fsm = {Init, 0, 0, 0, 0};
 
+    // ADD DEBUG: WHILE
     while(1 && q) {
         // wait for message (blocking)
+        // ADD DEBUG: BEFORE RECEIVING FROM QUEUE (NOT ISR)
         receiveFromQ1(&data);
+        // ADD DEBUG: AFTER RECEIVING FROM QUEUE (NOT ISR)
 
         // check for success
         if (!data.success) {
-            // error handle
+            stop_all();
         }
 
         // store values locally
@@ -46,14 +50,15 @@ void *mainThread(void *arg0)
             sensorVal = data.value;
         }
         else {
-            // error handle
+            stop_all();
         }
 
         // change fsm (in sensor_states)
+        // ADD DEBUG: TASK
         updateFSM(&fsm, timeInc, sensorVal);
     }
 
-    // error handle failed queue creation
+    stop_all();
 
     return 0;
 }

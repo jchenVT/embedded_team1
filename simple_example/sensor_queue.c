@@ -21,7 +21,7 @@ QueueHandle_t msgQ = NULL;
 bool createQ1() {
 
     msgQ = xQueueCreate( qLENGTH, qITEMSIZE);
-
+    // ADD DEBUG
     return msgQ == NULL ? false : true;
 }
 
@@ -37,7 +37,7 @@ bool createQ1() {
 int sendTimeMsgToQ1(unsigned int timeVal) {
 
     long long int newMsg = TIME_DATA | timeVal;
-
+    // ADD DEBUG
     return xQueueSendToBackFromISR( msgQ, &newMsg, 0 );
 }
 
@@ -53,7 +53,7 @@ int sendTimeMsgToQ1(unsigned int timeVal) {
 int sendSensorMsgToQ1(int mmDist) {
 
     long long int newMsg = SENSOR_DATA | mmDist;
-
+    // ADD DEBUG
     return xQueueSendToBackFromISR( msgQ, &newMsg, 0 );
 }
 
@@ -69,6 +69,7 @@ void receiveFromQ1(struct qData *oldData) {
 
     long long int *msg = NULL;
 
+    // ADD DEBUG
     xQueueReceive( msgQ, msg, portMAX_DELAY );
 
     if (msg == NULL) {
