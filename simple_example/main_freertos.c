@@ -88,10 +88,14 @@ int main(void)
     debug_setup();
 
     /* Initialize the attributes structure with default values */
-    pthread_attr_init(&attrs);
+    pthread_attr_init(&attrs1);
+    pthread_attr_init(&attrs2);
+    pthread_attr_init(&attrs3);
 
     /* Set priority, detach state, and stack size attributes */
-    priParam.sched_priority = 1;
+    priParam1.sched_priority = 1;
+    priParam2.sched_priority = 1;
+    priParam3.sched_priority = 1;
     retcStar = pthread_attr_setschedparam(&attrs1, &priParam1);
     retcStar |= pthread_attr_setdetachstate(&attrs1, PTHREAD_CREATE_DETACHED);
     retcStar |= pthread_attr_setstacksize(&attrs1, THREADSTACKSIZE);
