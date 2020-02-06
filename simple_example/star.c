@@ -46,9 +46,7 @@ void *mainThread(void *arg0)
         dbgOutputLoc(STAR_RECEIVE_MESSAGE);
         /**********************************/
 
-        /**********************************/
-       dbgOutputLoc(STAR_WHILE_BEGIN);
-       /**********************************/
+
 
         // check for success
         if (!data.success) {

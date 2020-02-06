@@ -73,18 +73,18 @@ int sendSensorMsgToQ1(int mmDist) {
  */
 void receiveFromQ1(struct qData *oldData) {
 
-    long long int *msg = NULL;
+    long long int msg = 0;
 
     /**************************/
     dbgOutputLoc(SQ_Q1_RECEIVE);
     /**************************/
-    xQueueReceive( msgQ, msg, portMAX_DELAY );
+    xQueueReceive( msgQ, &msg, portMAX_DELAY );
 
-    if (msg == NULL) {
+    if (&msg == NULL) {
         oldData->success = false;
     }
 
-    oldData->type = *msg & TYPE_MASK;
-    oldData->value = *msg & VALUE_MASK;
+    oldData->type = msg & TYPE_MASK;
+    oldData->value = msg & VALUE_MASK;
 
 }
