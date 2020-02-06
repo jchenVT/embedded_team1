@@ -52,6 +52,7 @@
 #include "timerone.h"
 #include "timertwo.h"
 #include "debug.h"
+#include "sensor_queue.h"
 
 extern void *mainThread(void *arg0);
 extern void *mainTimerOneThread(void *arg0);
@@ -86,6 +87,9 @@ int main(void)
     /* Call driver init functions */
     Board_init();
     debug_setup();
+    if (!createQ1()) {
+        stop_all();
+    }
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs1);
@@ -93,7 +97,7 @@ int main(void)
     pthread_attr_init(&attrs3);
 
     /* Set priority, detach state, and stack size attributes */
-    priParam1.sched_priority = 1;
+    /*priParam1.sched_priority = 1;
     priParam2.sched_priority = 1;
     priParam3.sched_priority = 1;
     retcStar = pthread_attr_setschedparam(&attrs1, &priParam1);
@@ -106,14 +110,15 @@ int main(void)
     retcTimer2 |= pthread_attr_setdetachstate(&attrs3, PTHREAD_CREATE_DETACHED);
     retcTimer2 |= pthread_attr_setstacksize(&attrs3, THREADSTACKSIZE);
     if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
-        /* failed to set attributes */
+        // failed to set attributes
         while (1) {}
-    }
+    }*/
 
-    retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
-    retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
     retcTimer2 = pthread_create(&thread3, &attrs3, mainTimerTwoThread, NULL);
-    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
+    retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
+    //retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
+
+    if (/*retcStar != 0 &&*/ retcTimer1 != 0 && retcTimer2 != 0) {
         /* pthread_create() failed */
         while (1) {}
     }

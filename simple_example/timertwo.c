@@ -29,7 +29,7 @@ void *mainTimerTwoThread(void *arg0) {
     timer2 = Timer_open(CONFIG_TIMER_0, &params);
 
     /**************************/
-    dbgOutputLoc(T1_TIMER_OPENED);
+    dbgOutputLoc(T2_TIMER_OPENED);
     /**************************/
 
     if (timer2 == NULL) {
@@ -87,16 +87,19 @@ void timer75Callback(Timer_Handle myHandle) {
         int retnum;
         retnum = snprintf(UARTbuf, 10, "%d", res);
 
-        for (i = 0; i < retnum; ++i) {
+        dbgUARTVal((unsigned char) 'a');
+        /*for (i = 0; i < retnum; ++i) {
             dbgUARTVal((unsigned char) UARTbuf[i]);
         }
-        dbgUARTVal((unsigned char) 'a');
-        //adcValueUv = ADC_convertToMicroVolts(adc, adcValue);
+        dbgUARTVal((unsigned char) 'a');*/
+        adcValueUv = ADC_convertToMicroVolts(adc, adcValue);
     }
     //GPIO_toggle(CONFIG_GPIO_LED_0);
     /* Converting to millimeters */
 
-    //sendSensorMsgToQ1(convertToMM(adcValueUv));
+    if (sendSensorMsgToQ1(convertToMM(adcValueUv)) == errQUEUE_FULL) {
+        stop_all();
+    }
 
     ADC_close(adc);
 }

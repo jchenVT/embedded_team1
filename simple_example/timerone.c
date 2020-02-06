@@ -10,6 +10,7 @@
 #define TIMER_LENGTH 1000
 
 void *mainTimerOneThread(void *arg0) {
+
     Timer_Handle timer1;
     Timer_Params params;
 
@@ -44,11 +45,13 @@ void *mainTimerOneThread(void *arg0) {
     return (NULL);
 }
 
-void timerSecondCallback() {
+void timerSecondCallback(Timer_Handle myHandle) {
 
     /**************************/
     dbgOutputLoc(T1_CALLBACK);
     /**************************/
 
-    sendTimeMsgToQ1(TIMER_LENGTH);
+    if (sendTimeMsgToQ1(TIMER_LENGTH) == errQUEUE_FULL) {
+        stop_all();
+    }
 }

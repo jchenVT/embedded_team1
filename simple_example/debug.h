@@ -12,7 +12,7 @@
 
 // Debug Output Location Macros Definition
 // Used in dbgOUtputLoc(_MACRO_)
-#define FAILURE 0x7F
+#define FAILURE 0x78
 
 //star debug locations
 #define STAR_MAIN_START 0x00

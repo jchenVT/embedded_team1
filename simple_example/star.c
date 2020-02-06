@@ -21,9 +21,6 @@ void *mainThread(void *arg0)
     dbgOutputLoc(STAR_MAIN_START); 
     /**********************************/
 
-    // create queue
-    bool q = createQ1();
-
     // sensor queue
     struct qData data = {true, 0, 0};
     int sensorVal = 0;
@@ -33,7 +30,7 @@ void *mainThread(void *arg0)
     struct fsmData fsm = {Init, 0, 0, 0, 0};
 
     // ADD DEBUG: WHILE
-    while(1 && q) {
+    while(1) {
         /**********************************/
         dbgOutputLoc(STAR_WHILE_BEGIN); 
         /**********************************/
@@ -48,6 +45,10 @@ void *mainThread(void *arg0)
         /**********************************/
         dbgOutputLoc(STAR_RECEIVE_MESSAGE);
         /**********************************/
+
+        /**********************************/
+       dbgOutputLoc(STAR_WHILE_BEGIN);
+       /**********************************/
 
         // check for success
         if (!data.success) {

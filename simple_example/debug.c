@@ -15,14 +15,14 @@ void debug_setup()
     GPIO_setConfig(CONFIG_GPIO_6, GPIO_CFG_OUTPUT);
     GPIO_setConfig(CONFIG_GPIO_7, GPIO_CFG_OUTPUT);
 
-    GPIO_write(CONFIG_GPIO_0, GPIO_CFG_OUT_HIGH);
-    GPIO_write(CONFIG_GPIO_1, GPIO_CFG_OUT_HIGH);
-    GPIO_write(CONFIG_GPIO_2, GPIO_CFG_OUT_HIGH);
-    GPIO_write(CONFIG_GPIO_3, GPIO_CFG_OUT_HIGH);
-    GPIO_write(CONFIG_GPIO_4, GPIO_CFG_OUT_HIGH);
-    GPIO_write(CONFIG_GPIO_5, GPIO_CFG_OUT_HIGH);
-    GPIO_write(CONFIG_GPIO_6, GPIO_CFG_OUT_HIGH);
-    GPIO_write(CONFIG_GPIO_7, GPIO_CFG_OUT_HIGH);
+    GPIO_write(CONFIG_GPIO_0, GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_1, GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_2, GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_3, GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_4, GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_5, GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_6, GPIO_CFG_OUT_LOW);
+    GPIO_write(CONFIG_GPIO_7, GPIO_CFG_OUT_LOW);
 
     /*****************************/
     dbgOutputLoc(UART_INITIALIZE);
@@ -89,10 +89,9 @@ void stop_all()
 
     while(1)
     {
-        GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
+        GPIO_toggle(CONFIG_GPIO_LED_0);
         // blink LED forever
         int i = 0;
         for (;i<100000;i++) ;
-        GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
     }
 }

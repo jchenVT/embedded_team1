@@ -18,6 +18,6 @@
 #include "sensor_queue.h"
 #include "debug.h"
 
-void timerSecondCallback();
+void timerSecondCallback(Timer_Handle myHandle);
 
 #endif /* TIMERONE_H_ */

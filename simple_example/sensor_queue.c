@@ -33,7 +33,6 @@ bool createQ1() {
  *              Wrapper for the RTOS function to send time data through
  *              the queue. Should be called from the callbacks (via ISR).
  *              Refer to page 110 of RTOS doc.
- *
  *  @params     timeVal - value from timers
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
