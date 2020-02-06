@@ -68,8 +68,12 @@ int main(void)
     pthread_t           thread1;
     pthread_t           thread2;
     pthread_t           thread3;
-    pthread_attr_t      attrs;
-    struct sched_param  priParam;
+    pthread_attr_t      attrs1;
+    pthread_attr_t      attrs2;
+    pthread_attr_t      attrs3;
+    struct sched_param  priParam1;
+    struct sched_param  priParam2;
+    struct sched_param  priParam3;
     int                 retcStar;
     int                 retcTimer1;
     int                 retcTimer2;
@@ -88,23 +92,23 @@ int main(void)
 
     /* Set priority, detach state, and stack size attributes */
     priParam.sched_priority = 1;
-    retcStar = pthread_attr_setschedparam(&attrs, &priParam);
-    retcStar |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
-    retcStar |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
-    retcTimer1 = pthread_attr_setschedparam(&attrs, &priParam);
-    retcTimer1 |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
-    retcTimer1 |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
-    retcTimer2 = pthread_attr_setschedparam(&attrs, &priParam);
-    retcTimer2 |= pthread_attr_setdetachstate(&attrs, PTHREAD_CREATE_DETACHED);
-    retcTimer2 |= pthread_attr_setstacksize(&attrs, THREADSTACKSIZE);
+    retcStar = pthread_attr_setschedparam(&attrs1, &priParam1);
+    retcStar |= pthread_attr_setdetachstate(&attrs1, PTHREAD_CREATE_DETACHED);
+    retcStar |= pthread_attr_setstacksize(&attrs1, THREADSTACKSIZE);
+    retcTimer1 = pthread_attr_setschedparam(&attrs2, &priParam2);
+    retcTimer1 |= pthread_attr_setdetachstate(&attrs2, PTHREAD_CREATE_DETACHED);
+    retcTimer1 |= pthread_attr_setstacksize(&attrs2, THREADSTACKSIZE);
+    retcTimer2 = pthread_attr_setschedparam(&attrs3, &priParam3);
+    retcTimer2 |= pthread_attr_setdetachstate(&attrs3, PTHREAD_CREATE_DETACHED);
+    retcTimer2 |= pthread_attr_setstacksize(&attrs3, THREADSTACKSIZE);
     if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
         /* failed to set attributes */
         while (1) {}
     }
 
-    retcStar = pthread_create(&thread1, &attrs, mainThread, NULL);
-    retcTimer1 = pthread_create(&thread2, &attrs, mainTimerOneThread, NULL);
-    retcTimer2 = pthread_create(&thread3, &attrs, mainTimerTwoThread, NULL);
+    retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
+    retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
+    retcTimer2 = pthread_create(&thread3, &attrs3, mainTimerTwoThread, NULL);
     if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0) {
         /* pthread_create() failed */
         while (1) {}
