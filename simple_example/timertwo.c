@@ -43,6 +43,8 @@ void *mainTimerTwoThread(void *arg0) {
 
 int convertToMM(uint32_t mV) {
     int voltage = (int) mV / VCONVERSION;
+    // 20 = 4 mV
+    // 30 = 6
     int mm = pow(MMCONVERSION1 * voltage, (MMCONVERSION2));
     return mm;
 }
@@ -51,8 +53,8 @@ void timer75Callback(Timer_Handle myHandle) {
     ADC_Handle adc;
     ADC_Params params;
     int_fast16_t res = 0;
+    uint16_t avgValue = 0;
     uint16_t adcValue;
-    uint32_t adcValueUv;
     int i;
 
 
@@ -69,32 +71,29 @@ void timer75Callback(Timer_Handle myHandle) {
 
     /* sampling 10 times */
     for (i = 0; i < 10; ++i) {
-        res += ADC_convert(adc, &adcValue);
+        res = ADC_convert(adc, &adcValue);
+        avgValue += adcValue;
     }
 
     /**************************/
     dbgOutputLoc(T2_CALLBACK_ADC_READ);
     /**************************/
 
-    res /= 10;
+    avgValue /= 10;
+    // uart will print but it will not print consecutively.
+    // sensor values are usually 3-5.
 
     if (res == ADC_STATUS_SUCCESS) {
         // send to UART
-        char UARTbuf[10];
+        unsigned char UARTbuf[10];
         int retnum;
-        retnum = snprintf(UARTbuf, 10, "%d", res);
+        retnum = snprintf(UARTbuf, 10, "%d", avgValue);
 
-        dbgUARTVal((unsigned char) 'a');
-        /*for (i = 0; i < retnum; ++i) {
-            dbgUARTVal((unsigned char) UARTbuf[i]);
-        }
-        dbgUARTVal((unsigned char) 'a');*/
-        adcValueUv = ADC_convertToMicroVolts(adc, adcValue);
+        dbgUARTVal(avgValue);
     }
-    //GPIO_toggle(CONFIG_GPIO_LED_0);
     /* Converting to millimeters */
 
-    if (sendSensorMsgToQ1(convertToMM(adcValueUv)) == errQUEUE_FULL) {
+    if (sendSensorMsgToQ1(convertToMM(avgValue)) == errQUEUE_FULL) {
         stop_all();
     }
 

@@ -36,7 +36,7 @@ void debug_setup()
     uartParams.readDataMode = UART_DATA_BINARY;
     uartParams.readReturnMode = UART_RETURN_FULL;
     uartParams.readEcho = UART_ECHO_OFF;
-    uartParams.baudRate = 115200;
+    uartParams.baudRate = 9600;
 
     /*****************************/
     dbgOutputLoc(UART_OPENING);
@@ -69,10 +69,11 @@ void dbgUARTVal(unsigned char outVal)
     if (uart == NULL)
         stop_all();
 
+    const char e[1] = outVal;
     /*****************************/
     dbgOutputLoc(UART_WRITING); 
     /*****************************/
-    UART_write(uart, (const void *) outVal, sizeof(outVal));
+    UART_write(uart, e, sizeof(e));
 }
 
 void stop_all()
