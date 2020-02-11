@@ -32,8 +32,8 @@ void debug_setup()
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
     UART_Params_init(&uartParams);
-    uartParams.writeDataMode = UART_DATA_BINARY;
-    uartParams.readDataMode = UART_DATA_BINARY;
+    uartParams.writeDataMode = UART_DATA_TEXT;
+    uartParams.readDataMode = UART_DATA_TEXT;
     uartParams.readReturnMode = UART_RETURN_FULL;
     uartParams.readEcho = UART_ECHO_OFF;
     uartParams.baudRate = 9600;
@@ -69,8 +69,8 @@ void dbgUARTVal(unsigned char outVal)
     if (uart == NULL)
         stop_all();
 
-    const char e[5];
-    snprintf(e, 5, "%u\n", outVal);
+    const char e[0] = outVal;
+    //snprintf(e, 5, "%u\n", outVal);
 
     /*****************************/
     dbgOutputLoc(UART_WRITING); 

@@ -35,8 +35,8 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 // print uart sensor =
-                const char sensorOut[20];
-                snprintf(sensorOut, 20, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
+                const char sensorOut[40];
+                snprintf(sensorOut, 40, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
                 UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
@@ -53,8 +53,8 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 // print uart sensor=
-                const char sensorOut[20];
-                snprintf(sensorOut, 20, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
+                const char sensorOut[40];
+                snprintf(sensorOut, 40, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
                 UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
@@ -72,8 +72,8 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 // print uart sensor =
                 // print uart time =
-                const char sensorOut[20];
-                snprintf(sensorOut, 20, "CurTime=%d\n", fsm->curTime/1000);
+                const char sensorOut[40];
+                snprintf(sensorOut, 40, "CurTime=%d\n", fsm->curTime/1000);
                 UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
