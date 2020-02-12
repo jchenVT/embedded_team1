@@ -34,9 +34,8 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
             if (timeInc > 0) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
-                // print uart sensor =
                 char sensorOut[40];
-                snprintf(sensorOut, 40, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
+                snprintf(sensorOut, 40, "1.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
                 UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
@@ -52,9 +51,8 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
             if (timeInc > 0) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
-                // print uart sensor=
                 char sensorOut[40];
-                snprintf(sensorOut, 40, "Sensor=%d,%d\n", fsm->sensorAvg, fsm->sensorCount);
+                snprintf(sensorOut, 40, "2.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
                 UART_write(uart, sensorOut, sizeof(sensorOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
@@ -70,11 +68,12 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
             if (timeInc > 0) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
-                // print uart sensor =
-                // print uart time =
                 char sensorOut[40];
-                snprintf(sensorOut, 40, "CurTime=%d\n", (fsm->curTime)/1000);
+                snprintf(sensorOut, 40, "3.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
                 UART_write(uart, sensorOut, sizeof(sensorOut));
+                char timerOut[40];
+                snprintf(timerOut, 40, "3.CurTime=%d", (fsm->curTime)/1000);
+                UART_write(uart, timerOut, sizeof(timerOut));
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
                 fsm->curState = WaitingForTime1;

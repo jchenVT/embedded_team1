@@ -72,7 +72,7 @@ void timer75Callback(Timer_Handle myHandle) {
     /* sampling 10 times */
     for (i = 0; i < 10; ++i) {
         res = ADC_convert(adc, &adcValue);
-        avgValue += adcValue;
+        avgValue += 0;
     }
 
     /**************************/
@@ -89,7 +89,7 @@ void timer75Callback(Timer_Handle myHandle) {
         int retnum;
         retnum = snprintf(UARTbuf, 10, "%d", avgValue);
 
-        dbgUARTVal(avgValue);
+        //dbgUARTVal(avgValue);
     }
     /* Converting to millimeters */
 
