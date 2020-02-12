@@ -17,7 +17,7 @@
  */
 int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
 
-    int size;
+    int size, i;
     switch (fsm->curState) {
         case Init:
             fsm->curTime = 0;
@@ -37,7 +37,7 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 char sensorOut[40];
                 size = snprintf(sensorOut, 40, "1.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
-                for (int i=0;i<size;i++)
+                for (i=0;i<size;i++)
                 {
                     dbgUARTVal(sensorOut[i]);
                 }
@@ -57,7 +57,7 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 char sensorOut[40];
                 size = snprintf(sensorOut, 40, "2.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
-                for (int i=0;i<size;i++)
+                for (i=0;i<size;i++)
                 {
                     dbgUARTVal(sensorOut[i]);
                 }
@@ -77,14 +77,14 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 char sensorOut[40];
                 size = snprintf(sensorOut, 40, "3.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
-                for (int i=0;i<size;i++)
+                for (i=0;i<size;i++)
                 {
                     dbgUARTVal(sensorOut[i]);
                 }
 
                 char timerOut[40];
                 size = snprintf(timerOut, 40, "3.CurTime=%d", (fsm->curTime)/1000);
-                for (int i=0;i<size;i++)
+                for (i=0;i<size;i++)
                 {
                     dbgUARTVal(timerOut[i]);
                 }
