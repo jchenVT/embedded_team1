@@ -17,6 +17,7 @@
  */
 int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
 
+    int size;
     switch (fsm->curState) {
         case Init:
             fsm->curTime = 0;
@@ -35,8 +36,11 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 char sensorOut[40];
-                snprintf(sensorOut, 40, "1.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
-                UART_write(uart, sensorOut, sizeof(sensorOut));
+                size = snprintf(sensorOut, 40, "1.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
+                for (int i=0;i<size;i++)
+                {
+                    dbgUARTVal(sensorOut[i]);
+                }
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
                 fsm->curState = WaitingForTime2;
@@ -52,8 +56,11 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 char sensorOut[40];
-                snprintf(sensorOut, 40, "2.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
-                UART_write(uart, sensorOut, sizeof(sensorOut));
+                size = snprintf(sensorOut, 40, "2.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
+                for (int i=0;i<size;i++)
+                {
+                    dbgUARTVal(sensorOut[i]);
+                }
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
                 fsm->curState = WaitingForTime3;
@@ -69,11 +76,18 @@ int updateFSM(struct fsmData *fsm, int timeInc, int sensorVal) {
                 fsm->curTime += timeInc;
                 fsm->sensorAvg = fsm->sensorTotal/fsm->sensorCount;
                 char sensorOut[40];
-                snprintf(sensorOut, 40, "3.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
-                UART_write(uart, sensorOut, sizeof(sensorOut));
+                size = snprintf(sensorOut, 40, "3.Sensor=%d,%d", fsm->sensorAvg, fsm->sensorCount);
+                for (int i=0;i<size;i++)
+                {
+                    dbgUARTVal(sensorOut[i]);
+                }
+
                 char timerOut[40];
-                snprintf(timerOut, 40, "3.CurTime=%d", (fsm->curTime)/1000);
-                UART_write(uart, timerOut, sizeof(timerOut));
+                size = snprintf(timerOut, 40, "3.CurTime=%d", (fsm->curTime)/1000);
+                for (int i=0;i<size;i++)
+                {
+                    dbgUARTVal(timerOut[i]);
+                }
                 fsm->sensorTotal = 0;
                 fsm->sensorCount = 0;
                 fsm->curState = WaitingForTime1;
