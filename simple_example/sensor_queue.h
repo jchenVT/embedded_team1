@@ -22,9 +22,6 @@
 #define qLENGTH         32
 #define qITEMSIZE       8
 
-/* Declaration of the queue */
-extern QueueHandle_t msgQ;
-
 /* Struct used in RETURNING message from queue */
 struct qData {
     bool success;

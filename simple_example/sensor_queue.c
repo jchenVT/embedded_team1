@@ -8,7 +8,7 @@
 #include "sensor_queue.h"
 #include "debug.h"
 
-QueueHandle_t msgQ = NULL;
+static QueueHandle_t msgQ = NULL;
 
 /*
  *  @function   createQ1

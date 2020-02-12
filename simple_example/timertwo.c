@@ -85,7 +85,7 @@ void timer75Callback(Timer_Handle myHandle) {
 
     if (res == ADC_STATUS_SUCCESS) {
         // send to UART
-        unsigned char UARTbuf[10];
+        char UARTbuf[10];
         int retnum;
         retnum = snprintf(UARTbuf, 10, "%d", avgValue);
 
