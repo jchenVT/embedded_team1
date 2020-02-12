@@ -2,6 +2,7 @@
 
 UART_Handle uart = NULL;
 UART_Params uartParams;
+static QueueHandle_t uartQ = NULL;
 
 void debug_setup()
 {
@@ -45,6 +46,10 @@ void debug_setup()
     uart = UART_open(CONFIG_UART_0, &uartParams);
     if (uart == NULL)
         stop_all(FAIL_UART_INIT);
+
+    // creating uart queue
+    uartQ = xQueueCreate( 32, 1);
+    if (uartQ == NULL) stop_all(FAIL_UART_INIT);
 }
 
 void dbgOutputLoc(unsigned int outLoc)
@@ -66,17 +71,19 @@ void dbgOutputLoc(unsigned int outLoc)
 
 void dbgUARTVal(unsigned char outVal)
 {
+    /*****************************
     if (uart == NULL)
         stop_all(FAIL_UART_INIT);
 
     const char e[0] = outVal;
     //snprintf(e, 5, "%u\n", outVal);
 
-    /*****************************/
     dbgOutputLoc(UART_WRITING); 
-    /*****************************/
 
     UART_write(uart, e, sizeof(e));
+
+    *****************************/
+    xQueueSendToBackFromISR( uartQ, &outVal, 0);
 }
 
 void stop_all(unsigned int FAILURE_CODE)
@@ -99,5 +106,40 @@ void stop_all(unsigned int FAILURE_CODE)
         // blink LED forever
         int i = 0;
         for (;i<100000;i++) ;
+    }
+}
+
+
+unsigned char receiveFromUARTQ() 
+{
+
+    unsigned char msg = 0;
+
+    xQueueReceive( uartQ, &msg, portMAX_DELAY );
+
+    if (&msg == NULL) 
+        return -1;
+    
+    return msg;
+}
+
+void *uartThread(void *arg0)
+{
+    while(1)
+    {
+        unsigned char outVal = receiveFromUARTQ(); 
+
+        if (outVal == -1)
+            stop_all(FAIL_UART_INIT);
+        
+        if (uart == NULL)
+            stop_all(FAIL_UART_INIT);
+
+        const char e[1] = {outVal};
+        //snprintf(e, 5, "%u\n", outVal);
+
+        dbgOutputLoc(UART_WRITING); 
+
+        UART_write(uart, e, sizeof(e));
     }
 }

@@ -3,6 +3,7 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#include <queue.h>
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/UART.h>
 
@@ -55,12 +56,17 @@
 #define UART_WRITING            0x62
 #define UART_CLOSING            0x63
 
+
+
+
 extern UART_Handle uart;
 // Set up function
 void debug_setup();
 
 // Send a value through UART
 void dbgUARTVal(unsigned char outVal);
+// get value from uart queue
+unsigned char receiveFromUARTQ();
 
 // Debug function that outputs to GPIO pins
 // Use logic analyzer to determine location
@@ -68,5 +74,7 @@ void dbgUARTVal(unsigned char outVal);
 void dbgOutputLoc(unsigned int outLoc);
 
 void stop_all(unsigned int FAILURE_CODE);
+
+void *uartThread(void *arg0);
 
 #endif

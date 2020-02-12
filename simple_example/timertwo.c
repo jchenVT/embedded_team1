@@ -72,7 +72,7 @@ void timer75Callback(Timer_Handle myHandle) {
     /* sampling 10 times */
     for (i = 0; i < 10; ++i) {
         res = ADC_convert(adc, &adcValue);
-        avgValue += 0;
+        avgValue += adcValue;
     }
 
     /**************************/
@@ -83,14 +83,18 @@ void timer75Callback(Timer_Handle myHandle) {
     // uart will print but it will not print consecutively.
     // sensor values are usually 3-5.
 
+    dbgUARTVal('{');
     if (res == ADC_STATUS_SUCCESS) {
         // send to UART
         char UARTbuf[10];
         int retnum;
         retnum = snprintf(UARTbuf, 10, "%d", avgValue);
-
-        //dbgUARTVal(avgValue);
+        for(i=0;i<retnum;i++)
+        {
+            dbgUARTVal(UARTbuf[i]);
+        }
     }
+    dbgUARTVal('}');
     /* Converting to millimeters */
 
     if (sendSensorMsgToQ1(convertToMM(avgValue)) == errQUEUE_FULL) {

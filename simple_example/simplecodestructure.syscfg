@@ -44,8 +44,12 @@ UART1.$name = "CONFIG_UART_0";
 UART1.dataDirection = "Send Only";
 // Interrupt Priority - UART peripheral interrupt priority
 UART1.interruptPriority = "5";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+UART1.$hardware = system.deviceData.board.components.XDS110UART;
 // Name
 UART1.uart.$name = "MyUART1";
+// Use Peripheral
+UART1.uart.$assign = "UART1";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO2.$name = "CONFIG_GPIO_0";
 // Mode - Select the GPIO mode
@@ -111,9 +115,7 @@ GPIO1.gpioPin.$suggestSolution = "64";
 // Suggest solution
 Timer1.timer.$suggestSolution = "Timer1";
 // Suggest solution
-UART1.uart.$suggestSolution = "UART0";
-// Suggest solution
-UART1.uart.txPin.$suggestSolution = "53";
+UART1.uart.txPin.$suggestSolution = "55";
 // Suggest solution
 ADC1.adc.$suggestSolution = "ADC0";
 // Suggest solution
