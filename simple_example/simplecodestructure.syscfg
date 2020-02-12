@@ -21,6 +21,8 @@ var GPIO9 = GPIO.addInstance();
 var ADC = scripting.addModule("/ti/drivers/ADC", {}, false);
 var ADC1 = ADC.addInstance();
 var Timer2 = Timer.addInstance();
+var PWM = scripting.addModule("/ti/drivers/PWM", {}, false);
+var PWM1 = PWM.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -106,10 +108,14 @@ Timer2.$name = "CONFIG_TIMER_1";
 Timer2.timerType = "32 Bits";
 // Name
 Timer2.timer.$name = "MyTimer1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to PWM runtime APIs
+PWM1.$name = "CONFIG_PWM_0";
+// Name
+PWM1.timer.$name = "MyTimer1";
 // Suggest solution
 GPIO1.gpioPin.$suggestSolution = "64";
 // Suggest solution
-Timer1.timer.$suggestSolution = "Timer1";
+Timer1.timer.$suggestSolution = "Timer2";
 // Suggest solution
 UART1.uart.$suggestSolution = "UART0";
 // Suggest solution
@@ -118,3 +124,7 @@ UART1.uart.txPin.$suggestSolution = "53";
 ADC1.adc.$suggestSolution = "ADC0";
 // Suggest solution
 Timer2.timer.$suggestSolution = "Timer0";
+// Suggest solution
+PWM1.timer.$suggestSolution = "Timer1";
+// Suggest solution
+PWM1.timer.pwmPin.$suggestSolution = "21";

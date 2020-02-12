@@ -29,7 +29,6 @@ void *mainThread(void *arg0)
     // sensor FSM
     struct fsmData fsm = {Init, 0, 0, 0, 0};
 
-    // ADD DEBUG: WHILE
     while(1) {
         /**********************************/
         dbgOutputLoc(STAR_WHILE_BEGIN); 
@@ -50,7 +49,7 @@ void *mainThread(void *arg0)
 
         // check for success
         if (!data.success) {
-            stop_all();
+            stop_all(FAIL_Q1_READ);
         }
 
         // store values locally
@@ -62,7 +61,7 @@ void *mainThread(void *arg0)
             sensorVal = data.value;
         }
         else {
-            stop_all();
+            stop_all(FAIL_Q1_WRONG_DATA);
         }
 
         // change fsm (in sensor_states)
@@ -71,8 +70,6 @@ void *mainThread(void *arg0)
         /**********************************/
         updateFSM(&fsm, timeInc, sensorVal);
     }
-
-    stop_all();
 
     return 0;
 }

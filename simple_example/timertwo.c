@@ -19,7 +19,7 @@ void *mainTimerTwoThread(void *arg0) {
     Timer_Params_init(&params);
 
     params.periodUnits = Timer_PERIOD_US;
-    params.period = TIMER_PERIOD*10;
+    params.period = TIMER_PERIOD;
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = timer75Callback;
 
@@ -31,12 +31,12 @@ void *mainTimerTwoThread(void *arg0) {
 
     if (timer2 == NULL) {
         /* Failed to initialized timer */
-        stop_all();
+        stop_all(FAIL_T2_INIT);
     }
 
     if (Timer_start(timer2) == Timer_STATUS_ERROR) {
         /* Failed to start timer */
-        stop_all();
+        stop_all(FAIL_T2_START);
     }
     return (NULL);
 }
@@ -66,7 +66,7 @@ void timer75Callback(Timer_Handle myHandle) {
     adc = ADC_open(CONFIG_ADC_0, &params);
 
     if (adc == NULL) {
-        stop_all();
+        stop_all(FAIL_ADC_INIT);
     }
 
     /* sampling 10 times */
@@ -94,7 +94,7 @@ void timer75Callback(Timer_Handle myHandle) {
     /* Converting to millimeters */
 
     if (sendSensorMsgToQ1(convertToMM(avgValue)) == errQUEUE_FULL) {
-        stop_all();
+        stop_all(FAIL_T2_SEND_TO_Q1);
     }
 
     ADC_close(adc);

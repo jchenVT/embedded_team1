@@ -44,13 +44,13 @@ void debug_setup()
 
     uart = UART_open(CONFIG_UART_0, &uartParams);
     if (uart == NULL)
-        stop_all();
+        stop_all(FAIL_UART_INIT);
 }
 
 void dbgOutputLoc(unsigned int outLoc)
 {
-    if (outLoc > 0x7F)
-        stop_all();
+    if (outLoc > 0x7B)
+        stop_all(FAIL_UNKNOWN_CODE);
     
     static bool firstbit = false;
     firstbit = !firstbit;
@@ -67,7 +67,7 @@ void dbgOutputLoc(unsigned int outLoc)
 void dbgUARTVal(unsigned char outVal)
 {
     if (uart == NULL)
-        stop_all();
+        stop_all(FAIL_UART_INIT);
 
     const char e[0] = outVal;
     //snprintf(e, 5, "%u\n", outVal);
@@ -79,7 +79,7 @@ void dbgUARTVal(unsigned char outVal)
     UART_write(uart, e, sizeof(e));
 }
 
-void stop_all()
+void stop_all(unsigned int FAILURE_CODE)
 {
     taskDISABLE_INTERRUPTS();
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
@@ -87,9 +87,11 @@ void stop_all()
 
     /*****************************/
     dbgOutputLoc(UART_CLOSING);
-    dbgOutputLoc(FAILURE);
     /*****************************/
     UART_close(uart);
+    /*****************************/
+    dbgOutputLoc(FAILURE_CODE);
+    /*****************************/
 
     while(1)
     {

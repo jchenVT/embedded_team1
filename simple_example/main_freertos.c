@@ -87,7 +87,7 @@ int main(void)
     Timer_init();
     ADC_init();
     if (!createQ1()) {
-        stop_all();
+        stop_all(FAIL_Q1_INIT);
     }
 
     /* Initialize the attributes structure with default values */

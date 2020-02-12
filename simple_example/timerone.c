@@ -33,12 +33,12 @@ void *mainTimerOneThread(void *arg0) {
 
     if (timer1 == NULL) {
         /* Failed to initialized timer */
-        stop_all();
+        stop_all(FAIL_T1_INIT);
     }
 
     if (Timer_start(timer1) == Timer_STATUS_ERROR) {
         /* Failed to start timer */
-        stop_all();
+        stop_all(FAIL_T1_START);
     }
 
     return (NULL);
@@ -51,6 +51,6 @@ void timerSecondCallback(Timer_Handle myHandle) {
     /**************************/
 
     if (sendTimeMsgToQ1(TIMER_LENGTH) == errQUEUE_FULL) {
-        stop_all();
+        stop_all(FAIL_T1_SEND_TO_Q1);
     }
 }
