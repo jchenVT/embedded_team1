@@ -28,10 +28,10 @@
 
 #define TIMER_PERIOD 75000
 #define VCONVERSION 1000
-#define MMCONVERSION1 538.48
-#define MMCONVERSION2 -1.172
+#define MMCONVERSION1 695718
+#define MMCONVERSION2 -1.234
 
 void timer75Callback(Timer_Handle myHandle);
-int convertToMM(uint32_t mV);
+int convertToMM(uint16_t val);
 
 #endif /* TIMERTWO_H_ */

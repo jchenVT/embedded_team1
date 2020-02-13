@@ -45,8 +45,6 @@ void *mainThread(void *arg0)
         dbgOutputLoc(STAR_RECEIVE_MESSAGE);
         /**********************************/
 
-
-
         // check for success
         if (!data.success) {
             stop_all(FAIL_Q1_READ);
@@ -70,6 +68,4 @@ void *mainThread(void *arg0)
         /**********************************/
         updateFSM(&fsm, timeInc, sensorVal);
     }
-
-    return 0;
 }

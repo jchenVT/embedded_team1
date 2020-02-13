@@ -41,12 +41,9 @@ void *mainTimerTwoThread(void *arg0) {
     return (NULL);
 }
 
-int convertToMM(uint32_t mV) {
-    int voltage = (int) mV / VCONVERSION;
-    // 20 = 4 mV
-    // 30 = 6
-    int mm = pow(MMCONVERSION1 * voltage, (MMCONVERSION2));
-    return mm;
+int convertToMM(uint16_t val) {
+    double mm = MMCONVERSION1 * pow(val, (MMCONVERSION2));
+    return (int) mm;
 }
 
 void timer75Callback(Timer_Handle myHandle) {
@@ -56,7 +53,6 @@ void timer75Callback(Timer_Handle myHandle) {
     uint16_t avgValue = 0;
     uint16_t adcValue;
     int i;
-
 
     /**************************/
     dbgOutputLoc(T2_CALLBACK_BEGIN);
@@ -80,24 +76,26 @@ void timer75Callback(Timer_Handle myHandle) {
     /**************************/
 
     avgValue /= 10;
-    // uart will print but it will not print consecutively.
-    // sensor values are usually 3-5.
+
+    int converted;
 
     dbgUARTVal('{');
     if (res == ADC_STATUS_SUCCESS) {
         // send to UART
-        char UARTbuf[10];
+        char convertbuf[10];
         int retnum;
-        retnum = snprintf(UARTbuf, 10, "%d", avgValue);
-        for(i=0;i<retnum;i++)
-        {
-            dbgUARTVal(UARTbuf[i]);
+        converted = convertToMM(avgValue);
+        retnum = snprintf(convertbuf, 10, "%d", converted);
+        for (i=0; i<retnum; ++i) {
+            dbgUARTVal(convertbuf[i]);
         }
     }
+    dbgUARTVal(' ');
+    dbgUARTVal('m');
+    dbgUARTVal('m');
     dbgUARTVal('}');
-    /* Converting to millimeters */
 
-    if (sendSensorMsgToQ1(convertToMM(avgValue)) == errQUEUE_FULL) {
+    if (sendSensorMsgToQ1(converted) == errQUEUE_FULL) {
         stop_all(FAIL_T2_SEND_TO_Q1);
     }
 

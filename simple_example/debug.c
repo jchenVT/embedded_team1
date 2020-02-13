@@ -118,7 +118,7 @@ unsigned char receiveFromUARTQ()
     xQueueReceive( uartQ, &msg, portMAX_DELAY );
 
     if (&msg == NULL) 
-        return -1;
+        return (unsigned char) -1;
     
     return msg;
 }
@@ -129,14 +129,13 @@ void *uartThread(void *arg0)
     {
         unsigned char outVal = receiveFromUARTQ(); 
 
-        if (outVal == -1)
+        if ((int) outVal == -1)
             stop_all(FAIL_UART_INIT);
         
         if (uart == NULL)
             stop_all(FAIL_UART_INIT);
 
         const char e[1] = {outVal};
-        //snprintf(e, 5, "%u\n", outVal);
 
         dbgOutputLoc(UART_WRITING); 
 
