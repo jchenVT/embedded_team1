@@ -1,4 +1,6 @@
-simple_example/Debug/
+*/Debug
+*/.launches
 *.settings/
 simple_example/.launches/*
+*/.ycm_extra_conf.py
 
