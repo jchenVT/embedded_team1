@@ -14,14 +14,12 @@
 /* Driver configuration */
 #include <ti/drivers/Board.h>
 #include "prox1read.h"
-#include "prox2read.h"
 //#include "rgbread.h"
 #include "sensor_queue.h"
 #include "debug.h"
 
 /* Get thread locations */
 extern void *readProximity1Thread(void *arg0);
-//extern void *readProximity2Thread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -29,16 +27,7 @@ extern void *readProximity1Thread(void *arg0);
 /*
  *  ======== main ========
  */
-int main(void)
-{
-    /* UART0 Proximity Sensor Read */
-    pthread_t           thread1;
-    pthread_attr_t      attrs1;
-    int                 retcProx1;
-
-    //pthread_t           thread2;
-    //pthread_attr_t      attrs2;
-    //int                 retcProx2;
+int main(void) {
 
     /* initialize the system locks */
     #ifdef __ICCARM__
@@ -47,21 +36,35 @@ int main(void)
 
     /* Call driver setup functions */
     Board_init();
-    //debug_setup();
+    debug_setup();
     if (!setupQs()) {
-        //stop_all(FAIL_Q1_INIT);
+        stop_all(FAILED_INIT_QUEUES);
     }
+
+    dbgOutputLoc(INIT_THREADS);
+
+    /* UART0 Proximity Sensor Read */
+        pthread_t           thread1;
+        pthread_attr_t      attrs1;
+        int                 retcProx1;
+
+    /* Other thread... */
+        //pthread_t           thread2;
+        //pthread_attr_t      attrs2;
+        //int                 retcProx2;
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs1);
     //pthread_attr_init(&attrs2);
 
     retcProx1 = pthread_create(&thread1, &attrs1, readProximity1Thread, NULL);
-    //retcProx2 = pthread_create(&thread2, &attrs2, readProximity2Thread, NULL);
 
     if (retcProx1 != 0) {
         /* pthread_create() failed */
-        while (1) {}
+        stop_all(FAILED_INIT_THREADS);
+        while (1) {
+
+        }
     }
 
     /* Start the FreeRTOS scheduler */

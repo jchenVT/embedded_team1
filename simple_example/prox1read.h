@@ -24,6 +24,6 @@
 
 
 /* Main Thread */
-//void readProximity1Thread();
+void *readProximity1Thread(void *arg0);
 
 #endif /* PROX1READ_H_ */

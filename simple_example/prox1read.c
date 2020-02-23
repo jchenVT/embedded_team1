@@ -17,36 +17,40 @@
  */
 void *readProximity1Thread(void *arg0) {
 
-    // one-time initialization of UART driver
+    dbgOutputLoc(INIT_UART0);
+
+    /* One-time initialization of UART driver */
     UART_init();
 
-    // initialize UART parameters
+    /* Initialize UART parameters */
     UART_Params params;
     UART_Params_init(&params);
     params.baudRate = 9600;
     params.readMode = UART_MODE_BLOCKING;
     params.readTimeout = UART_WAIT_FOREVER;
 
-    // open the UART
+    /* Open the UART */
     UART_Handle uart;
     uart = UART_open(CONFIG_UART_0, &params);
 
-    // check if UART is open
+    /* Check if UART is open */
     if (uart == NULL)
-        stop_all(FAIL_UART_INIT);
+        stop_all(FAILED_UART0_INIT);
 
     int32_t readCount;
     uint8_t buffer[8];
 
     while (1) {
 
-        // Read from the UART
+        /* Read from the UART */
+        dbgOutputLoc(WAITING_READ_UART0);
         readCount = UART_read(uart, buffer, 8);
 
-        // error handle
+        /* Error handle the value read */
 
 
-        // send to queue
+        /* Send to queue */
+        dbgOutputLoc(SEND_PROX1Q);
         sendToProx1Q(readCount);
     }
 }
