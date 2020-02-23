@@ -55,7 +55,7 @@
 #include <rover_queues.h>
 #include <rover_debug.h>
 
-extern void *mainThread(void *arg0);
+//extern void *mainThread(void *arg0);
 extern void *uartThread(void *arg0);
 
 /* Stack size in bytes */
@@ -86,14 +86,6 @@ int main(void)
     __iar_Initlocks();
 #endif
 
-    /* Call driver init functions */
-    Board_init();
-    GPIO_init();
-    debug_setup();
-    uart_setup();
-    spi_setup();
-    timer_setup();
-
     if (!createMotorQ()) {
         stop_all(FAIL_MotorQ_INIT);
     }
@@ -106,22 +98,32 @@ int main(void)
     }
     */
 
+    /* Call driver init functions */
+    Board_init();
+    GPIO_init();
+    debug_setup();
+    uart_setup();
+    //spi_setup();
+    //timer_setup();
+
     /* Initialize the attributes structure with default values */
-    pthread_attr_init(&mainControlsAttrs);
+    //pthread_attr_init(&mainControlsAttrs);
     pthread_attr_init(&motorAttrs);
     //pthread_attr_init(&mqttRecvAttrs);
     //pthread_attr_init(&mqttSendAttrs);
 
-    retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainThread, NULL);
+    //retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
     //retcMQTTRecv = pthread_create(&mqttRecvThread, &mqttRecvAttrs, mqttRecvThread, NULL);
     //rectMQTTSend = pthread_create(&mqttSendThread, &mqttSendAttrs, mqttSendThread, NULL);
 
+    /*
     if (retcMainControls != 0) {
         stop_all(FAIL_MainThread_INIT);
         while (1) {}
     }
-    else if (retcMotors != 0) {
+    */
+    if (retcMotors != 0) {
         stop_all(FAIL_MotorsThread_INIT);
         while(1) {}
     }

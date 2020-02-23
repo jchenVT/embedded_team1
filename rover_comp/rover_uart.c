@@ -32,10 +32,6 @@ void uart_setup()
     uart = UART_open(CONFIG_UART_0, &uartParams);
     if (uart == NULL)
         stop_all(FAIL_UART_INIT);
-
-    // creating uart queue
-    bool success = createMotorQ();
-    if (!success) stop_all(FAIL_UART_INIT);
 }
 
 void uart_close() {
@@ -55,11 +51,8 @@ void *uartThread(void *arg0)
         bool outVal = receiveFromMotorsQ(&curData);
 
         if (!outVal)
-            stop_all(FAIL_UART_INIT);
+            stop_all(FAIL_UART_RECEIVE);
         
-        if (uart == NULL)
-            stop_all(FAIL_UART_INIT);
-
         dbgOutputLoc(UART_WRITING);
 
         const char checkSum[1] = {(curData.address[0] + curData.command[0] + curData.speed[0]) & 0b01111111};

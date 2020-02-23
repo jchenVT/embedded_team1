@@ -24,7 +24,7 @@ bool createMotorQ() {
 
     motorsQ = xQueueCreate( qLENGTH, mqITEMSIZE);
     /**************************/
-    dbgOutputLoc(SQ_Q1_CREATE);
+    dbgOutputLoc(RQ_MotorQ_CREATE);
     /**************************/
     return motorsQ == NULL ? false : true;
 }
@@ -32,14 +32,18 @@ bool createMotorQ() {
 bool createMQTTReceiveQ() {
 
     mqttReceiveQ = xQueueCreate( qLENGTH, MRqITEMSIZE);
-
+    /**************************/
+    dbgOutputLoc(RQ_MQTTReceive_CREATE);
+    /**************************/
     return mqttReceiveQ == NULL ? false : true;
 }
 
 bool createMQTTSendQ() {
 
     mqttSendQ = xQueueCreate( qLENGTH, MSqITEMSIZE);
-
+    /**************************/
+    dbgOutputLoc(RQ_MQTTSend_CREATE);
+    /**************************/
     return mqttSendQ == NULL ? false : true;
 }
 
@@ -55,7 +59,7 @@ int sendMsgToMotors(char address, char command, char speed) {
 
     struct motorData newMsg = {{address}, {command}, {speed}};
     /**************************/
-    dbgOutputLoc(SQ_Q1_SEND_TIME);
+    dbgOutputLoc(RQ_MotorQ_SEND);
     /**************************/
     return xQueueSendToBack( motorsQ, &newMsg, 0 );
 }
@@ -74,18 +78,25 @@ int sendMsgToMQTTSendQ(int sendLoc, int data) {
 
 bool receiveFromMotorsQ(struct motorData *oldData) {
     xQueueReceive( motorsQ, oldData, portMAX_DELAY );
-
+    /**************************/
+    dbgOutputLoc(RQ_MotorQ_RECEIVE);
+    /**************************/
     return oldData == NULL ? false : true;
 }
 
 bool receiveFromMQTTReceiveQ(struct receiveData *oldData) {
     xQueueReceive( mqttReceiveQ, oldData, portMAX_DELAY );
-
+    /**************************/
+    dbgOutputLoc(RQ_MQTTReceive_RECEIVE);
+    /**************************/
     return oldData == NULL ? false : true;
 }
 
 bool receiveFromMQTTSendQ() {
 
+    /**************************/
+    dbgOutputLoc(RQ_MQTTSend_RECEIVE);
+    /**************************/
     return false;
 }
 

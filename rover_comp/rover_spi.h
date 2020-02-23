@@ -43,6 +43,6 @@ void spi_close();
 
 void timerCallback(Timer_Handle myHandle);
 void readEncoder(int encoder);
-void transferData(int encoder);
+bool transferData(int encoder);
 
 #endif /* ROVER_SPI_H_ */

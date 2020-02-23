@@ -14,9 +14,13 @@ static SPI_Handle masterSpi;
 static Timer_Handle timer0;
 
 void spi_setup() {
+
+    /*****************************/
+    dbgOutputLoc(SPI_INITIALIZE);
+    /*****************************/
+
     /* Call driver init functions. */
     SPI_init();
-
     SPI_Params      spiParams;
 
     /*
@@ -41,19 +45,26 @@ void spi_setup() {
     spiParams.bitRate = 9600;
     //spiParams.dataSize = 4;
 
+    /*****************************/
+    dbgOutputLoc(SPI_OPENING);
+    /*****************************/
+
     masterSpi = SPI_open(CONFIG_SPI_MASTER, &spiParams);
     if (masterSpi == NULL) {
-        // Debug ERROR: Error initializing master SPI
-    }
-    else {
-        // Debug: "Master SPI initialized\n"
+        /*****************************/
+        stop_all(FAIL_SPI_INIT);
+        /*****************************/
     }
 
 }
 
 void timer_setup() {
-    Timer_init();
 
+    /*****************************/
+    dbgOutputLoc(SPI_TIMER_INITIALIZE);
+    /*****************************/
+
+    Timer_init();
     Timer_Params    params;
 
     /* Setting up the timer in continuous callback mode that calls the callback function */
@@ -63,13 +74,21 @@ void timer_setup() {
     params.timerMode = Timer_CONTINUOUS_CALLBACK;
     params.timerCallback = timerCallback;
 
+    /*****************************/
+    dbgOutputLoc(SPI_TIMER_OPENING);
+    /*****************************/
+
     timer0 = Timer_open(CONFIG_TIMER_0, &params);
 
     if (timer0 == NULL) {
-        /* Failed to initialized timer */
+        /*****************************/
+        stop_all(FAIL_TIMER_INIT);
+        /*****************************/
     }
     if (Timer_start(timer0) == Timer_STATUS_ERROR) {
-        /* Failed to start timer */
+        /*****************************/
+        stop_all(FAIL_TIMER_START);
+        /*****************************/
     }
 
     GPIO_write(CONFIG_SPI_MASTER_READY, 0);
@@ -87,8 +106,17 @@ void spi_close() {
 }
 
 void timerCallback(Timer_Handle myHandle) {
+    /*****************************/
+    dbgOutputLoc(SPI_READING_128);
+    /*****************************/
     readEncoder(e128);
+    /*****************************/
+    dbgOutputLoc(SPI_READING_129);
+    /*****************************/
     readEncoder(e129);
+    /*****************************/
+    dbgOutputLoc(SPI_READING_130);
+    /*****************************/
     readEncoder(e130);
 }
 
@@ -96,22 +124,28 @@ void readEncoder(int encoder) {
 
     if (encoder == e128) {
         GPIO_write(CONFIG_SPI_SLAVE128_READY, 0);
-        transferData(encoder);
+        if (!transferData(encoder)) {
+            stop_all(FAIL_SPI_READING_128);
+        }
         GPIO_write(CONFIG_SPI_SLAVE128_READY, 1);
     }
     else if (encoder == e129) {
         GPIO_write(CONFIG_SPI_SLAVE129_READY, 0);
-        transferData(encoder);
+        if (!transferData(encoder)) {
+            stop_all(FAIL_SPI_READING_129);
+        }
         GPIO_write(CONFIG_SPI_SLAVE129_READY, 1);
     }
     else if (encoder == e130) {
         GPIO_write(CONFIG_SPI_SLAVE130_READY, 0);
-        transferData(encoder);
+        if (!transferData(encoder)) {
+            stop_all(FAIL_SPI_READING_130);
+        }
         GPIO_write(CONFIG_SPI_SLAVE130_READY, 1);
     }
 }
 
-void transferData(int encoder) {
+bool transferData(int encoder) {
 
     static SPI_Transaction transaction;
 
@@ -130,7 +164,6 @@ void transferData(int encoder) {
 
         sendMsgToReceiveQ(false, data, encoder);
     }
-    else {
-        // Debug: "Unsuccessful master SPI transfer"
-    }
+
+    return transferOK;
 }
