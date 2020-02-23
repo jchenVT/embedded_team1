@@ -48,15 +48,14 @@
 
 /* Driver configuration */
 #include <ti/drivers/Board.h>
-#include "star.h"
+
+#include <rover_main.h>
 #include <rover_spi.h>
-#include "timertwo.h"
 #include <rover_uart.h>
 #include <rover_queues.h>
+#include <rover_debug.h>
 
 extern void *mainThread(void *arg0);
-extern void *mainTimerOneThread(void *arg0);
-extern void *mainTimerTwoThread(void *arg0);
 extern void *uartThread(void *arg0);
 
 /* Stack size in bytes */
@@ -67,18 +66,20 @@ extern void *uartThread(void *arg0);
  */
 int main(void)
 {
-    pthread_t           thread1;
-    pthread_t           thread2;
-    pthread_t           thread3;
-    pthread_t           thread4;
-    pthread_attr_t      attrs1;
-    pthread_attr_t      attrs2;
-    pthread_attr_t      attrs3;
-    pthread_attr_t      attrs4;
-    int                 retcStar;
-    int                 retcTimer1;
-    int                 retcTimer2;
-    int                 retcUART;
+    pthread_t           mainControlsThread;
+    pthread_t           motorThread;
+    pthread_t           mqttRecvThread;
+    pthread_t           mqttSendThread;
+
+    pthread_attr_t      mainControlsAttrs;
+    pthread_attr_t      motorAttrs;
+    pthread_attr_t      mqttRecvAttrs;
+    pthread_attr_t      mqttSendAttrs;
+
+    int                 retcMainControls;
+    int                 retcMotors;
+    int                 retcMQTTRecv;
+    int                 rectMQTTSend;
 
     /* initialize the system locks */
 #ifdef __ICCARM__
@@ -87,28 +88,53 @@ int main(void)
 
     /* Call driver init functions */
     Board_init();
+    GPIO_init();
     debug_setup();
-    Timer_init();
-    ADC_init();
-    if (!createQ1()) {
-        stop_all(FAIL_Q1_INIT);
+    uart_setup();
+    spi_setup();
+    timer_setup();
+
+    if (!createMotorQ()) {
+        stop_all(FAIL_MotorQ_INIT);
     }
+    /*
+    if (!createMQTTReceiveQ()) {
+        stop_all(FAIL_MQTTRecvQ_INIT);
+    }
+    if (!createMQTTSendQ()) {
+        stop_all(FAIL_MQTTSendQ_INIT);
+    }
+    */
 
     /* Initialize the attributes structure with default values */
-    pthread_attr_init(&attrs1);
-    pthread_attr_init(&attrs2);
-    pthread_attr_init(&attrs3);
-    pthread_attr_init(&attrs4);
+    pthread_attr_init(&mainControlsAttrs);
+    pthread_attr_init(&motorAttrs);
+    //pthread_attr_init(&mqttRecvAttrs);
+    //pthread_attr_init(&mqttSendAttrs);
 
-    retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
-    retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
-    retcTimer2 = pthread_create(&thread3, &attrs3, mainTimerTwoThread, NULL);
-    retcUART = pthread_create(&thread4, &attrs4, uartThread, NULL);
+    retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainThread, NULL);
+    retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
+    //retcMQTTRecv = pthread_create(&mqttRecvThread, &mqttRecvAttrs, mqttRecvThread, NULL);
+    //rectMQTTSend = pthread_create(&mqttSendThread, &mqttSendAttrs, mqttSendThread, NULL);
 
-    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0 && retcUART != 0) {
-        /* pthread_create() failed */
+    if (retcMainControls != 0) {
+        stop_all(FAIL_MainThread_INIT);
         while (1) {}
     }
+    else if (retcMotors != 0) {
+        stop_all(FAIL_MotorsThread_INIT);
+        while(1) {}
+    }
+    /*
+    else if (rectMQTTRecv != 0) {
+        stop_all(FAIL_MQTTRecvThread_INIT);
+        while(1) {}
+    }
+    else if (rectMQTTSend != 0) {
+        stop_all(FAIL_MQTTSendThread_INIT);
+        while(1) {}
+    }
+     */
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();

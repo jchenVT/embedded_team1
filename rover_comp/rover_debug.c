@@ -9,7 +9,6 @@
 
 void debug_setup()
 {
-    GPIO_init();
     GPIO_setConfig(CONFIG_GPIO_0, GPIO_CFG_OUTPUT);
     GPIO_setConfig(CONFIG_GPIO_1, GPIO_CFG_OUTPUT);
     GPIO_setConfig(CONFIG_GPIO_2, GPIO_CFG_OUTPUT);
@@ -57,6 +56,7 @@ void stop_all(unsigned int FAILURE_CODE)
     GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
     uart_close();
+    spi_close();
 
     /*****************************/
     dbgOutputLoc(FAILURE_CODE);

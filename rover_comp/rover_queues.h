@@ -13,6 +13,8 @@
 #include <queue.h>
 #include <stdbool.h>
 
+#include <rover_debug.h>
+
 /* Motor Controller Data */
 #define FORWARD_COMMAND 0b00000000
 #define REVERSE_COMMAND 0b00000001
@@ -23,8 +25,7 @@
 /* Queue variables */
 #define qLENGTH         32
 #define mqITEMSIZE      3
-#define eqITEMSIZE      4 // CHANGE/CONFIRM
-#define MRqITEMSIZE     4 // CHANGE/CONFIRM
+#define MRqITEMSIZE     24 // CHANGE/CONFIRM
 #define MSqITEMSIZE     4 // CHANGE/CONFIRM
 
 /* Struct used in RETURNING message from queue */
@@ -34,13 +35,24 @@ struct motorData {
     char speed[1];
 };
 
+struct receiveData {
+    bool type;
+    long data;
+    long data2;
+};
+
 /* Routine declarations */
 bool createMotorQ();
-bool createEncoderQ();
 bool createMQTTReceiveQ();
 bool createMQTTSendQ();
+
 int sendMsgToMotors(char address, char command, char speed);
+int sendMsgToReceiveQ(bool sensorType, long data, long data2);
+int sendMsgToMQTTSendQ(int sendLoc, int data);
+
 bool receiveFromMotorsQ(struct motorData *oldData);
+bool receiveFromMQTTReceiveQ(struct receiveData *oldData);
+bool receiveFromMQTTSendQ();
 
 #endif /* ROVER_QUEUES_H_ */
 

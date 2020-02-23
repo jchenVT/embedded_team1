@@ -5,8 +5,8 @@
  *      Author: giffen
  */
 
-#ifndef STAR_H_
-#define STAR_H_
+#ifndef ROVER_MAIN_H_
+#define ROVER_MAIN_H_
 
 #include <rover_queues.h>
 #include <rover_uart.h>
@@ -14,4 +14,4 @@
 
 void *mainThread(void *arg0);
 
-#endif /* STAR_H_ */
+#endif /* ROVER_MAIN_H_ */

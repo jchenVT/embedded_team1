@@ -5,11 +5,9 @@
  *      Author: trieu
  */
 
-#include <rover_uart.h>
-#include "rover_queues.h"
+#include <rover_queues.h>
 
 static QueueHandle_t motorsQ = NULL;
-static QueueHandle_t encoderQ = NULL;
 static QueueHandle_t mqttReceiveQ = NULL;
 static QueueHandle_t mqttSendQ = NULL;
 
@@ -31,25 +29,18 @@ bool createMotorQ() {
     return motorsQ == NULL ? false : true;
 }
 
-bool createEncoderQ() {
-
-    encoderQ = xQueueCreate( qLENGTH, eqITEMSIZE);
-
-    return encoderQ == NULL ? false : true;
-}
-
 bool createMQTTReceiveQ() {
 
-    encoderQ = xQueueCreate( qLENGTH, MRqITEMSIZE);
+    mqttReceiveQ = xQueueCreate( qLENGTH, MRqITEMSIZE);
 
-    return encoderQ == NULL ? false : true;
+    return mqttReceiveQ == NULL ? false : true;
 }
 
 bool createMQTTSendQ() {
 
-    mqttReceiveQ = xQueueCreate( qLENGTH, MSqITEMSIZE);
+    mqttSendQ = xQueueCreate( qLENGTH, MSqITEMSIZE);
 
-    return mqttReceiveQ == NULL ? false : true;
+    return mqttSendQ == NULL ? false : true;
 }
 
 /*
@@ -69,34 +60,32 @@ int sendMsgToMotors(char address, char command, char speed) {
     return xQueueSendToBack( motorsQ, &newMsg, 0 );
 }
 
-/*
- *  @function   receiveFromQ1
- *              Wrapper for the RTOS function to data from the queue.
- *              This function will block. Refer to page 113 of RTOS doc.
- *
- *  @params     oldData - `reference to the struct holding the old data
- *  @return     None
- */
-/*
-void receiveFromQ1(struct qData *oldData) {
+int sendMsgToReceiveQ(bool sensorType, long data, long data2) {
+    struct receiveData newMsg = {sensorType, data, data2};
 
-    long long int msg = 0;
-
-    dbgOutputLoc(SQ_Q1_RECEIVE);
-    xQueueReceive( msgQ, &msg, portMAX_DELAY );
-
-    if (&msg == NULL) {
-        oldData->success = false;
-    }
-
-    oldData->type = msg & TYPE_MASK;
-    oldData->value = msg & VALUE_MASK;
-
+    return xQueueSendToBack( motorsQ, &newMsg, 0 );
 }
-*/
+
+int sendMsgToMQTTSendQ(int sendLoc, int data) {
+
+    return 0;
+}
+
 
 bool receiveFromMotorsQ(struct motorData *oldData) {
     xQueueReceive( motorsQ, oldData, portMAX_DELAY );
 
     return oldData == NULL ? false : true;
 }
+
+bool receiveFromMQTTReceiveQ(struct receiveData *oldData) {
+    xQueueReceive( mqttReceiveQ, oldData, portMAX_DELAY );
+
+    return oldData == NULL ? false : true;
+}
+
+bool receiveFromMQTTSendQ() {
+
+    return false;
+}
+

@@ -22,22 +22,27 @@
 /* Project Files */
 #include <rover_queues.h>
 #include <rover_uart.h>
+#include <rover_debug.h>
 
 /* Driver Header files */
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/SPI.h>
+#include <ti/drivers/Timer.h>
 #include "ti_drivers_config.h"
 
-#define THREADSTACKSIZE (1024)
-#define SPI_MSG_LENGTH  (30)
-#define MASTER_MSG      ("Hello from master, msg#: ")
-#define MAX_LOOP        (10)
+#define THREADSTACKSIZE 1024
+#define SPI_MSG_LENGTH  5
+#define MAX_LOOP        10
+#define TIMER_LENGTH    1000
 
-void slaveReadyFxn(uint_least8_t index);
+enum encoders {e128, e129, e130};
+
 void spi_setup();
+void timer_setup();
 void spi_close();
 
-void *mainSPIThread(void *arg0);
-
+void timerCallback(Timer_Handle myHandle);
+void readEncoder(int encoder);
+void transferData(int encoder);
 
 #endif /* ROVER_SPI_H_ */

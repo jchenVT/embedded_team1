@@ -12,16 +12,27 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <ti/drivers/GPIO.h>
+#include "ti_drivers_config.h"
 
 #include <stdbool.h>
 #include <stdio.h>
-#include "ti_drivers_config.h"
-#include <task.h>
+
 #include <rover_uart.h>
+#include <rover_spi.h>
 
 // Debug Output Location Macros Definition
 // Used in dbgOUtputLoc(_MACRO_)
-#define FAIL_Q1_INIT            0x70
+#define FAIL_MotorQ_INIT        0x80
+#define FAIL_EncoderQ_INIT      0x81
+#define FAIL_MQTTRecvQ_INIT     0x82
+#define FAIL_MQTTSendQ_INIT     0x83
+#define FAIL_MainThread_INIT    0x84
+#define FAIL_MotorsThread_INIT  0x85
+#define FAIL_EncoderThread_INIT 0x86
+#define FAIL_MQTTRecvThread_INIT 0x87
+#define FAIL_MQTTSendThread_INIT 0x88
+
+
 #define FAIL_Q1_READ            0x71
 #define FAIL_Q1_WRONG_DATA      0x72
 #define FAIL_T1_INIT            0x73
@@ -59,10 +70,10 @@
 #define T2_CALLBACK_ADC_READ    0x33
 
 // uart locations
-#define UART_INITIALIZE         0x60
-#define UART_OPENING            0x61
-#define UART_WRITING            0x62
-#define UART_CLOSING            0x63
+#define UART_INITIALIZE         0x40
+#define UART_OPENING            0x41
+#define UART_WRITING            0x42
+#define UART_CLOSING            0x43
 
 
 #ifndef ROVER_DEBUG_H_
