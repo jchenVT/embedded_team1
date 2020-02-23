@@ -48,16 +48,15 @@
 
 /* Driver configuration */
 #include <ti/drivers/Board.h>
-#include "star.h"
-#include "timerone.h"
-#include "timertwo.h"
-#include "debug.h"
+#include "prox1read.h"
+#include "prox2read.h"
+//#include "rgbread.h"
 #include "sensor_queue.h"
+#include "debug.h"
 
-extern void *mainThread(void *arg0);
-extern void *mainTimerOneThread(void *arg0);
-extern void *mainTimerTwoThread(void *arg0);
-extern void *uartThread(void *arg0);
+/* Get thread locations */
+extern void *readProximity1Thread(void *arg0);
+extern void *readProximity2Thread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -69,16 +68,10 @@ int main(void)
 {
     pthread_t           thread1;
     pthread_t           thread2;
-    pthread_t           thread3;
-    pthread_t           thread4;
     pthread_attr_t      attrs1;
     pthread_attr_t      attrs2;
-    pthread_attr_t      attrs3;
-    pthread_attr_t      attrs4;
-    int                 retcStar;
-    int                 retcTimer1;
-    int                 retcTimer2;
-    int                 retcUART;
+    int                 retcProx1;
+    int                 retcProx2;
 
     /* initialize the system locks */
 #ifdef __ICCARM__
@@ -88,24 +81,19 @@ int main(void)
     /* Call driver init functions */
     Board_init();
     debug_setup();
-    Timer_init();
-    ADC_init();
-    if (!createQ1()) {
-        stop_all(FAIL_Q1_INIT);
+
+    if (!setupQs()) {
+        //stop_all(FAIL_Q1_INIT);
     }
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs1);
     pthread_attr_init(&attrs2);
-    pthread_attr_init(&attrs3);
-    pthread_attr_init(&attrs4);
 
-    retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
-    retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
-    retcTimer2 = pthread_create(&thread3, &attrs3, mainTimerTwoThread, NULL);
-    retcUART = pthread_create(&thread4, &attrs4, uartThread, NULL);
+    retcProx1 = pthread_create(&thread1, &attrs1, readProximity1Thread, NULL);
+    retcProx2 = pthread_create(&thread2, &attrs2, readProximity2Thread, NULL);
 
-    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0 && retcUART != 0) {
+    if (retcProx1 != 0 && retcProx2 != 0) {
         /* pthread_create() failed */
         while (1) {}
     }

@@ -24,6 +24,6 @@
 
 
 /* Main Thread */
-//void readProximitySensor();
+//void readProximity1Thread();
 
 #endif /* PROX1READ_H_ */

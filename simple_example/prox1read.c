@@ -15,7 +15,7 @@
  *  @params     arg0
  *  @return     void
  */
-void *readProximitySensor(void *arg0) {
+void *readProximity1Thread(void *arg0) {
 
     // one-time initialization of UART driver
     UART_init();

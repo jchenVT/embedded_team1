@@ -18,7 +18,7 @@ static QueueHandle_t rgbQ = NULL;
  *              amount of memory the queue will use.
  *
  *  @params     None
- *  @return     bool - indicates whether there was a succesful setup
+ *  @return     bool - indicates whether there was a successful setup
  */
 bool setupQs() {
 
