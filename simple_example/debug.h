@@ -44,7 +44,7 @@
 
 ///////////////////////////////////////////////////
 
-extern UART_Handle uart;
+//extern UART_Handle uart;
 
 void debug_setup();
 void dbgOutputLoc(unsigned int outLoc);
