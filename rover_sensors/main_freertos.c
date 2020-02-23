@@ -5,7 +5,6 @@
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
  * *  Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
@@ -48,16 +47,14 @@
 
 /* Driver configuration */
 #include <ti/drivers/Board.h>
-#include "star.h"
-#include "timerone.h"
-#include "timertwo.h"
-#include "debug.h"
-#include "sensor_queue.h"
 
-extern void *mainThread(void *arg0);
-extern void *mainTimerOneThread(void *arg0);
-extern void *mainTimerTwoThread(void *arg0);
-extern void *uartThread(void *arg0);
+#include "debug.h"
+#include "queues.h"
+#include "spi_pixy.h"
+#include "uart_debug.h"
+#include "uart_lidar.h"
+
+extern void *uartDebugThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -68,17 +65,8 @@ extern void *uartThread(void *arg0);
 int main(void)
 {
     pthread_t           thread1;
-    pthread_t           thread2;
-    pthread_t           thread3;
-    pthread_t           thread4;
     pthread_attr_t      attrs1;
-    pthread_attr_t      attrs2;
-    pthread_attr_t      attrs3;
-    pthread_attr_t      attrs4;
-    int                 retcStar;
-    int                 retcTimer1;
-    int                 retcTimer2;
-    int                 retcUART;
+    int                 retcUARTDebug;
 
     /* initialize the system locks */
 #ifdef __ICCARM__
@@ -87,25 +75,18 @@ int main(void)
 
     /* Call driver init functions */
     Board_init();
+    queues_init();
     debug_setup();
-    Timer_init();
-    ADC_init();
-    if (!createQ1()) {
-        stop_all(FAIL_Q1_INIT);
-    }
+    spi_pixy_init();
+    uart_lidar_init();
+    uart_debug_init();
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs1);
-    pthread_attr_init(&attrs2);
-    pthread_attr_init(&attrs3);
-    pthread_attr_init(&attrs4);
 
-    retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
-    retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
-    retcTimer2 = pthread_create(&thread3, &attrs3, mainTimerTwoThread, NULL);
-    retcUART = pthread_create(&thread4, &attrs4, uartThread, NULL);
+    retcUARTDebug = pthread_create(&thread1, &attrs1, uartDebugThread, NULL);
 
-    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0 && retcUART != 0) {
+    if (retcUARTDebug != 0) {
         /* pthread_create() failed */
         while (1) {}
     }

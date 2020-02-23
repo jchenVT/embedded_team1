@@ -4,12 +4,12 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <queue.h>
-#include <ti/drivers/GPIO.h>
-#include <ti/drivers/UART.h>
 
 #include <stdbool.h>
 #include <stdio.h>
+
 #include "ti_drivers_config.h"
+#include <ti/drivers/GPIO.h>
 
 // Debug Output Location Macros Definition
 // Used in dbgOUtputLoc(_MACRO_)
@@ -59,20 +59,8 @@
 
 
 
-
-extern UART_Handle uart;
-
-
-struct uart_message {
-	uint8_t array_len;
-	unsigned char msg [50];	
-};
-
 // Set up function
 void debug_setup();
-
-// Send a value through UART
-void dbgUARTVal(unsigned char outVal);
 
 // Debug function that outputs to GPIO pins
 // Use logic analyzer to determine location

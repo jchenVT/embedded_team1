@@ -3,17 +3,26 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
-#include <queue.h>
-#include "debug.h"
-#include <ti/drivers/SPI.h>
+
 #include <stdbool.h>
 
+#include <ti/drivers/SPI.h>
+#include <ti/drivers/Timer.h>
 #include "ti_drivers_config.h"
 
-#define MSGSIZE 60
+#include <stdio.h>
+#include <string.h>
+
+#include "debug.h"
+#include "queues.h"
+
+#define TX_MSGSIZE 6
 
 static SPI_Handle spi;
 static SPI_Params spi_params;
+
+static Timer_Handle timer_pixy;
+static Timer_Params timer_pixy_params;
 
 static const uint8_t request_packet_ccc [] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
 static uint8_t recv_packet_ccc[60];
@@ -40,9 +49,8 @@ bool checksum_check_ccc( uint8_t byte_arr[] );
 
 Block_t convert_to_block_t( uint8_t block_array[] );
 
-// TODO Include the timer for running this here
 
-void timer_spi_callback();
+void timer_spi_callback( Timer_Handle timer_handle );
 
 
 #endif 
