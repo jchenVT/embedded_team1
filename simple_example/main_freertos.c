@@ -14,7 +14,7 @@
 /* Driver configuration */
 #include <ti/drivers/Board.h>
 #include "proxread.h"
-//#include "rgbread.h"
+#include "rgbread.h"
 #include "sensor_queue.h"
 #include "debug.h"
 
@@ -30,7 +30,7 @@ extern void *readProximityThread(void *arg0);
  */
 int main(void) {
 
-    /* initialize the system locks */
+    /* Initialize the system locks */
     #ifdef __ICCARM__
         __iar_Initlocks();
     #endif
@@ -57,20 +57,20 @@ int main(void) {
     int                 retcProx;
 
     /* Other thread... */
-    //pthread_t           thread2;
-    //pthread_attr_t      attrs2;
-    //int                 retcProx2;
+    pthread_t           threadRGB;
+    pthread_attr_t      attrsRGB;
+    int                 retcRGB;
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrsDebug);
     pthread_attr_init(&attrsProx);
+    pthread_attr_init(&attrsRGB);
 
     retcDebug = pthread_create(&threadDebug, &attrsDebug, uartThread, NULL);
     retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
+    retcRGB = pthread_create(&threadRGB, &attrsRGB, readRGBThread, NULL);
 
-    if (retcDebug != 0 && retcProx != 0) {
-
-        /* pthread_create() failed */
+    if (retcDebug != 0 && retcProx != 0 && retcRGB != 0) {
         stop_all(FAILED_INIT_THREADS);
         while (1) {
 
@@ -83,9 +83,9 @@ int main(void) {
     return (0);
 }
 
-/**
- *  vApplicationMallocFailedHook()
- *      Application defined malloc failed hook
+/*
+ *  @funtion    vApplicationMallocFailedHook()
+ *              Application defined malloc failed hook
  */
 void vApplicationMallocFailedHook() {
 
@@ -95,9 +95,9 @@ void vApplicationMallocFailedHook() {
     }
 }
 
-/**
- *  vApplicationStackOverflowHook()
- *      Application defined stack overflow hook
+/*
+ *  @function   vApplicationStackOverflowHook()
+ *              Application defined stack overflow hook
  */
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) {
 

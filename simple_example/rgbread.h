@@ -1,12 +1,12 @@
 /*
- *  proxread.h
+ *  rgbread.h
  *
  *  Created on: Feb 23, 2020
  *      Author: giffen
  */
 
-#ifndef PROXREAD_H_
-#define PROXREAD_H_
+#ifndef RGBREAD_H_
+#define RGBREAD_H_
 
 /* POSIX Header files */
 #include <pthread.h>
@@ -15,9 +15,7 @@
 #include <FreeRTOS.h>
 #include "ti_drivers_config.h"
 #include <ti/drivers/GPIO.h>
-#include <ti/drivers/UART.h>
-#include <ti/drivers/timer.h>
-#include <timers.h>
+#include <ti/drivers/I2C.h>
 
 /* Queue files */
 #include "sensor_queue.h"
@@ -25,9 +23,12 @@
 /* Debug files */
 #include "debug.h"
 
+/* Slave attributes */
+#define SENSORS 0
+#define OPT_ADDR 0x29 // see documentation pg. 3
 
 /* Main Thread */
-void *readProximityThread(void *arg0);
-void timerCallback(TimerHandle_t xTimer);
+void *readRGBThread(void *arg0);
+void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status);
 
-#endif /* PROXREAD_H_ */
+#endif /* RGBREAD_H_ */

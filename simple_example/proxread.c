@@ -1,11 +1,12 @@
 /*
- *  prox1read.c
+ *  proxread.c
  *
  *  Created on: Feb 23, 2020
  *      Author: giffen
  */
 
 #include <proxread.h>
+
 
 /*
  *  @function   readProximitySensor
