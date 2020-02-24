@@ -42,27 +42,34 @@
 
 /* Driver configuration */
 #include "ti_drivers_config.h"
+#include "arm.h"
+
+static UART_Handle uart;
+static PWM_Handle pwm_x, pwm_y, pwm_z, pwm_claw;
+
+static movqData_t off_pos = {1200, 1000, 1000, 800};
+static movqData_t start_pos = {1200, 1000, 600, 800};
+
+static movqData_t current_pos, goal_pos;
+static bool done = false;
 
 /*
  *  ======== mainThread ========
  */
-void *mainArmThread(void *arg0)
+void *armDebugThread(void *arg0)
 {
-    char angle1, angle2, angle3, angle4;
     char        input;
     const char  echoPrompt[] = "Echoing characters:\r\n";
-    UART_Handle uart;
+
+    dState inState = WaitingForAngles;
+
+    createMovQ();
+    current_pos = off_pos;
+
     UART_Params uartParams;
 
     /* Call driver init functions */
-    GPIO_init();
     UART_init();
-
-    /* Configure the LED pin */
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-
-    /* Turn on user LED */
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
     /* Create a UART with data processing off. */
     UART_Params_init(&uartParams);
@@ -70,6 +77,7 @@ void *mainArmThread(void *arg0)
     uartParams.readDataMode = UART_DATA_BINARY;
     uartParams.readReturnMode = UART_RETURN_FULL;
     uartParams.readEcho = UART_ECHO_OFF;
+    uartParams.readMode = UART_MODE_BLOCKING;
     uartParams.baudRate = 115200;
 
     uart = UART_open(CONFIG_UART_0, &uartParams);
@@ -81,11 +89,74 @@ void *mainArmThread(void *arg0)
 
     UART_write(uart, echoPrompt, sizeof(echoPrompt));
 
-    /* Loop forever echoing */
+    /* Loop forever */
     while (1) {
-        UART_read(uart, &input, 1);
-        input++;
-        GPIO_toggle(CONFIG_GPIO_LED_0);
-        UART_write(uart, &input, 1);
+        if (inState == WaitingForAngles) {
+            UART_read(uart, &input, 1);
+            inState = WaitingForAck;
+        }
+        if (inState == WaitingForAck) {
+            if (done) {
+                inState = WaitingForAngles;
+            }
+        }
     }
+}
+
+void *mainArmThread(void *arg0) {
+    TimerHandle_t timer10ms = xTimerCreate("9ms", pdMS_TO_TICKS(10), pdFALSE, NULL, movementCallback);
+    aState armState = NotMoving;
+
+    PWM_Params pwmParams;
+
+    PWM_init();
+    PWM_Params_init(&pwmParams);
+    pwmParams.dutyUnits = PWM_DUTY_US;
+    pwmParams.dutyValue = 0;
+    pwmParams.periodUnits = PWM_PERIOD_US;
+    pwmParams.periodValue = 100000;
+
+    pwm_x = PWM_open(CONFIG_PWM_0, &pwmParams);
+    pwm_y = PWM_open(CONFIG_PWM_1, &pwmParams);
+    pwm_z = PWM_open(CONFIG_PWM_2, &pwmParams);
+    pwm_claw = PWM_open(CONFIG_PWM_3, &pwmParams);
+
+    if (!pwm_x) {
+        UART_write(uart, "pwm x failed\r\n", 14);
+    }
+    if (!pwm_y) {
+        UART_write(uart, "pwm y failed\r\n", 14);
+    }
+    if (!pwm_z) {
+        UART_write(uart, "pwm z failed\r\n", 14);
+    }
+    if (!pwm_claw) {
+        UART_write(uart, "pwm c failed\r\n", 14);
+    }
+
+    PWM_start(pwm_x);
+    PWM_start(pwm_y);
+    PWM_start(pwm_z);
+    PWM_start(pwm_claw);
+
+    while (1) {
+        if (armState == Moving) {
+            if (xTimerIsTimerActive(timer10ms) == pdFALSE) {
+                xTimerStart(timer10ms, 0);
+            }
+        }
+        else if (armState == NotMoving) {
+            if (xTimerIsTimerActive(timer10ms) == pdTRUE) {
+                xTimerStop(timer10ms, 0);
+            }
+            movqData_t tempM;
+            receiveFromMovQ(&tempM);
+            goal_pos = tempM;
+            armState = Moving;
+        }
+    }
+}
+
+void movementCallback(TimerHandle_t xTimer) {
+
 }

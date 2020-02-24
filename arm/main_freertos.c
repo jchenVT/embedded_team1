@@ -50,6 +50,7 @@
 #include <ti/drivers/Board.h>
 
 extern void *mainArmThread(void *arg0);
+extern void *armDebugThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -59,7 +60,8 @@ extern void *mainArmThread(void *arg0);
  */
 int main(void)
 {
-    pthread_t           thread;
+    pthread_t           arm_thread;
+    pthread_t           debug_thread;
     pthread_attr_t      attrs;
     struct sched_param  priParam;
     int                 retc;
@@ -85,7 +87,8 @@ int main(void)
         while (1) {}
     }
 
-    retc = pthread_create(&thread, &attrs, mainArmThread, NULL);
+    retc = pthread_create(&arm_thread, &attrs, mainArmThread, NULL);
+    retc = pthread_create(&debug_thread, &attrs, armDebugThread, NULL);
     if (retc != 0) {
         /* pthread_create() failed */
         while (1) {}

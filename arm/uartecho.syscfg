@@ -4,32 +4,73 @@
 // @versions {"data":"2019103101","timestamp":"2019103101","tool":"1.3.1030","templates":"2019103101"}
 
 var RTOS = scripting.addModule("/ti/drivers/RTOS");
-var GPIO = scripting.addModule("/ti/drivers/GPIO");
-var GPIO1 = GPIO.addInstance();
 var UART = scripting.addModule("/ti/drivers/UART");
 var UART1 = UART.addInstance();
+var PWM = scripting.addModule("/ti/drivers/PWM", {}, false);
+var PWM1 = PWM.addInstance();
+var PWM2 = PWM.addInstance();
+var GPIO = scripting.addModule("/ti/drivers/GPIO", {}, false);
+var GPIO1 = GPIO.addInstance();
+var PWM3 = PWM.addInstance();
+var PWM4 = PWM.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
+// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
+UART1.$name = "CONFIG_UART_0";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+UART1.$hardware = system.deviceData.board.components.XDS110UART;
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
 // Name
 Power.parkPins.$name = "ti_drivers_power_PowerCC32XXPins0";
 var Board = scripting.addModule("/ti/drivers/Board", {}, false);
 var DriverLib = scripting.addModule("/ti/devices/DriverLib", {}, false);
-// Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO1.$hardware = system.deviceData.board.components.LED_RED;
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO1.$name = "CONFIG_GPIO_LED_0";
-// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
-UART1.$name = "CONFIG_UART_0";
-// Use Hardware - Select the hardware to use, or 'None' to use available header pins
-UART1.$hardware = system.deviceData.board.components.XDS110UART;
 // Name
 UART1.uart.$name = "MyUART1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to PWM runtime APIs
+PWM1.$name = "CONFIG_PWM_0";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+PWM1.$hardware = system.deviceData.board.components.LED_YELLOW;
+// Name
+PWM1.timer.$name = "MyTimer1";
+// Assign pin
+PWM1.timer.pwmPin.$assign = "boosterpack.9"; // P01
+// Name - The C/C++ identifier used in applications as the index parameter passed to PWM runtime APIs
+PWM2.$name = "CONFIG_PWM_1";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+PWM2.$hardware = system.deviceData.board.components.LED_GREEN;
+// Name
+PWM2.timer.$name = "MyTimer1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO1.$name = "CONFIG_GPIO_0";
+// Name - The C/C++ identifier used in applications as the index parameter passed to PWM runtime APIs
+PWM3.$name = "CONFIG_PWM_2";
+// Name
+PWM3.timer.$name = "MyTimer1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to PWM runtime APIs
+PWM4.$name = "CONFIG_PWM_3";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+PWM4.$hardware = system.deviceData.board.components.LED_RED;
+// Name
+PWM4.timer.$name = "MyTimer1";
 // Suggest solution
-GPIO1.gpioPin.$suggestSolution = "64";
-// Suggest solution
-UART1.uart.$suggestSolution = "UART0";
+UART1.uart.$suggestSolution = "UART1";
 // Suggest solution
 UART1.uart.txPin.$suggestSolution = "55";
 // Suggest solution
 UART1.uart.rxPin.$suggestSolution = "57";
+// Suggest solution
+PWM1.timer.$suggestSolution = "Timer3";
+// Suggest solution
+PWM2.timer.$suggestSolution = "Timer3";
+// Suggest solution
+PWM2.timer.pwmPin.$suggestSolution = "2";
+// Suggest solution
+GPIO1.gpioPin.$suggestSolution = "3";
+// Suggest solution
+PWM3.timer.$suggestSolution = "Timer1";
+// Suggest solution
+PWM3.timer.pwmPin.$suggestSolution = "21";
+// Suggest solution
+PWM4.timer.$suggestSolution = "Timer2";
+// Suggest solution
+PWM4.timer.pwmPin.$suggestSolution = "64";

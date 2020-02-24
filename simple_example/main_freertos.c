@@ -53,11 +53,13 @@
 #include "timertwo.h"
 #include "debug.h"
 #include "sensor_queue.h"
+#include "arm.h"
 
 extern void *mainThread(void *arg0);
 extern void *mainTimerOneThread(void *arg0);
 extern void *mainTimerTwoThread(void *arg0);
 extern void *uartThread(void *arg0);
+extern void *armDebugThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -71,14 +73,19 @@ int main(void)
     pthread_t           thread2;
     pthread_t           thread3;
     pthread_t           thread4;
+    pthread_t           thread5;
+
     pthread_attr_t      attrs1;
     pthread_attr_t      attrs2;
     pthread_attr_t      attrs3;
     pthread_attr_t      attrs4;
+    pthread_attr_t      attrs5;
+
     int                 retcStar;
     int                 retcTimer1;
     int                 retcTimer2;
     int                 retcUART;
+    int                 retcARM;
 
     /* initialize the system locks */
 #ifdef __ICCARM__
@@ -87,7 +94,7 @@ int main(void)
 
     /* Call driver init functions */
     Board_init();
-    debug_setup();
+    //debug_setup();
     Timer_init();
     ADC_init();
     if (!createQ1()) {
@@ -99,13 +106,16 @@ int main(void)
     pthread_attr_init(&attrs2);
     pthread_attr_init(&attrs3);
     pthread_attr_init(&attrs4);
+    pthread_attr_init(&attrs5);
+
 
     retcStar = pthread_create(&thread1, &attrs1, mainThread, NULL);
     retcTimer1 = pthread_create(&thread2, &attrs2, mainTimerOneThread, NULL);
-    retcTimer2 = pthread_create(&thread3, &attrs3, mainTimerTwoThread, NULL);
+    // retcTimer2 = pthread_create(&thread3, &attrs3, mainTimerTwoThread, NULL);
     retcUART = pthread_create(&thread4, &attrs4, uartThread, NULL);
+    retcARM = pthread_create(&thread5, &attrs5, armDebugThread, NULL);
 
-    if (retcStar != 0 && retcTimer1 != 0 && retcTimer2 != 0 && retcUART != 0) {
+    if (retcStar != 0 && retcTimer1 != 0 && /*retcTimer2 != 0 && */ retcUART != 0 && retcARM != 0) {
         /* pthread_create() failed */
         while (1) {}
     }

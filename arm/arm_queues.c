@@ -16,8 +16,9 @@ bool createMovQ() {
     return movQ == NULL ? false : true;
 }
 
-int sendMsgToMovQ(uint16_t yee, uint16_t haw, uint16_t cow, uint16_t boy) {
-    movqData_t newMsg = {yee, haw, cow, boy};
+int sendMsgToMovQ(movqData_t inMsg) {
+    movqData_t newMsg;
+    newMsg = inMsg;
 
     return xQueueSendToBackFromISR(movQ, &newMsg, 0);
 }
