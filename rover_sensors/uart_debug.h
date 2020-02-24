@@ -5,6 +5,8 @@
 #include <task.h>
 #include <queue.h>
 
+#include <string.h>
+
 #include <ti/drivers/UART.h>
 #include "ti_drivers_config.h"
 

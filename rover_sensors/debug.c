@@ -1,8 +1,7 @@
 #include "debug.h"
 
-void debug_setup()
+void debug_init()
 {
-    GPIO_init();
     GPIO_setConfig(CONFIG_GPIO_0, GPIO_CFG_OUTPUT);
     GPIO_setConfig(CONFIG_GPIO_1, GPIO_CFG_OUTPUT);
     GPIO_setConfig(CONFIG_GPIO_2, GPIO_CFG_OUTPUT);
@@ -22,7 +21,7 @@ void debug_setup()
     GPIO_write(CONFIG_GPIO_7, GPIO_CFG_OUT_LOW);
 
     /*****************************/
-    dbgOutputLoc(UART_INITIALIZE);
+    dbgOutputLoc(INIT_GPIO_DEBUG);
     /*****************************/
 
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
@@ -32,7 +31,7 @@ void debug_setup()
 
 void dbgOutputLoc(unsigned int outLoc)
 {
-    if (outLoc > 0x7B)
+    if (outLoc > 0x7F)
         stop_all(FAIL_UNKNOWN_CODE);
     
     GPIO_write(CONFIG_GPIO_0, GPIO_CFG_OUT_LOW);
@@ -56,8 +55,6 @@ void stop_all(unsigned int FAILURE_CODE)
     GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
     /*****************************/
-    dbgOutputLoc(UART_CLOSING);
-    /*****************************/
     dbgOutputLoc(FAILURE_CODE);
     /*****************************/
 
@@ -69,5 +66,4 @@ void stop_all(unsigned int FAILURE_CODE)
         for (;i<1000000;i++) ;
     }
 }
-
 

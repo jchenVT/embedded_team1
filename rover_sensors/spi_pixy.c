@@ -10,20 +10,40 @@ void spi_pixy_init()
     spi_params.frameFormat = SPI_POL1_PHA1;
     spi_params.bitRate = 2000000;
     spi_params.dataSize = 8;
+    /*****************************/
+    dbgOutputLoc(SPI_SPI_OPEN);
+    /*****************************/
+    spi = SPI_open(CONFIG_SPI_0, &spi_params);
+    if (spi == NULL)
+        stop_all(FAIL_SPI_INIT);
+          
+
+    Timer_init();
 
     Timer_Params_init(&timer_pixy_params);
     timer_pixy_params.periodUnits = Timer_PERIOD_HZ;
     timer_pixy_params.period = 10;
-    timer_pixy_params.timerCallback = timer_spi_callback;
     timer_pixy_params.timerMode = Timer_CONTINUOUS_CALLBACK;
+    timer_pixy_params.timerCallback = timer_spi_callback;
     
-    // TODO: set up timer 0 in syscfg
+    /*****************************/
+    dbgOutputLoc(SPI_TIMER_OPEN);
+    /*****************************/
     timer_pixy = Timer_open(CONFIG_TIMER_0, &timer_pixy_params);
+    if (timer_pixy == NULL)
+        stop_all(FAIL_SPI_TIMER_INIT);
+    if (Timer_start(timer_pixy) == Timer_STATUS_ERROR)
+        stop_all(FAIL_SPI_TIMER_INIT);
+            
 }
 
 
-void spi_pixy_callback( SPI_Handle handle, SPI_Transaction *transaction )
+void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction)
 {
+    
+    /*****************************/
+    dbgOutputLoc(SPI_PIXY_CALLBACK);
+    /*****************************/
     uint8_t num_blocks = transaction->count / 20;
     Block_t block;
     uart_message_t uart_msg;
@@ -49,16 +69,26 @@ void spi_pixy_callback( SPI_Handle handle, SPI_Transaction *transaction )
 
 void timer_spi_callback(Timer_Handle timer_handle)
 {
+    /*****************************/
+    dbgOutputLoc(SPI_TIMER_CALLBACK);
+    /*****************************/
+    
+    GPIO_toggle(CONFIG_GPIO_LED_0);
+    /*
     uart_message_t uart_msg;
     uart_msg.array_len = 14;
-    strncpy(uart_msg.msg, "timer callbacc", 100);
+    strncpy(uart_msg.msg, "timer callbacc", 14);
     xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
     send_pixy_ccc_spi();
+    */
 }
 
 
 void send_pixy_ccc_spi()
 {
+    /*****************************/
+    dbgOutputLoc(SPI_SEND_TRANSACTION);
+    /*****************************/
     SPI_Transaction spi_transaction;
     bool transferOK;
     spi_transaction.count = TX_MSGSIZE;
@@ -66,8 +96,7 @@ void send_pixy_ccc_spi()
     spi_transaction.rxBuf = (void *)recv_packet_ccc;
     transferOK = SPI_transfer(spi, &spi_transaction);
     if (!transferOK)
-        // TODO: add some actual failure code
-        stop_all(0xFA);
+        stop_all(FAIL_SPI_TRANSACTION);
 }
 
 Block_t convert_to_block_t(uint8_t block_array[])

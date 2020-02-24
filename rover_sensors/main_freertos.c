@@ -75,11 +75,15 @@ int main(void)
 
     /* Call driver init functions */
     Board_init();
+//    Timer_init();
+    GPIO_init();
     queues_init();
-    debug_setup();
-    spi_pixy_init();
-    uart_lidar_init();
+    debug_init();
     uart_debug_init();
+    spi_pixy_init();
+//  uart_lidar_init();
+
+    dbgOutputLoc(INIT_ALL);
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs1);
