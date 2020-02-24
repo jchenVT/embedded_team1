@@ -11,7 +11,7 @@ static unsigned char masterRxBuffer[SPI_MSG_LENGTH];
 static unsigned char masterTxBuffer[SPI_MSG_LENGTH] = {0x60, 0x00, 0x00, 0x00, 0x00};
 
 static SPI_Handle masterSpi;
-static Timer_Handle timer0;
+static TimerHandle_t timer0;
 
 void spi_setup() {
 
@@ -43,7 +43,7 @@ void spi_setup() {
     spiParams.transferMode = SPI_MODE_BLOCKING;
     spiParams.frameFormat = SPI_POL0_PHA1;
     spiParams.bitRate = 9600;
-    //spiParams.dataSize = 4;
+    spiParams.dataSize = 4; // UNSURE
 
     /*****************************/
     dbgOutputLoc(SPI_OPENING);
@@ -64,31 +64,18 @@ void timer_setup() {
     dbgOutputLoc(SPI_TIMER_INITIALIZE);
     /*****************************/
 
-    Timer_init();
-    Timer_Params    params;
+    timer0 = xTimerCreate("spi_timer", pdMS_TO_TICKS(TIMER_LENGTH), pdTRUE, NULL, timerCallback);
 
-    /* Setting up the timer in continuous callback mode that calls the callback function */
-    Timer_Params_init(&params);
-    params.period = TIMER_LENGTH;
-    params.periodUnits = Timer_PERIOD_US;
-    params.timerMode = Timer_CONTINUOUS_CALLBACK;
-    params.timerCallback = timerCallback;
+    if (timer0 == NULL {
+        stop_all(FAIL_TIMER_INIT);
+    }
 
     /*****************************/
     dbgOutputLoc(SPI_TIMER_OPENING);
     /*****************************/
 
-    timer0 = Timer_open(CONFIG_TIMER_0, &params);
-
-    if (timer0 == NULL) {
-        /*****************************/
-        stop_all(FAIL_TIMER_INIT);
-        /*****************************/
-    }
-    if (Timer_start(timer0) == Timer_STATUS_ERROR) {
-        /*****************************/
+    if (xTimerStart(timer0, 0) != pdPASS) {
         stop_all(FAIL_TIMER_START);
-        /*****************************/
     }
 
     GPIO_write(CONFIG_SPI_MASTER_READY, 0);
@@ -96,7 +83,7 @@ void timer_setup() {
 
 void spi_close() {
     SPI_close(masterSpi);
-    Timer_close(timer0);
+    xTimerStop(timer0);
 
     /* Example complete - set pins to a known state */
     GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
@@ -105,19 +92,19 @@ void spi_close() {
     GPIO_write(CONFIG_SPI_MASTER_READY, 0);
 }
 
-void timerCallback(Timer_Handle myHandle) {
+void timerCallback(TimerHandle_t myHandle) {
     /*****************************/
     dbgOutputLoc(SPI_READING_128);
     /*****************************/
-    readEncoder(e128);
+    //readEncoder(e128);
     /*****************************/
     dbgOutputLoc(SPI_READING_129);
     /*****************************/
-    readEncoder(e129);
+    //readEncoder(e129);
     /*****************************/
     dbgOutputLoc(SPI_READING_130);
     /*****************************/
-    readEncoder(e130);
+    //readEncoder(e130);
 }
 
 void readEncoder(int encoder) {

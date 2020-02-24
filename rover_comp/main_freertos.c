@@ -66,6 +66,7 @@ extern void *uartThread(void *arg0);
  */
 int main(void)
 {
+
     pthread_t           mainControlsThread;
     pthread_t           motorThread;
     pthread_t           mqttRecvThread;
@@ -86,25 +87,22 @@ int main(void)
     __iar_Initlocks();
 #endif
 
+    /* Call driver init functions */
+    Board_init();
+    debug_setup();
+
     if (!createMotorQ()) {
         stop_all(FAIL_MotorQ_INIT);
     }
-    /*
     if (!createMQTTReceiveQ()) {
         stop_all(FAIL_MQTTRecvQ_INIT);
     }
     if (!createMQTTSendQ()) {
         stop_all(FAIL_MQTTSendQ_INIT);
     }
-    */
 
-    /* Call driver init functions */
-    Board_init();
-    GPIO_init();
-    debug_setup();
-    uart_setup();
     //spi_setup();
-    //timer_setup();
+    timer_setup();
 
     /* Initialize the attributes structure with default values */
     //pthread_attr_init(&mainControlsAttrs);
@@ -120,21 +118,17 @@ int main(void)
     /*
     if (retcMainControls != 0) {
         stop_all(FAIL_MainThread_INIT);
-        while (1) {}
     }
     */
     if (retcMotors != 0) {
         stop_all(FAIL_MotorsThread_INIT);
-        while(1) {}
     }
     /*
     else if (rectMQTTRecv != 0) {
         stop_all(FAIL_MQTTRecvThread_INIT);
-        while(1) {}
     }
     else if (rectMQTTSend != 0) {
         stop_all(FAIL_MQTTSendThread_INIT);
-        while(1) {}
     }
      */
 

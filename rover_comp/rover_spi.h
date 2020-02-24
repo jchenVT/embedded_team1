@@ -8,10 +8,6 @@
 #ifndef ROVER_SPI_H_
 #define ROVER_SPI_H_
 
-/* POSIX Header files */
-#include <semaphore.h>
-#include <unistd.h>
-
 /* C-Libraries */
 #include <stddef.h>
 #include <stdint.h>
@@ -20,15 +16,17 @@
 #include <stdlib.h>
 
 /* Project Files */
+#include <rover_debug.h>
 #include <rover_queues.h>
 #include <rover_uart.h>
-#include <rover_debug.h>
 
 /* Driver Header files */
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/SPI.h>
-#include <ti/drivers/Timer.h>
 #include "ti_drivers_config.h"
+
+#include <FreeRTOS.h>
+#include <timers.h>
 
 #define THREADSTACKSIZE 1024
 #define SPI_MSG_LENGTH  5
@@ -41,7 +39,7 @@ void spi_setup();
 void timer_setup();
 void spi_close();
 
-void timerCallback(Timer_Handle myHandle);
+void timerCallback(TimerHandle_t myHandle);
 void readEncoder(int encoder);
 bool transferData(int encoder);
 

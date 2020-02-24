@@ -63,6 +63,7 @@
 // timer locations
 #define SPI_TIMER_INITIALIZE    0x60
 #define SPI_TIMER_OPENING       0x61
+#define SPI_TIMER_CLOSING       0x62
 
 // FAILURE Locations
 #define FAIL_UART_INIT          0x70

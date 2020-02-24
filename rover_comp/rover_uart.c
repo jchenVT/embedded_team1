@@ -16,8 +16,6 @@ void uart_setup()
     /*****************************/
 
     UART_init();
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
     UART_Params_init(&uartParams);
     uartParams.writeDataMode = UART_DATA_TEXT;
     uartParams.readDataMode = UART_DATA_TEXT;
@@ -44,6 +42,8 @@ void uart_close() {
 // Output UART to rover motors
 void *uartThread(void *arg0)
 {
+    uart_setup();
+
     struct motorData curData = {0,0,0};
 
     while(1)
