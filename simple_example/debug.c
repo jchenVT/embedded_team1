@@ -1,7 +1,7 @@
 #include "debug.h"
 
-void debug_setup()
-{
+void debug_setup() {
+
     GPIO_init();
     GPIO_setConfig(CONFIG_GPIO_0, GPIO_CFG_OUTPUT);
     GPIO_setConfig(CONFIG_GPIO_1, GPIO_CFG_OUTPUT);
@@ -22,8 +22,8 @@ void debug_setup()
     GPIO_write(CONFIG_GPIO_7, GPIO_CFG_OUT_LOW);
 }
 
-void dbgOutputLoc(unsigned int outLoc)
-{
+void dbgOutputLoc(unsigned int outLoc) {
+
     if (outLoc > 0x7B)
         stop_all(FAILED_UNKNOWN_CODE);
     
@@ -44,8 +44,8 @@ void dbgOutputLoc(unsigned int outLoc)
     GPIO_write(CONFIG_GPIO_0, firstbit ? GPIO_CFG_OUT_HIGH : GPIO_CFG_OUT_LOW);
 }
 
-void stop_all(unsigned int FAILURE_CODE)
-{
+void stop_all(unsigned int FAILURE_CODE) {
+
     vTaskSuspendAll();
     taskENTER_CRITICAL();
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
@@ -53,13 +53,7 @@ void stop_all(unsigned int FAILURE_CODE)
 
     dbgOutputLoc(FAILURE_CODE);
 
-    while(1)
-    {
-        /*
-        GPIO_toggle(CONFIG_GPIO_LED_0);
-        // blink LED forever
-        int i = 0;
-        for (;i<100000;i++) ;
-        */
+    while(1) {
+
     }
 }
