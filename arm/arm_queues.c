@@ -16,16 +16,20 @@ bool createMovQ() {
     return movQ == NULL ? false : true;
 }
 
-int sendMsgToMovQ(movqData_t inMsg) {
-    movqData_t newMsg;
-    newMsg = inMsg;
+int sendMsgToMovQ(movqData_t newMsg) {
+    movqData_t inMsg;
 
-    return xQueueSendToBackFromISR(movQ, &newMsg, 0);
+    inMsg.yee_value = newMsg.yee_value;
+    inMsg.haw_value = newMsg.haw_value;
+    inMsg.cow_value = newMsg.cow_value;
+    inMsg.boy_value = newMsg.boy_value;
+
+    return xQueueSendToBackFromISR(movQ, &inMsg, 0);
 }
 
 bool receiveFromMovQ(movqData_t *m) {
 
     xQueueReceive(movQ, m, portMAX_DELAY);
 
-    return m == NULL;
+    return m != NULL;
 }

@@ -49,6 +49,9 @@
 /* Driver configuration */
 #include <ti/drivers/Board.h>
 
+#include "arm.h"
+#include "arm_queues.h"
+
 extern void *mainArmThread(void *arg0);
 extern void *armDebugThread(void *arg0);
 
@@ -73,6 +76,8 @@ int main(void)
 
     /* Call driver init functions */
     Board_init();
+    arm_init();
+    createMovQ();
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs);
