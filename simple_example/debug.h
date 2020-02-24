@@ -16,17 +16,17 @@
 /* Main thread */
 #define INIT_THREADS                0x01
 
-/* Proximity 1 Thread */
+/* Proximity 1 */
 #define INIT_UART0                  0x11
 #define WAITING_READ_UART0          0x12
 #define SEND_PROX1Q                 0x13
 
-/* Proximity 2 Thread */
+/* Proximity 2 */
 #define INIT_UART1                  0x21
 #define WAITING_READ_UART1          0x22
 #define SEND_PROX2Q                 0x23
 
-/* RGB Callback */
+/* RGB */
 
 /* Failure */
 #define FAILED_INIT_THREADS         0x71
@@ -44,7 +44,7 @@
 
 ///////////////////////////////////////////////////
 
-//extern UART_Handle uart;
+extern UART_Handle uart;
 
 void debug_setup();
 void dbgOutputLoc(unsigned int outLoc);
