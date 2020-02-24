@@ -36,7 +36,9 @@ int main(void) {
 
     /* Call driver setup functions */
     Board_init();
+    GPIO_init();
     debug_setup();
+
     if (!setupQs()) {
         stop_all(FAILED_INIT_QUEUES);
     }

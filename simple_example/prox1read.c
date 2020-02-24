@@ -17,40 +17,31 @@
  */
 void *readProximity1Thread(void *arg0) {
 
-    dbgOutputLoc(INIT_UART0);
+    dbgOutputLoc(INIT_TIMER1);
 
-    /* One-time initialization of UART driver */
-    UART_init();
+    /* One-time initialization of software timer */
+    TimerHandle_t timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(10), pdTRUE, NULL, timerCallback);
+    xTimerStart(timer10ms, 0);
 
-    /* Initialize UART parameters */
-    UART_Params params;
-    UART_Params_init(&params);
-    params.baudRate = 9600;
-    params.readMode = UART_MODE_BLOCKING;
-    params.readTimeout = UART_WAIT_FOREVER;
+    /* Initialize pin to read proximity 1 */
+    GPIO_setConfig(CONFIG_GPIO_PROX1, GPIO_CFG_INPUT);
+}
 
-    /* Open the UART */
-    UART_Handle uart;
-    uart = UART_open(CONFIG_UART_0, &params);
+/*
+ *  @function   timerCallback
+ *              Adds the current sensor reading to the sensor queue.
+ *
+ *  @params     xTimer
+ *  @return     void
+ */
+void timerCallback(TimerHandle_t xTimer) {
 
-    /* Check if UART is open */
-    if (uart == NULL)
-        stop_all(FAILED_UART0_INIT);
+    dbgOutputLoc(TIMER1_CALLBACK);
 
-    int32_t readCount;
-    uint8_t buffer[8];
+    /* Check pin and send to queue */
+    int reading = GPIO_read(CONFIG_GPIO_PROX1);
 
-    while (1) {
-
-        /* Read from the UART */
-        dbgOutputLoc(WAITING_READ_UART0);
-        readCount = UART_read(uart, buffer, 8);
-
-        /* Error handle the value read */
-
-
-        /* Send to queue */
-        dbgOutputLoc(SEND_PROX1Q);
-        sendToProx1Q(readCount);
-    }
+    /* send to the correct sensor queue */
+    dbgOutputLoc(SEND_PROX1Q);
+    sendToProx1Q(reading);
 }

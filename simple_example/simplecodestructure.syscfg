@@ -6,8 +6,6 @@
 var RTOS = scripting.addModule("/ti/drivers/RTOS");
 var GPIO = scripting.addModule("/ti/drivers/GPIO");
 var GPIO1 = GPIO.addInstance();
-var Timer = scripting.addModule("/ti/drivers/Timer");
-var Timer1 = Timer.addInstance();
 var UART = scripting.addModule("/ti/drivers/UART", {}, false);
 var UART1 = UART.addInstance();
 var GPIO2 = GPIO.addInstance();
@@ -18,10 +16,7 @@ var GPIO6 = GPIO.addInstance();
 var GPIO7 = GPIO.addInstance();
 var GPIO8 = GPIO.addInstance();
 var GPIO9 = GPIO.addInstance();
-var ADC = scripting.addModule("/ti/drivers/ADC", {}, false);
-var ADC1 = ADC.addInstance();
-var Timer2 = Timer.addInstance();
-var UART2 = UART.addInstance();
+var GPIO10 = GPIO.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -33,12 +28,6 @@ var DriverLib = scripting.addModule("/ti/devices/DriverLib", {}, false);
 GPIO1.$hardware = system.deviceData.board.components.LED_RED;
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO1.$name = "CONFIG_GPIO_LED_0";
-// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
-Timer1.$name = "CONFIG_TIMER_0";
-// Timer Type
-Timer1.timerType = "32 Bits";
-// Name
-Timer1.timer.$name = "MyTimer1";
 // Data Direction
 UART1.dataDirection = "Send Only";
 // Interrupt Priority - UART peripheral interrupt priority
@@ -56,7 +45,7 @@ GPIO2.$name = "CONFIG_GPIO_0";
 // Mode - Select the GPIO mode
 GPIO2.mode = "Output";
 // Assign pin
-GPIO2.gpioPin.$assign = "boosterpack.2"; // P58*
+GPIO2.gpioPin.$assign = "boosterpack.10"; // P02
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO3.$name = "CONFIG_GPIO_1";
 // Mode - Select the GPIO mode
@@ -99,35 +88,11 @@ GPIO9.$name = "CONFIG_GPIO_7";
 GPIO9.mode = "Output";
 // Assign pin
 GPIO9.gpioPin.$assign = "boosterpack.9"; // P01
-// Name - The C/C++ identifier used in applications as the index parameter passed to ADC runtime APIs
-ADC1.$name = "CONFIG_ADC_0";
-// Name
-ADC1.adc.$name = "MyADC1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO10.$name = "CONFIG_GPIO_PROX1";
 // Assign pin
-ADC1.adc.adcPin.$assign = "boosterpack.24"; // P60
-// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
-Timer2.$name = "CONFIG_TIMER_1";
-// Timer Type
-Timer2.timerType = "32 Bits";
-// Name
-Timer2.timer.$name = "MyTimer1";
-// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
-UART2.$name = "CONFIG_UART_0";
-// Data Direction
-UART2.dataDirection = "Receive Only";
-// Name
-UART2.uart.$name = "MyUART1";
+GPIO10.gpioPin.$assign = "boosterpack.15"; // P07
 // Suggest solution
 GPIO1.gpioPin.$suggestSolution = "64";
 // Suggest solution
-Timer1.timer.$suggestSolution = "Timer1";
-// Suggest solution
 UART1.uart.txPin.$suggestSolution = "55";
-// Suggest solution
-ADC1.adc.$suggestSolution = "ADC0";
-// Suggest solution
-Timer2.timer.$suggestSolution = "Timer0";
-// Suggest solution
-UART2.uart.$suggestSolution = "UART0";
-// Suggest solution
-UART2.uart.rxPin.$suggestSolution = "45";
