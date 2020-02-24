@@ -16,6 +16,8 @@
 #include "proxread.h"
 #include "rgbread.h"
 #include "sensor_queue.h"
+
+/* Debug files */
 #include "debug.h"
 
 /* Get thread locations */
@@ -26,7 +28,8 @@ extern void *readProximityThread(void *arg0);
 #define THREADSTACKSIZE   1024
 
 /*
- *  ======== main ========
+ *  @function   main
+ *              main thread when starting the TI board.
  */
 int main(void) {
 
@@ -46,7 +49,7 @@ int main(void) {
 
     dbgOutputLoc(INIT_THREADS);
 
-    /* Debug UART */
+    /* Debug UART Output */
     pthread_t           threadDebug;
     pthread_attr_t      attrsDebug;
     int                 retcDebug;
@@ -56,12 +59,11 @@ int main(void) {
     pthread_attr_t      attrsProx;
     int                 retcProx;
 
-    /* Other thread... */
+    /* RGB Sensor Read */
     pthread_t           threadRGB;
     pthread_attr_t      attrsRGB;
     int                 retcRGB;
 
-    /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrsDebug);
     pthread_attr_init(&attrsProx);
     pthread_attr_init(&attrsRGB);
