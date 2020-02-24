@@ -1,10 +1,12 @@
 #include "spi_pixy.h"
 
+SPI_Handle spi = NULL;
+Timer_Handle timer_pixy = NULL;
+uint8_t recv_packet_ccc[60];
+
 void spi_pixy_init()
 {
-    SPI_init();
     SPI_Params_init(&spi_params);
-    
     spi_params.transferMode = SPI_MODE_CALLBACK;
     spi_params.transferCallbackFxn = spi_pixy_callback;
     spi_params.frameFormat = SPI_POL1_PHA1;
@@ -16,9 +18,7 @@ void spi_pixy_init()
     spi = SPI_open(CONFIG_SPI_0, &spi_params);
     if (spi == NULL)
         stop_all(FAIL_SPI_INIT);
-          
 
-    Timer_init();
 
     Timer_Params_init(&timer_pixy_params);
     timer_pixy_params.periodUnits = Timer_PERIOD_HZ;
@@ -50,8 +50,7 @@ void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction)
     size_t i = 0, msg_size;
     if (num_blocks == 0)
     {
-        uart_msg.array_len = 9;
-        strncpy(uart_msg.msg, "Not found", 100);
+        uart_msg.array_len = snprintf(uart_msg.msg, 100, "Not found, tc=%zu", transaction->count);
         xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
     }
 
@@ -79,8 +78,8 @@ void timer_spi_callback(Timer_Handle timer_handle)
     uart_msg.array_len = 14;
     strncpy(uart_msg.msg, "timer callbacc", 14);
     xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
-    send_pixy_ccc_spi();
     */
+    send_pixy_ccc_spi();
 }
 
 

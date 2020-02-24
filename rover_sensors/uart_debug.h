@@ -12,9 +12,6 @@
 
 #include "queues.h"
 
-static UART_Handle uart_debug;
-static UART_Params uart_debug_params;
-
 void uart_debug_init();
 
 void *uartDebugThread(void *arg0);

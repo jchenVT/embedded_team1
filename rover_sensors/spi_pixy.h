@@ -18,14 +18,14 @@
 
 #define TX_MSGSIZE 6
 
-static SPI_Handle spi;
+extern SPI_Handle spi;
 static SPI_Params spi_params;
 
-static Timer_Handle timer_pixy;
-static Timer_Params timer_pixy_params;
+extern Timer_Handle timer_pixy;
+Timer_Params timer_pixy_params;
 
 static const uint8_t request_packet_ccc [] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
-static uint8_t recv_packet_ccc[60];
+extern uint8_t recv_packet_ccc[60];
 
 typedef struct block {
 	uint16_t signature;

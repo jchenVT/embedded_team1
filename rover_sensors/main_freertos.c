@@ -15,7 +15,6 @@
  * *  Neither the name of Texas Instruments Incorporated nor the names of
  *    its contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
@@ -64,10 +63,6 @@ extern void *uartDebugThread(void *arg0);
  */
 int main(void)
 {
-    pthread_t           thread1;
-    pthread_attr_t      attrs1;
-    int                 retcUARTDebug;
-
     /* initialize the system locks */
 #ifdef __ICCARM__
     __iar_Initlocks();
@@ -75,15 +70,21 @@ int main(void)
 
     /* Call driver init functions */
     Board_init();
-//    Timer_init();
     GPIO_init();
-    queues_init();
+    Timer_init();
+    UART_init();
+    SPI_init();
     debug_init();
+    queues_init();
     uart_debug_init();
     spi_pixy_init();
 //  uart_lidar_init();
 
     dbgOutputLoc(INIT_ALL);
+
+    pthread_t           thread1;
+    pthread_attr_t      attrs1;
+    int                 retcUARTDebug;
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs1);

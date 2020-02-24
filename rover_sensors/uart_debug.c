@@ -1,5 +1,8 @@
 #include "uart_debug.h"
 
+UART_Handle uart_debug = NULL;
+UART_Params uart_debug_params;
+
 void uart_debug_init()
 {
     UART_Params_init(&uart_debug_params);
@@ -12,13 +15,23 @@ void uart_debug_init()
     /*****************************/
     uart_debug = UART_open(CONFIG_UART_0, &uart_debug_params);
     if (uart_debug == NULL)
+    {
         stop_all(FAIL_UART_INIT);
+    }
 
+    /*****************************/
+    dbgOutputLoc(UART_DEBUG_INITIALIZED);
+    /*****************************/
+
+    /*****************************
     uart_message_t test;
-    const char test_str[10] = "a test";
-    strcpy(test.msg, test_str);
+    const unsigned char test_str[10] = "a test";
+    strncpy(test.msg, test_str, 6);
     test.array_len = 6;
+    dbgOutputLoc(UART_DEBUG_TEST);
     UART_write(uart_debug, test.msg, test.array_len);
+    dbgOutputLoc(UART_DEBUG_TEST_DONE);
+    *****************************/
 
 }
 

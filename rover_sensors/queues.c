@@ -1,5 +1,6 @@
 #include "queues.h"
 
+QueueHandle_t uart_debug_q = NULL;
 
 void queues_init()
 {

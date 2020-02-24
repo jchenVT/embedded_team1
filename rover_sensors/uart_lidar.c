@@ -1,5 +1,7 @@
 #include "uart_lidar.h"
 
+UART_Handle uart_lidar = NULL;
+
 void uart_lidar_init()
 {
     // TODO: Replace these with proper UART connection to lidar

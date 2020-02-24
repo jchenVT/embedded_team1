@@ -16,7 +16,7 @@
 #include "queues.h"
 
 
-static UART_Handle uart_lidar;
+extern UART_Handle uart_lidar;
 static UART_Params uart_lidar_params;
 
 
