@@ -33,7 +33,7 @@ struct qData {
 /* Routine declarations */
 bool setupQs();
 int sendToProx1Q(int value);
-int sendToProx1Q(int value);
+int sendToProx2Q(int value);
 int sendToRGBQ(int value);
 void receiveFromProx1Q(struct qData *oldData);
 void receiveFromProx2Q(struct qData *oldData);

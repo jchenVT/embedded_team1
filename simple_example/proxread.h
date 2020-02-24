@@ -5,8 +5,8 @@
  *      Author: giffen
  */
 
-#ifndef PROX1READ_H_
-#define PROX1READ_H_
+#ifndef PROXREAD_H_
+#define PROXREAD_H_
 
 /* POSIX Header files */
 #include <pthread.h>
@@ -27,7 +27,7 @@
 
 
 /* Main Thread */
-void *readProximity1Thread(void *arg0);
+void *readProximityThread(void *arg0);
 void timerCallback(TimerHandle_t xTimer);
 
-#endif /* PROX1READ_H_ */
+#endif /* PROXREAD_H_ */

@@ -1,5 +1,9 @@
 #include "debug.h"
 
+UART_Handle uart = NULL;
+UART_Params uartParams;
+static QueueHandle_t uartQ = NULL;
+
 void debug_setup() {
 
     GPIO_setConfig(CONFIG_GPIO_0, GPIO_CFG_OUTPUT);
@@ -19,6 +23,43 @@ void debug_setup() {
     GPIO_write(CONFIG_GPIO_5, GPIO_CFG_OUT_LOW);
     GPIO_write(CONFIG_GPIO_6, GPIO_CFG_OUT_LOW);
     GPIO_write(CONFIG_GPIO_7, GPIO_CFG_OUT_LOW);
+
+    UART_init();
+    UART_Params_init(&uartParams);
+    uartParams.writeDataMode = UART_DATA_TEXT;
+    uartParams.readDataMode = UART_DATA_TEXT;
+    uartParams.readReturnMode = UART_RETURN_FULL;
+    uartParams.readEcho = UART_ECHO_OFF;
+    uartParams.baudRate = 9600;
+
+    uart = UART_open(CONFIG_UART_DEBUG, &uartParams);
+    if (uart == NULL) {
+        stop_all(FAILED_START_DEBUG);
+    }
+
+    uartQ = xQueueCreate(32, 1);
+    if (uartQ == NULL) {
+        stop_all(FAILED_START_DEBUG);
+    }
+}
+
+void *uartThread(void *arg0) {
+
+    while(1) {
+
+        unsigned char outVal = receiveFromUARTQ();
+
+        if ((int) outVal == -1) {
+            stop_all(FAILED_START_DEBUG);
+        }
+
+        if (uart == NULL) {
+            stop_all(FAILED_START_DEBUG);
+        }
+
+        const char e[1] = {outVal};
+        UART_write(uart, e, sizeof(e));
+    }
 }
 
 void dbgOutputLoc(unsigned int outLoc) {
@@ -39,12 +80,28 @@ void dbgOutputLoc(unsigned int outLoc) {
     GPIO_write(CONFIG_GPIO_0, GPIO_CFG_OUT_LOW);
 }
 
+void dbgUARTVal(unsigned char outVal) {
+
+    xQueueSendToBackFromISR( uartQ, &outVal, 0);
+}
+
+unsigned char receiveFromUARTQ() {
+
+    unsigned char msg = 0;
+
+    xQueueReceive(uartQ, &msg, portMAX_DELAY);
+
+    if (&msg == NULL) {
+        return (unsigned char) -1;
+    }
+
+    return msg;
+}
+
 void stop_all(unsigned int FAILURE_CODE) {
 
     vTaskSuspendAll();
     taskENTER_CRITICAL();
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
 
     dbgOutputLoc(FAILURE_CODE);
 

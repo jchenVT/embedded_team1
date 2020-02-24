@@ -13,13 +13,14 @@
 
 /* Driver configuration */
 #include <ti/drivers/Board.h>
-#include "prox1read.h"
+#include "proxread.h"
 //#include "rgbread.h"
 #include "sensor_queue.h"
 #include "debug.h"
 
 /* Get thread locations */
-extern void *readProximity1Thread(void *arg0);
+extern void *uartThread(void *arg0);
+extern void *readProximityThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -45,23 +46,30 @@ int main(void) {
 
     dbgOutputLoc(INIT_THREADS);
 
-    /* UART0 Proximity Sensor Read */
-        pthread_t           thread1;
-        pthread_attr_t      attrs1;
-        int                 retcProx1;
+    /* Debug UART */
+    pthread_t           threadDebug;
+    pthread_attr_t      attrsDebug;
+    int                 retcDebug;
+
+    /* Proximity Sensor Read */
+    pthread_t           threadProx;
+    pthread_attr_t      attrsProx;
+    int                 retcProx;
 
     /* Other thread... */
-        //pthread_t           thread2;
-        //pthread_attr_t      attrs2;
-        //int                 retcProx2;
+    //pthread_t           thread2;
+    //pthread_attr_t      attrs2;
+    //int                 retcProx2;
 
     /* Initialize the attributes structure with default values */
-    pthread_attr_init(&attrs1);
-    //pthread_attr_init(&attrs2);
+    pthread_attr_init(&attrsDebug);
+    pthread_attr_init(&attrsProx);
 
-    retcProx1 = pthread_create(&thread1, &attrs1, readProximity1Thread, NULL);
+    retcDebug = pthread_create(&threadDebug, &attrsDebug, uartThread, NULL);
+    retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
 
-    if (retcProx1 != 0) {
+    if (retcDebug != 0 && retcProx != 0) {
+
         /* pthread_create() failed */
         stop_all(FAILED_INIT_THREADS);
         while (1) {
@@ -86,7 +94,6 @@ void vApplicationMallocFailedHook() {
 
     }
 }
-
 
 /**
  *  vApplicationStackOverflowHook()

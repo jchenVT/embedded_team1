@@ -42,7 +42,7 @@ int sendToProx1Q(int value) {
 }
 
 /*
- *  @function   sendToProx1Q
+ *  @function   sendToProx2Q
  *              Wrapper to add to the proximity 2 sensor queue.
  *
  *  @params     value - value from sensor
