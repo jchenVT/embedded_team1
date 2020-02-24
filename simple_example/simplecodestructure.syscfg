@@ -21,6 +21,7 @@ var GPIO9 = GPIO.addInstance();
 var ADC = scripting.addModule("/ti/drivers/ADC", {}, false);
 var ADC1 = ADC.addInstance();
 var Timer2 = Timer.addInstance();
+var UART2 = UART.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -38,14 +39,14 @@ Timer1.$name = "CONFIG_TIMER_0";
 Timer1.timerType = "32 Bits";
 // Name
 Timer1.timer.$name = "MyTimer1";
-// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
-UART1.$name = "CONFIG_UART_0";
 // Data Direction
 UART1.dataDirection = "Send Only";
 // Interrupt Priority - UART peripheral interrupt priority
 UART1.interruptPriority = "5";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
 UART1.$hardware = system.deviceData.board.components.XDS110UART;
+// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
+UART1.$name = "CONFIG_UART_DEBUG";
 // Name
 UART1.uart.$name = "MyUART1";
 // Use Peripheral
@@ -110,6 +111,12 @@ Timer2.$name = "CONFIG_TIMER_1";
 Timer2.timerType = "32 Bits";
 // Name
 Timer2.timer.$name = "MyTimer1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
+UART2.$name = "CONFIG_UART_0";
+// Data Direction
+UART2.dataDirection = "Receive Only";
+// Name
+UART2.uart.$name = "MyUART1";
 // Suggest solution
 GPIO1.gpioPin.$suggestSolution = "64";
 // Suggest solution
@@ -120,3 +127,7 @@ UART1.uart.txPin.$suggestSolution = "55";
 ADC1.adc.$suggestSolution = "ADC0";
 // Suggest solution
 Timer2.timer.$suggestSolution = "Timer0";
+// Suggest solution
+UART2.uart.$suggestSolution = "UART0";
+// Suggest solution
+UART2.uart.rxPin.$suggestSolution = "45";
