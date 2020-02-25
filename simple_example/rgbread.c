@@ -43,6 +43,10 @@ void *readRGBThread(void *arg0) {
     transaction.slaveAddress = OPT_ADDR;
     transaction.arg = NULL;
 
+    if (i2cHandle == NULL) {
+        stop_all(FAILED_I2C_INIT);
+    }
+
     while (1) {
 
         /* Read from I2C slave device */
