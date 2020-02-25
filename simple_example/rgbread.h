@@ -16,6 +16,8 @@
 #include "ti_drivers_config.h"
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/I2C.h>
+#include <semaphore.h>
+#include <unistd.h>
 
 /* Queue files */
 #include "sensor_queue.h"
@@ -25,10 +27,10 @@
 
 /* Slave attributes */
 #define SENSORS 0
-#define OPT_ADDR 0x29 // see documentation pg. 3
+#define OPT_ADDR 0x29 // see TCS34725 documentation pg. 3
 
 /* Main Thread */
 void *readRGBThread(void *arg0);
-void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status);
+void i2cCallback(I2C_Handle handle, bool status, I2C_Transaction *msg);
 
 #endif /* RGBREAD_H_ */

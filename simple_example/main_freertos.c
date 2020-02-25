@@ -23,6 +23,7 @@
 /* Get thread locations */
 extern void *uartThread(void *arg0);
 extern void *readProximityThread(void *arg0);
+extern void *readRGBThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -69,8 +70,8 @@ int main(void) {
     pthread_attr_init(&attrsRGB);
 
     retcDebug = pthread_create(&threadDebug, &attrsDebug, uartThread, NULL);
-    retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
     retcRGB = pthread_create(&threadRGB, &attrsRGB, readRGBThread, NULL);
+    //retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
 
     if (retcDebug != 0 && retcProx != 0 && retcRGB != 0) {
         stop_all(FAILED_INIT_THREADS);

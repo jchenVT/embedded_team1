@@ -7,6 +7,11 @@
 
 #include "rgbread.h"
 
+/* Global semaphore handle for callback */
+sem_t semaphoreHandle;
+
+/* Buffer to push readings into */
+uint8_t rxBuffer[2];
 
 /*
  *  @function   readRGBThread()
@@ -21,6 +26,7 @@ void *readRGBThread(void *arg0) {
     dbgOutputLoc(INIT_I2C);
 
     I2C_init();
+    sem_init(&semaphoreHandle, 0, 0);
 
     /* Initialize optional I2C bus parameters */
     I2C_Params params;
@@ -35,19 +41,32 @@ void *readRGBThread(void *arg0) {
     /* Initialize slave address of transaction */
     I2C_Transaction transaction = {0};
     transaction.slaveAddress = OPT_ADDR;
+    transaction.arg = NULL;
 
-    /* Read from I2C slave device */
-    I2C_transfer(i2cHandle, &transaction);
+    while (1) {
+
+        /* Read from I2C slave device */
+        /*uint8_t data[5];
+        transaction.readBuf = data;
+        transaction.readCount = sizeof(data);
+        transaction.writeCount = 0;*/
+        I2C_transfer(i2cHandle, &transaction);
+
+        //dbgOutputLoc(I2C_CALLBACK);
+
+        /* Waits for post to continue thread */
+        sem_wait(&semaphoreHandle);
+    }
 }
 
 /*
  *  @function   i2cCallback()
  *              Callback for when the I2C is done writing.
  *
- *  @params     I2C_Handle handle, I2C_Transaction *msg, bool status
+ *  @params     handle, msg, status
  *  @return     void
  */
-void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status) {
+void i2cCallback(I2C_Handle handle, bool status, I2C_Transaction *msg) {
 
     dbgOutputLoc(I2C_CALLBACK);
 
@@ -55,10 +74,16 @@ void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status) {
         stop_all(FAILED_I2C_CALLBACK);
     }
 
-    // Check for a semaphore handle
     if (msg->arg != NULL) {
-        // Perform a semaphore post
-        //sem_post((sem_t *) (msg->arg));
+
+        /* Check if message contents are okay */
+
+
+        /* Send to RGB queue */
+        //sendToRGBQ(value);
+
+        /* Perform a semaphore post to signal complete */
+        sem_post((sem_t *) (msg->arg));
     }
     else {
         stop_all(FAILED_RGB_BADVAL);
