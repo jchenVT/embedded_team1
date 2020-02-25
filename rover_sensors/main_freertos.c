@@ -7,7 +7,6 @@
  * are met:
  * *  Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- *
  * *  Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
@@ -78,7 +77,7 @@ int main(void)
     queues_init();
     uart_debug_init();
     spi_pixy_init();
-//  uart_lidar_init();
+    uart_lidar_init();
 
     dbgOutputLoc(INIT_ALL);
 

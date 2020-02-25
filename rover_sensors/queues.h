@@ -18,8 +18,7 @@ typedef struct uart_message {
 } uart_message_t;
 
 extern QueueHandle_t uart_debug_q;
-// add more queues here
-// static QueueHandle_t ;
+extern QueueHandle_t lidar_data_q;
 
 void queues_init();
 
