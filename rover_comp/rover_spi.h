@@ -30,17 +30,20 @@
 
 #define THREADSTACKSIZE 1024
 #define SPI_MSG_LENGTH  5
-#define MAX_LOOP        10
 #define TIMER_LENGTH    1000
 
-enum encoders {e128, e129, e130};
+enum encoders {e128=128, e129, e130};
 
 void spi_setup();
 void timer_setup();
 void spi_close();
 
-void timerCallback(TimerHandle_t myHandle);
+void spitimerCallback(TimerHandle_t myHandle);
+void initEncoders();
+void clearEncoderCounts();
 void readEncoder(int encoder);
 bool transferData(int encoder);
+
+void *spiThread(void *arg0);
 
 #endif /* ROVER_SPI_H_ */

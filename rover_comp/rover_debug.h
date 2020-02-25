@@ -34,9 +34,13 @@
 #define RQ_MotorQ_SEND          0x11
 #define RQ_MotorQ_RECEIVE       0x12
 
+#define RQ_EncoderQ_CREATE      0x13
+#define RQ_EncoderQ_SEND        0x14
+#define RQ_EncoderQ_RECEIVE     0x15
+
 // sensor queue locations
 #define RQ_MQTTReceive_CREATE   0x20
-#define RQ_MQTTReceive spiSEND  0x21
+#define RQ_MQTTReceive_spiSEND  0x21
 #define RQ_MQTTReceive_senSEND  0x22
 #define RQ_MQTTReceive_RECEIVE  0x23
 
@@ -58,7 +62,11 @@
 #define SPI_READING_128         0x52
 #define SPI_READING_129         0x53
 #define SPI_READING_130         0x54
-#define SPI_CLOSING             0x55
+#define SPI_SENDING             0x55
+#define SPI_CLOSING             0x56
+
+#define SPI_ENCODER_INIT        0x57
+#define SPI_ENCODER_CLEARING    0x47
 
 // timer locations
 #define SPI_TIMER_INITIALIZE    0x60
@@ -72,17 +80,20 @@
 #define FAIL_TIMER_START        0x73
 
 #define FAIL_MotorQ_INIT        0x80
-#define FAIL_MQTTRecvQ_INIT     0x81
-#define FAIL_MQTTSendQ_INIT     0x82
-#define FAIL_MainThread_INIT    0x83
-#define FAIL_MotorsThread_INIT  0x84
-#define FAIL_MQTTRecvThread_INIT 0x85
+#define FAIL_EncoderQ_INIT      0x81
+#define FAIL_MQTTRecvQ_INIT     0x82
+#define FAIL_MQTTSendQ_INIT     0x83
+#define FAIL_MainThread_INIT    0x84
+#define FAIL_MotorsThread_INIT  0x85
+#define FAIL_EncoderThread_INIT 0x86
+#define FAIL_MQTTRecvThread_INIT 0x87
 #define FAIL_MQTTSendThread_INIT 0x86
 
 #define FAIL_UART_RECEIVE       0x90
 #define FAIL_SPI_READING_128    0x91
 #define FAIL_SPI_READING_129    0x92
 #define FAIL_SPI_READING_130    0x93
+#define FAIL_SPI_SEND_TO_Q      0x94
 
 #define FAIL_UNKNOWN_CODE       0xFF
 

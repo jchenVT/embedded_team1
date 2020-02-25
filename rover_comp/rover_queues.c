@@ -8,6 +8,7 @@
 #include <rover_queues.h>
 
 static QueueHandle_t motorsQ = NULL;
+static QueueHandle_t encoderQ = NULL;
 static QueueHandle_t mqttReceiveQ = NULL;
 static QueueHandle_t mqttSendQ = NULL;
 
@@ -27,6 +28,14 @@ bool createMotorQ() {
     dbgOutputLoc(RQ_MotorQ_CREATE);
     /**************************/
     return motorsQ == NULL ? false : true;
+}
+
+bool createEncoderQ() {
+    encoderQ = xQueueCreate( qLENGTH, eqITEMSIZE );
+    /**************************/
+    dbgOutputLoc(RQ_EncoderQ_CREATE);
+    /**************************/
+    return encoderQ == NULL ? false : true;
 }
 
 bool createMQTTReceiveQ() {
@@ -55,7 +64,7 @@ bool createMQTTSendQ() {
  *  @params
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int sendMsgToMotors(char address, char command, char speed) {
+int sendMsgToMotorsQ(char address, char command, char speed) {
 
     struct motorData newMsg = {{address}, {command}, {speed}};
     /**************************/
@@ -64,9 +73,22 @@ int sendMsgToMotors(char address, char command, char speed) {
     return xQueueSendToBack( motorsQ, &newMsg, 0 );
 }
 
+int sendMsgToEncoderQ() {
+    bool newMsg = true;
+    /**************************/
+    dbgOutputLoc(RQ_EncoderQ_SEND);
+    /**************************/
+    return xQueueSendToBack( encoderQ, &newMsg, 0 );
+}
+
 int sendMsgToReceiveQ(bool sensorType, long data, long data2) {
     struct receiveData newMsg = {sensorType, data, data2};
-
+    if (sensorType) {
+        dbgOutputLoc(RQ_MQTTReceive_senSEND);
+    }
+    else {
+        dbgOutputLoc(RQ_MQTTReceive_spiSEND);
+    }
     return xQueueSendToBack( motorsQ, &newMsg, 0 );
 }
 
@@ -80,6 +102,14 @@ bool receiveFromMotorsQ(struct motorData *oldData) {
     xQueueReceive( motorsQ, oldData, portMAX_DELAY );
     /**************************/
     dbgOutputLoc(RQ_MotorQ_RECEIVE);
+    /**************************/
+    return oldData == NULL ? false : true;
+}
+
+bool receiveFromEncoderQ(bool *oldData) {
+    xQueueReceive( encoderQ, oldData, portMAX_DELAY );
+    /**************************/
+    dbgOutputLoc(RQ_EncoderQ_RECEIVE);
     /**************************/
     return oldData == NULL ? false : true;
 }

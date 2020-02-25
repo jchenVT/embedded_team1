@@ -54,9 +54,11 @@
 #include <rover_uart.h>
 #include <rover_queues.h>
 #include <rover_debug.h>
+#include <uart_tester.h>
 
-//extern void *mainThread(void *arg0);
+// extern void *mainThread(void *arg0);
 extern void *uartThread(void *arg0);
+extern void *spiThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -69,16 +71,19 @@ int main(void)
 
     pthread_t           mainControlsThread;
     pthread_t           motorThread;
+    pthread_t           encoderThread;
     pthread_t           mqttRecvThread;
     pthread_t           mqttSendThread;
 
     pthread_attr_t      mainControlsAttrs;
     pthread_attr_t      motorAttrs;
+    pthread_attr_t      encoderAttrs;
     pthread_attr_t      mqttRecvAttrs;
     pthread_attr_t      mqttSendAttrs;
 
     int                 retcMainControls;
     int                 retcMotors;
+    int                 retcEncoders;
     int                 retcMQTTRecv;
     int                 rectMQTTSend;
 
@@ -94,6 +99,9 @@ int main(void)
     if (!createMotorQ()) {
         stop_all(FAIL_MotorQ_INIT);
     }
+    if (!createEncoderQ()) {
+        stop_all(FAIL_EncoderQ_INIT);
+    }
     if (!createMQTTReceiveQ()) {
         stop_all(FAIL_MQTTRecvQ_INIT);
     }
@@ -101,17 +109,18 @@ int main(void)
         stop_all(FAIL_MQTTSendQ_INIT);
     }
 
-    //spi_setup();
-    timer_setup();
+    uartTimer_setup();
 
     /* Initialize the attributes structure with default values */
     //pthread_attr_init(&mainControlsAttrs);
     pthread_attr_init(&motorAttrs);
+    pthread_attr_init(&encoderAttrs);
     //pthread_attr_init(&mqttRecvAttrs);
     //pthread_attr_init(&mqttSendAttrs);
 
     //retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
+    retcEncoders = pthread_create(&encoderThread, &encoderAttrs, spiThread, NULL);
     //retcMQTTRecv = pthread_create(&mqttRecvThread, &mqttRecvAttrs, mqttRecvThread, NULL);
     //rectMQTTSend = pthread_create(&mqttSendThread, &mqttSendAttrs, mqttSendThread, NULL);
 
@@ -119,11 +128,15 @@ int main(void)
     if (retcMainControls != 0) {
         stop_all(FAIL_MainThread_INIT);
     }
-    */
+*/
     if (retcMotors != 0) {
         stop_all(FAIL_MotorsThread_INIT);
     }
-    /*
+
+    if (retcEncoders != 0) {
+        stop_all(FAIL_EncoderThread_INIT);
+    }
+/*
     else if (rectMQTTRecv != 0) {
         stop_all(FAIL_MQTTRecvThread_INIT);
     }

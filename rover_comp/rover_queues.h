@@ -25,6 +25,7 @@
 /* Queue variables */
 #define qLENGTH         32
 #define mqITEMSIZE      3
+#define eqITEMSIZE      1
 #define MRqITEMSIZE     24 // CHANGE/CONFIRM
 #define MSqITEMSIZE     4 // CHANGE/CONFIRM
 
@@ -43,14 +44,17 @@ struct receiveData {
 
 /* Routine declarations */
 bool createMotorQ();
+bool createEncoderQ();
 bool createMQTTReceiveQ();
 bool createMQTTSendQ();
 
-int sendMsgToMotors(char address, char command, char speed);
+int sendMsgToMotorsQ(char address, char command, char speed);
+int sendMsgToEncoderQ();
 int sendMsgToReceiveQ(bool sensorType, long data, long data2);
 int sendMsgToMQTTSendQ(int sendLoc, int data);
 
 bool receiveFromMotorsQ(struct motorData *oldData);
+bool receiveFromEncoderQ(bool *oldData);
 bool receiveFromMQTTReceiveQ(struct receiveData *oldData);
 bool receiveFromMQTTSendQ();
 

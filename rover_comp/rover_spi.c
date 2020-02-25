@@ -7,11 +7,15 @@
 
 #include <rover_spi.h>
 
-static unsigned char masterRxBuffer[SPI_MSG_LENGTH];
-static unsigned char masterTxBuffer[SPI_MSG_LENGTH] = {0x60, 0x00, 0x00, 0x00, 0x00};
+static char clearCountBuffer[1] = "\x20";
+static char clearDTRBuffer[5] = "\x98\x00\x00\x00\x00";
+static char initBuffer[2] = "\x88\x03";
+static char readTxBuffer[SPI_MSG_LENGTH] = "\x60\x00\x00\x00\x00";
+static char readRxBuffer[SPI_MSG_LENGTH];
 
 static SPI_Handle masterSpi;
-static TimerHandle_t timer0;
+static SPI_Transaction transaction;
+static TimerHandle_t spiTimer_Handle;
 
 void spi_setup() {
 
@@ -23,14 +27,19 @@ void spi_setup() {
     SPI_init();
     SPI_Params      spiParams;
 
+    /* Set Master as an output and slaves as inputs */
+    GPIO_setConfig(CONFIG_SPI_MASTER_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
+    GPIO_setConfig(CONFIG_SPI_SLAVE130_READY, GPIO_CFG_INPUT);
+    GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_INPUT);
+    GPIO_setConfig(CONFIG_SPI_SLAVE129_READY, GPIO_CFG_INPUT);
     /*
      * Handshake - Set CONFIG_SPI_MASTER_READY high to indicate master is ready
      * to run.  Wait CONFIG_SPI_SLAVE_READY to be high.
      */
     GPIO_write(CONFIG_SPI_MASTER_READY, 1);
-    while (GPIO_read(CONFIG_SPI_SLAVE128_READY) == 0) {}
-    while (GPIO_read(CONFIG_SPI_SLAVE129_READY) == 0) {}
-    while (GPIO_read(CONFIG_SPI_SLAVE130_READY) == 0) {}
+    GPIO_write(CONFIG_SPI_SLAVE128_READY, 1);
+    GPIO_write(CONFIG_SPI_SLAVE129_READY, 1);
+    GPIO_write(CONFIG_SPI_SLAVE130_READY, 1);
 
     /* Handshake complete; now configure interrupt on CONFIG_SPI_SLAVE_READY */
     GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_IN_PU | GPIO_CFG_IN_INT_FALLING);
@@ -40,10 +49,9 @@ void spi_setup() {
     /* Open SPI as master (default) */
     SPI_Params_init(&spiParams);
     spiParams.mode = SPI_MASTER;
-    spiParams.transferMode = SPI_MODE_BLOCKING;
     spiParams.frameFormat = SPI_POL0_PHA1;
     spiParams.bitRate = 9600;
-    spiParams.dataSize = 4; // UNSURE
+    spiParams.dataSize = 8;
 
     /*****************************/
     dbgOutputLoc(SPI_OPENING);
@@ -64,9 +72,9 @@ void timer_setup() {
     dbgOutputLoc(SPI_TIMER_INITIALIZE);
     /*****************************/
 
-    timer0 = xTimerCreate("spi_timer", pdMS_TO_TICKS(TIMER_LENGTH), pdTRUE, NULL, timerCallback);
+    spiTimer_Handle = xTimerCreate("spi_timer", pdMS_TO_TICKS(TIMER_LENGTH), pdTRUE, (void*)0, spitimerCallback);
 
-    if (timer0 == NULL {
+    if (spiTimer_Handle == NULL) {
         stop_all(FAIL_TIMER_INIT);
     }
 
@@ -74,83 +82,129 @@ void timer_setup() {
     dbgOutputLoc(SPI_TIMER_OPENING);
     /*****************************/
 
-    if (xTimerStart(timer0, 0) != pdPASS) {
+    if (xTimerStart(spiTimer_Handle, 0) != pdPASS) {
         stop_all(FAIL_TIMER_START);
     }
-
-    GPIO_write(CONFIG_SPI_MASTER_READY, 0);
 }
 
 void spi_close() {
     SPI_close(masterSpi);
-    xTimerStop(timer0);
+    xTimerStop(spiTimer_Handle, 0);
 
     /* Example complete - set pins to a known state */
     GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_SPI_SLAVE129_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
     GPIO_setConfig(CONFIG_SPI_SLAVE130_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
-    GPIO_write(CONFIG_SPI_MASTER_READY, 0);
 }
 
-void timerCallback(TimerHandle_t myHandle) {
-    /*****************************/
-    dbgOutputLoc(SPI_READING_128);
-    /*****************************/
-    //readEncoder(e128);
-    /*****************************/
-    dbgOutputLoc(SPI_READING_129);
-    /*****************************/
-    //readEncoder(e129);
-    /*****************************/
-    dbgOutputLoc(SPI_READING_130);
-    /*****************************/
-    //readEncoder(e130);
+void spitimerCallback(TimerHandle_t myHandle) {
+    sendMsgToEncoderQ();
 }
 
 void readEncoder(int encoder) {
+    memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
+    transaction.count = SPI_MSG_LENGTH;
+    transaction.txBuf = (void*)readTxBuffer;
+    transaction.rxBuf = (void*)readRxBuffer;
 
     if (encoder == e128) {
-        GPIO_write(CONFIG_SPI_SLAVE128_READY, 0);
-        if (!transferData(encoder)) {
+        if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
             stop_all(FAIL_SPI_READING_128);
         }
-        GPIO_write(CONFIG_SPI_SLAVE128_READY, 1);
     }
     else if (encoder == e129) {
-        GPIO_write(CONFIG_SPI_SLAVE129_READY, 0);
-        if (!transferData(encoder)) {
+        if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
             stop_all(FAIL_SPI_READING_129);
         }
-        GPIO_write(CONFIG_SPI_SLAVE129_READY, 1);
     }
     else if (encoder == e130) {
-        GPIO_write(CONFIG_SPI_SLAVE130_READY, 0);
-        if (!transferData(encoder)) {
+        if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
             stop_all(FAIL_SPI_READING_130);
         }
-        GPIO_write(CONFIG_SPI_SLAVE130_READY, 1);
+    }
+
+    long data = 0;
+    int i;
+    for (i=0;i<SPI_MSG_LENGTH; i++) {
+        data = (data << 8) | readRxBuffer[i];
+    }
+
+    if (sendMsgToReceiveQ(false, data, encoder) != pdPASS) {
+        stop_all(FAIL_SPI_SEND_TO_Q);
+    }
+}
+
+void initEncoders() {
+    memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
+    transaction.count = 2;
+    transaction.txBuf = (void*)initBuffer;
+    transaction.rxBuf = (void*)readRxBuffer;
+
+    dbgOutputLoc(SPI_ENCODER_INIT);
+
+    if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
+        stop_all(FAIL_SPI_READING_128);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
+        stop_all(FAIL_SPI_READING_129);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
+        stop_all(FAIL_SPI_READING_130);
+    }
+}
+
+void clearEncoderCounts() {
+    memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
+    transaction.count = 1;
+    transaction.txBuf = (void*)clearCountBuffer;
+    transaction.rxBuf = (void*)readRxBuffer;
+
+    dbgOutputLoc(SPI_ENCODER_CLEARING);
+
+    if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
+        stop_all(FAIL_SPI_READING_128);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
+        stop_all(FAIL_SPI_READING_129);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
+        stop_all(FAIL_SPI_READING_130);
     }
 }
 
 bool transferData(int encoder) {
 
-    static SPI_Transaction transaction;
+    dbgOutputLoc(SPI_SENDING);
 
-    memset((void *) masterRxBuffer, 0, SPI_MSG_LENGTH);
-    transaction.count = SPI_MSG_LENGTH;
-    transaction.txBuf = (void *) masterTxBuffer;
-    transaction.rxBuf = (void *) masterRxBuffer;
+    GPIO_write(encoder, 0);
 
     bool transferOK = SPI_transfer(masterSpi, &transaction);
-    if (transferOK) {
-        long data = 0;
-        int i;
-        for (i=0;i<SPI_MSG_LENGTH; i++) {
-            data = (data << 8) | masterRxBuffer[i];
-        }
 
-        sendMsgToReceiveQ(false, data, encoder);
+    GPIO_write(encoder, 1);
+    return transferOK;
+}
+
+void *spiThread(void *arg0) {
+
+    spi_setup();
+
+    initEncoders();
+    clearEncoderCounts();
+    timer_setup();
+
+    bool temp = false;
+
+    while(1) {
+        receiveFromEncoderQ(&temp);
+
+        dbgOutputLoc(SPI_READING_128);
+        readEncoder(e128);
+
+        dbgOutputLoc(SPI_READING_129);
+        readEncoder(e129);
+
+        dbgOutputLoc(SPI_READING_130);
+        readEncoder(e130);
     }
 
-    return transferOK;
 }
