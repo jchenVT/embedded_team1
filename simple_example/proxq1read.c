@@ -24,11 +24,12 @@ void *proxQ1ReadThread(void *arg0) {
 
     while (1) {
 
-        dbgOutputLoc(WAIT_PQ1READ); // wait for message
+        dbgOutputLoc(WAIT_PQ1READ);
 
+        /* Perform blocking read */
         receiveFromProx1Q(&data);
 
-        dbgOutputLoc(RECV_PQ1READ); // recv message
+        dbgOutputLoc(RECV_PQ1READ);
 
         /* Verify data is valid (and print to UART) */
         dbgUARTVal('P');
@@ -43,13 +44,11 @@ void *proxQ1ReadThread(void *arg0) {
                 dbgUARTVal('0');
             }
             else {
-                dbgOutputLoc(FAILED_PQ1_BADVAL);
-                dbgUARTVal('V');
+                stop_all(FAILED_PQ1_BADVAL);
             }
         }
         else {
-            dbgOutputLoc(FAILED_PQ1_BADVAL);
-            dbgUARTVal('B');
+            stop_all(FAILED_PQ1_BADVAL);
         }
         dbgUARTVal(' ');
 

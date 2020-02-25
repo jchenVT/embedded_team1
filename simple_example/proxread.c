@@ -60,12 +60,11 @@ void timerCallback(TimerHandle_t xTimer) {
     }
     dbgUARTVal(' ');
 
-    /* send to the correct sensor queue */
+    /* Send to the correct sensor queue */
     dbgOutputLoc(SEND_PROX1Q);
     sendToProx1Q(reading1);
 
     /* Print to UART for Debug */
-
     dbgUARTVal('P');
     dbgUARTVal('2');
     dbgUARTVal(':');
@@ -76,12 +75,11 @@ void timerCallback(TimerHandle_t xTimer) {
         dbgUARTVal('1');
     }
     else {
-        dbgOutputLoc(FAILED_PROX2_BADVAL);
-        dbgUARTVal('N');
+        stop_all(FAILED_PROX2_BADVAL);
     }
     dbgUARTVal(' ');
 
-    /* send to the correct sensor queue */
+    /* Send to the correct sensor queue */
     dbgOutputLoc(SEND_PROX2Q);
     sendToProx2Q(reading2);
 }
