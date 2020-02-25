@@ -31,12 +31,12 @@ void *readRGBThread(void *arg0) {
     /* Initialize optional I2C bus parameters */
     I2C_Params params;
     I2C_Params_init(&params);
-    params.bitRate = I2C_400kHz;
+    params.bitRate = I2C_100kHz;
     params.transferMode = I2C_MODE_CALLBACK;
     params.transferCallbackFxn = i2cCallback;
 
     /* Open I2C bus for usage */
-    I2C_Handle i2cHandle = I2C_open(SENSORS, &params);
+    I2C_Handle i2cHandle = I2C_open(CONFIG_I2C_0, &params);
 
     /* Initialize slave address of transaction */
     I2C_Transaction transaction = {0};
@@ -46,13 +46,7 @@ void *readRGBThread(void *arg0) {
     while (1) {
 
         /* Read from I2C slave device */
-        /*uint8_t data[5];
-        transaction.readBuf = data;
-        transaction.readCount = sizeof(data);
-        transaction.writeCount = 0;*/
         I2C_transfer(i2cHandle, &transaction);
-
-        //dbgOutputLoc(I2C_CALLBACK);
 
         /* Waits for post to continue thread */
         sem_wait(&semaphoreHandle);
@@ -66,7 +60,7 @@ void *readRGBThread(void *arg0) {
  *  @params     handle, msg, status
  *  @return     void
  */
-void i2cCallback(I2C_Handle handle, bool status, I2C_Transaction *msg) {
+void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status) {
 
     dbgOutputLoc(I2C_CALLBACK);
 
@@ -80,6 +74,7 @@ void i2cCallback(I2C_Handle handle, bool status, I2C_Transaction *msg) {
 
 
         /* Send to RGB queue */
+        dbgOutputLoc(SEND_RGBQ);
         //sendToRGBQ(value);
 
         /* Perform a semaphore post to signal complete */

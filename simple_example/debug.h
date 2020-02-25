@@ -14,7 +14,7 @@
 ///// Debug output location macro definitions /////
 
 /* Main thread */
-#define INIT_THREADS                0x0F
+#define INIT_THREADS                0x03
 
 /* Proximity Sensors */
 #define INIT_TIMER                  0x11

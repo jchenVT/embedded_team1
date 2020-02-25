@@ -71,7 +71,7 @@ int main(void) {
 
     retcDebug = pthread_create(&threadDebug, &attrsDebug, uartThread, NULL);
     retcRGB = pthread_create(&threadRGB, &attrsRGB, readRGBThread, NULL);
-    //retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
+    retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
 
     if (retcDebug != 0 && retcProx != 0 && retcRGB != 0) {
         stop_all(FAILED_INIT_THREADS);

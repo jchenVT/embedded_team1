@@ -48,6 +48,8 @@ GPIO2.$name = "CONFIG_GPIO_PROX2";
 GPIO2.gpioPin.$assign = "boosterpack.15"; // P07
 // Name - The C/C++ identifier used in applications as the index parameter passed to I2C runtime APIs
 I2C1.$name = "CONFIG_I2C_0";
+// Maximum Bit Rate - Maximum bit rate (Kbps) supported by this bus
+I2C1.maxBitRate = 400;
 // Name
 I2C1.i2c.$name = "MyI2C1";
 // Assign pin

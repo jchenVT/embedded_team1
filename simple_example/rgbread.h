@@ -31,6 +31,6 @@
 
 /* Main Thread */
 void *readRGBThread(void *arg0);
-void i2cCallback(I2C_Handle handle, bool status, I2C_Transaction *msg);
+void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status);
 
 #endif /* RGBREAD_H_ */
