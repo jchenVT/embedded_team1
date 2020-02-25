@@ -105,7 +105,7 @@ void debug_setup();
 // Debug function that outputs to GPIO pins
 // Use logic analyzer to determine location
 // outLoc must be <= 127
-void dbgOutputLoc(unsigned int outLoc);
+void dbgOutputLoc(char outLoc);
 void stop_all(unsigned int FAILURE_CODE);
 
 #endif /* ROVER_DEBUG_H_ */

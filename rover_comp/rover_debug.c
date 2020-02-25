@@ -6,6 +6,7 @@
  */
 
 #include <rover_debug.h>
+#include <uart_tester.h>
 
 void debug_setup()
 {
@@ -35,10 +36,11 @@ void debug_setup()
     GPIO_toggle(CONFIG_GPIO_LED_0);
 }
 
-void dbgOutputLoc(unsigned int outLoc)
+void dbgOutputLoc(char outLoc)
 {
-    if (outLoc > 0x93)
-        stop_all(FAIL_UNKNOWN_CODE);
+    if (outLoc > 0x93) {
+        //stop_all(FAIL_UNKNOWN_CODE);
+    }
 
     GPIO_write(CONFIG_GPIO_TOGGLE, GPIO_CFG_OUT_HIGH);
 
@@ -62,6 +64,7 @@ void stop_all(unsigned int FAILURE_CODE)
 
     uart_close();
     spi_close();
+    testing_stop();
 
     /*****************************/
     dbgOutputLoc(FAILURE_CODE);

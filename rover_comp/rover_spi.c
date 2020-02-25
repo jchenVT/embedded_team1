@@ -7,11 +7,11 @@
 
 #include <rover_spi.h>
 
-static char clearCountBuffer[1] = "\x20";
-static char clearDTRBuffer[5] = "\x98\x00\x00\x00\x00";
-static char initBuffer[2] = "\x88\x03";
-static char readTxBuffer[SPI_MSG_LENGTH] = "\x60\x00\x00\x00\x00";
-static char readRxBuffer[SPI_MSG_LENGTH];
+static char clearCountBuffer[1] = {0xE0};
+static char clearDTRBuffer[5] = {0x98, 0x00, 0x00, 0x00, 0x00};
+static char initBuffer[2] = {0x88, 0x03};
+static char readTxBuffer[SPI_MSG_LENGTH] = {0x60, 0x00, 0x00, 0x00, 0x00};
+static char readRxBuffer[SPI_MSG_LENGTH] = {0x00, 0x00, 0x00, 0x00, 0x00};
 
 static SPI_Handle masterSpi;
 static SPI_Transaction transaction;
@@ -88,13 +88,11 @@ void timer_setup() {
 }
 
 void spi_close() {
+
+    dbgOutputLoc(SPI_CLOSING);
+
     SPI_close(masterSpi);
     xTimerStop(spiTimer_Handle, 0);
-
-    /* Example complete - set pins to a known state */
-    GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_SPI_SLAVE129_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_SPI_SLAVE130_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
 }
 
 void spitimerCallback(TimerHandle_t myHandle) {
@@ -123,10 +121,10 @@ void readEncoder(int encoder) {
         }
     }
 
-    long data = 0;
+    long data;
     int i;
-    for (i=0;i<SPI_MSG_LENGTH; i++) {
-        data = (data << 8) | readRxBuffer[i];
+    for (i=0;i<sizeof(readRxBuffer); i++) {
+        data = (data << 8) + readRxBuffer[i];
     }
 
     if (sendMsgToReceiveQ(false, data, encoder) != pdPASS) {
@@ -154,6 +152,23 @@ void initEncoders() {
 }
 
 void clearEncoderCounts() {
+    memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
+    transaction.count = 5;
+    transaction.txBuf = (void*)clearDTRBuffer;
+    transaction.rxBuf = (void*)readRxBuffer;
+
+    dbgOutputLoc(SPI_ENCODER_CLEARING);
+
+    if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
+        stop_all(FAIL_SPI_READING_128);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
+        stop_all(FAIL_SPI_READING_129);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
+        stop_all(FAIL_SPI_READING_130);
+    }
+
     memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
     transaction.count = 1;
     transaction.txBuf = (void*)clearCountBuffer;
@@ -205,6 +220,8 @@ void *spiThread(void *arg0) {
 
         dbgOutputLoc(SPI_READING_130);
         readEncoder(e130);
+
+        clearEncoderCounts();
     }
 
 }

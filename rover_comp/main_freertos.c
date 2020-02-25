@@ -56,7 +56,7 @@
 #include <rover_debug.h>
 #include <uart_tester.h>
 
-// extern void *mainThread(void *arg0);
+extern void *mainThread(void *arg0);
 extern void *uartThread(void *arg0);
 extern void *spiThread(void *arg0);
 
@@ -112,23 +112,22 @@ int main(void)
     uartTimer_setup();
 
     /* Initialize the attributes structure with default values */
-    //pthread_attr_init(&mainControlsAttrs);
+    pthread_attr_init(&mainControlsAttrs);
     pthread_attr_init(&motorAttrs);
     pthread_attr_init(&encoderAttrs);
     //pthread_attr_init(&mqttRecvAttrs);
     //pthread_attr_init(&mqttSendAttrs);
 
-    //retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainThread, NULL);
+    retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
     retcEncoders = pthread_create(&encoderThread, &encoderAttrs, spiThread, NULL);
     //retcMQTTRecv = pthread_create(&mqttRecvThread, &mqttRecvAttrs, mqttRecvThread, NULL);
     //rectMQTTSend = pthread_create(&mqttSendThread, &mqttSendAttrs, mqttSendThread, NULL);
 
-    /*
+
     if (retcMainControls != 0) {
         stop_all(FAIL_MainThread_INIT);
     }
-*/
     if (retcMotors != 0) {
         stop_all(FAIL_MotorsThread_INIT);
     }

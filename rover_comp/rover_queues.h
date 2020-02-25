@@ -37,7 +37,7 @@ struct motorData {
 };
 
 struct receiveData {
-    bool type;
+    bool sensorType;
     long data;
     long data2;
 };

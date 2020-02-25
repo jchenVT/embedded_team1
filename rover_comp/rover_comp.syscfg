@@ -75,7 +75,7 @@ GPIO6.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO6.$name = "CONFIG_GPIO_3";
 // Assign pin
-GPIO6.gpioPin.$assign = "boosterpack.24"; // P60
+GPIO6.gpioPin.$assign = "boosterpack.2"; // P58*
 // Mode - Select the GPIO mode
 GPIO7.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
@@ -122,7 +122,7 @@ GPIO12.gpioPin.$assign = "boosterpack.18"; // P08
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO13.$name = "CONFIG_SPI_SLAVE130_READY";
 // Assign pin
-GPIO13.gpioPin.$assign = "boosterpack.17"; // P45
+GPIO13.gpioPin.$assign = "boosterpack.24"; // P60
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO14.$name = "CONFIG_GPIO_7";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins

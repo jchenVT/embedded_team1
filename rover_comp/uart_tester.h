@@ -12,6 +12,7 @@
 #include <timers.h>
 
 void uartTimer_setup();
+void testing_stop();
 void uarttimerCallback(TimerHandle_t timer0);
 
 #endif /* UART_TESTER_H_ */

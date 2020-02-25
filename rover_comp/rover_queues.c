@@ -89,7 +89,7 @@ int sendMsgToReceiveQ(bool sensorType, long data, long data2) {
     else {
         dbgOutputLoc(RQ_MQTTReceive_spiSEND);
     }
-    return xQueueSendToBack( motorsQ, &newMsg, 0 );
+    return xQueueSendToBack( mqttReceiveQ, &newMsg, 0 );
 }
 
 int sendMsgToMQTTSendQ(int sendLoc, int data) {
