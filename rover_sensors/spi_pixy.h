@@ -4,6 +4,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
+#include <stdlib.h>
 #include <stdbool.h>
 
 #include <ti/drivers/SPI.h>
@@ -18,14 +19,6 @@
 
 #define TX_MSGSIZE 6
 
-extern SPI_Handle spi;
-static SPI_Params spi_params;
-
-extern Timer_Handle timer_pixy;
-Timer_Params timer_pixy_params;
-
-static const uint8_t request_packet_ccc [] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
-extern uint8_t recv_packet_ccc[60];
 
 typedef struct block {
 	uint16_t signature;

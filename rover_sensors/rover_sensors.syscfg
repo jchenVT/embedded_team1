@@ -68,16 +68,10 @@ Timer2.timer.$assign = "Timer1";
 var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
 // Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
 SPI1.$name = "CONFIG_SPI_0";
+// Mode - In three pin mode the SS signal is not used.
+SPI1.mode = "Four Pin SS Active Low";
 // Name
 SPI1.spi.$name = "MySPI1";
-// Use Peripheral
-SPI1.spi.$assign = "SPI0";
-// Assign pin
-SPI1.spi.sclkPin.$assign = "boosterpack.17"; // P45
-// Assign pin
-SPI1.spi.misoPin.$assign = "boosterpack.14"; // P06
-// Assign pin
-SPI1.spi.mosiPin.$assign = "boosterpack.15"; // P07
 // Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
 UART2.$name = "CONFIG_UART_1";
 // Name
@@ -138,6 +132,16 @@ GPIO9.mode = "Output";
 GPIO9.gpioPin.$assign = "boosterpack.10"; // P02
 // Suggest solution
 GPIO1.gpioPin.$suggestSolution = "64";
+// Suggest solution
+SPI1.spi.$suggestSolution = "SPI0";
+// Suggest solution
+SPI1.spi.sclkPin.$suggestSolution = "45";
+// Suggest solution
+SPI1.spi.misoPin.$suggestSolution = "6";
+// Suggest solution
+SPI1.spi.mosiPin.$suggestSolution = "7";
+// Suggest solution
+SPI1.spi.ssPin.$suggestSolution = "50";
 // Suggest solution
 SPI1.spi.dmaRxChannel.$suggestSolution = "UDMA_CH30";
 // Suggest solution

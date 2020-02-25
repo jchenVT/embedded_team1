@@ -1,17 +1,22 @@
 #include "spi_pixy.h"
 
-SPI_Handle spi = NULL;
-Timer_Handle timer_pixy = NULL;
-uint8_t recv_packet_ccc[60];
+static SPI_Handle spi = NULL;
+static Timer_Handle timer_pixy = NULL;
+static const uint8_t request_packet_ccc [] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
+static const uint8_t request_packet_version [] = {0xc1, 0xae, 14, 0};
+// static void * request_packet_ccc = malloc(sizeof(uint8_t) * 6);
+
+static uint8_t recv_packet_ccc[60];
 
 void spi_pixy_init()
 {
+    SPI_Params spi_params;
     SPI_Params_init(&spi_params);
     spi_params.transferMode = SPI_MODE_CALLBACK;
     spi_params.transferCallbackFxn = spi_pixy_callback;
     spi_params.frameFormat = SPI_POL1_PHA1;
     spi_params.bitRate = 2000000;
-    spi_params.dataSize = 8;
+    spi_params.dataSize = 1;
     /*****************************/
     dbgOutputLoc(SPI_SPI_OPEN);
     /*****************************/
@@ -19,10 +24,10 @@ void spi_pixy_init()
     if (spi == NULL)
         stop_all(FAIL_SPI_INIT);
 
-
+    Timer_Params timer_pixy_params;
     Timer_Params_init(&timer_pixy_params);
     timer_pixy_params.periodUnits = Timer_PERIOD_HZ;
-    timer_pixy_params.period = 10;
+    timer_pixy_params.period = 1;
     timer_pixy_params.timerMode = Timer_CONTINUOUS_CALLBACK;
     timer_pixy_params.timerCallback = timer_spi_callback;
     
@@ -48,7 +53,7 @@ void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction)
     Block_t block;
     uart_message_t uart_msg;
     size_t i = 0, msg_size;
-    if (num_blocks == 0)
+    if (1) //num_blocks == 0)
     {
         uart_msg.array_len = snprintf(uart_msg.msg, 100, "Not found, tc=%zu", transaction->count);
         xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
@@ -90,8 +95,9 @@ void send_pixy_ccc_spi()
     /*****************************/
     SPI_Transaction spi_transaction;
     bool transferOK;
-    spi_transaction.count = TX_MSGSIZE;
-    spi_transaction.txBuf = (void *)request_packet_ccc;
+    spi_transaction.count = 4 * 8;
+    // TODO switch back
+    spi_transaction.txBuf = (void *)request_packet_version;
     spi_transaction.rxBuf = (void *)recv_packet_ccc;
     transferOK = SPI_transfer(spi, &spi_transaction);
     if (!transferOK)
