@@ -46,14 +46,15 @@
 
 static UART_Handle uart;
 static PWM_Handle pwm_x, pwm_y, pwm_z, pwm_claw;
+static TimerHandle_t timer10ms;
 
-static movqData_t off_pos = {1200, 1000, 1000, 800};
-static movqData_t start_pos = {1200, 1000, 600, 800};
+static movqData_t off_pos = {1600, 1100, 1000, 800};
+static movqData_t start_pos = {1600, 1500, 1800, 800};
 
 static movqData_t current_pos, goal_pos;
 
-// indicates whether arm is finished moving
-static bool done = false;
+static aState a;
+static dState d;
 
 // instantiates the uart for the arm messaging queue
 void arm_init() {
@@ -77,59 +78,6 @@ void arm_init() {
         /* UART_open() failed */
         while (1);
     }
-}
-
-// checks for valid char and sends the corresponding message to the queue
-bool validChar(char in) {
-    switch (in) {
-    case 'o':
-        if (sendMsgToMovQ(off_pos) == pdTRUE) {
-            return true;
-        }
-        break;
-    case 's':
-        if (sendMsgToMovQ(start_pos) == pdTRUE) {
-            return true;
-        }
-        break;
-    }
-    return false;
-}
-/*
- *  ========mainThread ========
- */
-void *armDebugThread(void *arg0)
-{
-    char input;
-    dState inState = WaitingForAngles;
-
-    // set the current position of the arm to its off position
-    current_pos = off_pos;
-    // set the current goal position of the arm to the start position
-    goal_pos = start_pos;
-
-    /* Loop forever */
-    while (1) {
-        if (inState == WaitingForAngles) {
-            // blocking read and write
-            UART_read(uart, &input, 1);
-            UART_write(uart, &input, 1);
-            if (validChar(input)) {
-                inState = WaitingForAck;
-            }
-        }
-        if (inState == WaitingForAck) {
-            // if arm has finished moving, accept more commands
-            if (done) {
-                inState = WaitingForAngles;
-            }
-        }
-    }
-}
-
-void *mainArmThread(void *arg0) {
-    TimerHandle_t timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(10), pdFALSE, NULL, movementCallback);
-    aState armState = NotMoving;
 
     PWM_Params pwmParams;
 
@@ -138,7 +86,7 @@ void *mainArmThread(void *arg0) {
     pwmParams.dutyUnits = PWM_DUTY_US;
     pwmParams.dutyValue = 0;
     pwmParams.periodUnits = PWM_PERIOD_US;
-    pwmParams.periodValue = 100000;
+    pwmParams.periodValue = 20000;
 
     pwm_x = PWM_open(CONFIG_PWM_0, &pwmParams);
     pwm_y = PWM_open(CONFIG_PWM_1, &pwmParams);
@@ -163,86 +111,170 @@ void *mainArmThread(void *arg0) {
     PWM_start(pwm_z);
     PWM_start(pwm_claw);
 
+    // initialize software timer for smooth arm movement
+    timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(10), pdTRUE, NULL, movementCallback);
+}
+
+// checks for valid char and sends the corresponding message to the queue
+bool validChar(char in) {
+    switch (in) {
+    case 'o':
+        goal_pos = off_pos;
+        return true;
+    case 's':
+        goal_pos = start_pos;
+        return true;
+    case 'c':
+        if (current_pos.boy_value == 800) {
+            goal_pos.boy_value = 1800;
+        }
+        else {
+            goal_pos.boy_value = 800;
+        }
+        return true;
+    case 'l':
+        goal_pos.yee_value = 380;
+        return true;
+    case 'r':
+        goal_pos.yee_value = 2430;
+        return true;
+    case 'd':
+        if (current_pos.cow_value == 1800) {
+            goal_pos.cow_value = 1100;
+        }
+        else {
+            goal_pos.cow_value = 1800;
+        }
+        return true;
+    case 'f':
+        if (current_pos.haw_value <= 1700 && current_pos.haw_value > 1500) {
+            goal_pos.haw_value = 1100;
+        }
+        else {
+            goal_pos.haw_value = 1700;
+        }
+        return true;
+    }
+    return false;
+}
+
+int doneStruct(movqData_t s) {
+    return s.yee_value == 0 && s.haw_value == 0 && s.cow_value == 0 && s.boy_value == 0;
+}
+
+int armDone() {
+    return memcmp(&current_pos, &goal_pos, sizeof(current_pos)) == 0;
+}
+/*
+ *  ========mainThread ========
+ */
+void *armDebugThread(void *arg0)
+{
+    char input;
+    d = WaitingForAngles;
+    movqData_t a1 = {1200, 1500, 1800, 1600};
+    movqData_t b = {1200, 1500, 1800, 800};
+    // set the current position of the arm to its off position
+    current_pos = start_pos;
+    // set the current goal position of the arm to the start position
+    goal_pos = off_pos;
+
+    /* Loop forever */
     while (1) {
-        if (armState == Moving) {
-            UART_write(uart, "moving\r\n", 8);
+        if (d == WaitingForAngles) {
+            UART_read(uart, &input, 1);
+            UART_write(uart, &input, 1);
+            if (validChar(input)) {
+                UART_write(uart, "valid\r\n", 7);
+                d = WaitingForAck;
+                a = Moving;
+            }
+        }
+        if (d == WaitingForAck) {
+            UART_write(uart, "ack\r\n", 5);
+            if (a == NotMoving) {
+                UART_write(uart, "angle\r\n", 7);
+                d = WaitingForAngles;
+            }
+        }
+    }
+}
+
+void *mainArmThread(void *arg0) {
+
+    while (1) {
+        if (a == Moving) {
+            UART_write(uart, "move\r\n", 6);
             // start timer if it is not active
             if (xTimerIsTimerActive(timer10ms) == pdFALSE) {
                 xTimerStart(timer10ms, 0);
             }
-            if (done) {
-                armState = NotMoving;
+            if (armDone()) {
+                char buf[40];
+                int ret = snprintf(buf, 20, "current %d %d %d %d", current_pos.yee_value,
+                                   current_pos.haw_value, current_pos.cow_value, current_pos.boy_value);
+                UART_write(uart, "done\r\n", 6);
+                UART_write(uart, buf, ret);
+                a = NotMoving;
             }
         }
-        else if (armState == NotMoving) {
+        else if (a == NotMoving) {
+            UART_write(uart, "no move\r\n", 9);
             if (xTimerIsTimerActive(timer10ms) == pdTRUE) {
+                UART_write(uart, "stopped\r\n", 9);
                 xTimerStop(timer10ms, 0);
             }
-            movqData_t tempM;
-            receiveFromMovQ(&tempM);
-            if (tempM.yee_value == 1200) {
-                UART_write(uart, "received\r\n", 10);
-            }
-            // hangs here, never outputs "moving" message, or callback message.
-//            goal_pos.yee_value = tempM.yee_value;
-//            goal_pos.haw_value = tempM.haw_value;
-//            goal_pos.cow_value = tempM.cow_value;
-//            goal_pos.boy_value = tempM.boy_value;
-
-            armState = Moving;
         }
     }
 }
 
 void movementCallback(TimerHandle_t xTimer) {
-    UART_write(uart, "in callback\r\n", 13);
-    int doneCount = 0;
-
+//    UART_write(uart, "callback\r\n", 10);
     if (current_pos.yee_value < goal_pos.yee_value) {
-        PWM_setDuty(pwm_x, ++current_pos.yee_value);
+        current_pos.yee_value += STEPSIZE;
+        PWM_setDuty(pwm_x, current_pos.yee_value);
     }
     else if (current_pos.yee_value > goal_pos.yee_value) {
-        PWM_setDuty(pwm_x, --current_pos.yee_value);
+        current_pos.yee_value -= STEPSIZE;
+        PWM_setDuty(pwm_x, current_pos.yee_value);
     }
     else {
         PWM_setDuty(pwm_x, current_pos.yee_value);
-        doneCount++;
     }
 
     if (current_pos.haw_value < goal_pos.haw_value) {
-        PWM_setDuty(pwm_y, ++current_pos.haw_value);
+        current_pos.haw_value += STEPSIZE;
+        PWM_setDuty(pwm_y, current_pos.haw_value);
     }
     else if (current_pos.haw_value > goal_pos.haw_value) {
-        PWM_setDuty(pwm_y, --current_pos.haw_value);
+        current_pos.haw_value -= STEPSIZE;
+        PWM_setDuty(pwm_y, current_pos.haw_value);
     }
     else {
         PWM_setDuty(pwm_y, current_pos.haw_value);
-        doneCount++;
     }
 
     if (current_pos.cow_value < goal_pos.cow_value) {
-        PWM_setDuty(pwm_z, ++current_pos.cow_value);
+        current_pos.cow_value += STEPSIZE;
+        PWM_setDuty(pwm_z, current_pos.cow_value);
     }
     else if (current_pos.cow_value > goal_pos.cow_value) {
-        PWM_setDuty(pwm_z, --current_pos.cow_value);
+        current_pos.cow_value -= STEPSIZE;
+        PWM_setDuty(pwm_z, current_pos.cow_value);
     }
     else {
         PWM_setDuty(pwm_z, current_pos.cow_value);
-        doneCount++;
     }
 
     if (current_pos.boy_value < goal_pos.boy_value) {
-        PWM_setDuty(pwm_claw, ++current_pos.boy_value);
+        current_pos.boy_value += STEPSIZE;
+        PWM_setDuty(pwm_claw, current_pos.boy_value);
     }
     else if (current_pos.boy_value > goal_pos.boy_value) {
-        PWM_setDuty(pwm_claw, --current_pos.boy_value);
+        current_pos.boy_value -= STEPSIZE;
+        PWM_setDuty(pwm_claw, current_pos.boy_value);
     }
     else {
         PWM_setDuty(pwm_claw, current_pos.boy_value);
-        doneCount++;
-    }
-
-    if (doneCount == 4) {
-        done = true;
     }
 }
