@@ -55,8 +55,7 @@ void timerCallback(TimerHandle_t xTimer) {
         dbgUARTVal('1');
     }
     else {
-        dbgOutputLoc(FAILED_PROX1_BADVAL);
-        dbgUARTVal('N');
+        stop_all(FAILED_PROX1_BADVAL);
     }
     dbgUARTVal(' ');
 
