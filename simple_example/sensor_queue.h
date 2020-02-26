@@ -26,7 +26,7 @@
 
 /* Struct used in RETURNING message from queue */
 struct qData {
-    int type;
+    long long int type;
     int value;
 };
 
