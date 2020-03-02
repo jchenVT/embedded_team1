@@ -18,6 +18,13 @@
 
 #define UART_BUF_SIZE 100
 
+typedef struct point {
+	uint16_t angle_raw;
+	uint16_t distance_raw;
+	double angle;
+	double distance;
+} point_t;
+
 extern UART_Handle uart_lidar;
 
 void uart_lidar_init();
@@ -31,6 +38,9 @@ void uart_lidar_callback(UART_Handle handle, void * buf, size_t count);
 
 void timer_lidar_callback(Timer_Handle handle);
 
+void send_point_uart_debug(point_t point);
+
 void * uartLidarThread(void * arg0);
+
 
 #endif

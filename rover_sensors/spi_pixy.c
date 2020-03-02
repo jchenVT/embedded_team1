@@ -53,11 +53,13 @@ void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction)
     Block_t block;
     uart_message_t uart_msg;
     size_t i = 0, msg_size;
-    if (1) //num_blocks == 0)
+    /*
+    if (num_blocks == 0)
     {
         uart_msg.array_len = snprintf(uart_msg.msg, 100, "Not found, tc=%zu", transaction->count);
         xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
     }
+    */
 
     for (; i<num_blocks; i++)
     {

@@ -12,12 +12,11 @@ void uart_lidar_init()
     UART_Params uart_lidar_params;
     UART_Params_init(&uart_lidar_params);
     uart_lidar_params.writeMode = UART_MODE_BLOCKING;
-    uart_lidar_params.readMode = UART_MODE_CALLBACK;
-    uart_lidar_params.readCallback = uart_lidar_callback;
+    uart_lidar_params.readMode = UART_MODE_BLOCKING;
+    // uart_lidar_params.readTimeout = 200000;
     uart_lidar_params.writeDataMode = UART_DATA_BINARY;
     uart_lidar_params.readDataMode = UART_DATA_BINARY;
     uart_lidar_params.readReturnMode = UART_RETURN_FULL;
-    uart_lidar_params.readEcho = UART_ECHO_OFF;
     uart_lidar_params.baudRate = 115200;
     /*****************************/
     dbgOutputLoc(UART_LIDAR_OPEN);
@@ -30,6 +29,7 @@ void uart_lidar_init()
     /*****************************/
 }
 
+/*
 void uart_timer_init()
 {
     Timer_Params timer_lidar_params;
@@ -45,37 +45,65 @@ void uart_timer_init()
         stop_all(FAIL_SPI_TIMER_INIT);
 
 }
+*/
 
-void uart_lidar_callback(UART_Handle handle, void * buf, size_t count)
+void send_point_uart_debug(point_t point)
 {
-    uint8_t * cast_buf;  
-    cast_buf = buf;
     uart_message_t msg;
-
-}
-
-void timer_lidar_callback(Timer_Handle handle)
-{
-    UART_read(uart_lidar, uart_buf, UART_BUF_SIZE);
+    msg.array_len = snprintf(msg.msg, 100, "lidar point=d:%fd,a:%fd", point.distance, point.angle);
+    xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
 }
 
 void *uartLidarThread(void *arg0)
 {
     // Open Timer
-    uart_timer_init();
+    // uart_timer_init();
+    
+    // Check lidar health
+    unsigned char get_health_msg[2] = {0xA5, 0x52};
+    UART_write(uart_lidar, get_health_msg, 2);
+    UART_read(uart_lidar, uart_buf, 7);
+    uint8_t health_status = uart_buf[3];
+    if (health_status != 0)
+        stop_all(UART_LIDAR_HEALTH_FAIL); 
+
+    /*****************************/
+    dbgOutputLoc(UART_LIDAR_HEALTH);
+    /*****************************/
 
     // send scan mode to start the lidar
-    // in debug mode rn
-    unsigned char start_msg[2] = {0xA5, 0x21};
+    unsigned char start_msg[2] = {0xA5, 0x20};
     // unsigned char start_msg[6] = {0xA5, 0xA8, 0x02, 0x00, 0x00, 0xC};
     UART_write(uart_lidar, start_msg, 2);
+    UART_read(uart_lidar, uart_buf, 5);
 
-    uart_message_t msg;
+    /*****************************/
+    dbgOutputLoc(UART_LIDAR_STARTED);
+    /*****************************/
 
     while(1)
     {
-        
-        xQueueReceive( lidar_data_q, &msg, portMAX_DELAY );
+        UART_read(uart_lidar, uart_buf, 5);
+        uint8_t quality;
+        quality = ((uint8_t) uart_buf[0]) >> 2; 
+        if (quality == 0)  
+            continue; 
+        point_t point;
+        point.angle_raw =  (uint8_t) uart_buf[2];
+        point.angle_raw <<= 7;
+        point.angle_raw &= ((uint8_t) uart_buf[1] >> 1);
 
+        point.distance_raw = (uint8_t) uart_buf[4];
+        point.distance_raw <<= 8;
+        point.angle_raw &= (uint8_t) uart_buf[3];
+        
+        point.distance = point.distance_raw / 4.0;
+        point.angle = point.angle_raw / 64.0;
+
+        /*****************************/
+        dbgOutputLoc(UART_LIDAR_POINT_IN);
+        /*****************************/
+
+        send_point_uart_debug(point);
     }
 }
