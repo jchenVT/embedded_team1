@@ -23,37 +23,60 @@ uint8_t rxBuffer[2];
  */
 void *readRGBThread(void *arg0) {
 
-    dbgOutputLoc(INIT_I2C);
-
-    I2C_init();
-    sem_init(&semaphoreHandle, 0, 0);
+    //sem_init(&semaphoreHandle, 0, 0);
 
     /* Initialize optional I2C bus parameters */
     I2C_Params params;
     I2C_Params_init(&params);
-    params.bitRate = I2C_100kHz;
-    params.transferMode = I2C_MODE_CALLBACK;
-    params.transferCallbackFxn = i2cCallback;
+    params.bitRate = I2C_400kHz;
+    params.transferMode = I2C_MODE_BLOCKING;
+    //params.transferCallbackFxn = i2cCallback;
 
     /* Open I2C bus for usage */
+    I2C_init();
     I2C_Handle i2cHandle = I2C_open(CONFIG_I2C_0, &params);
-
-    /* Initialize slave address of transaction */
-    I2C_Transaction transaction = {0};
-    transaction.slaveAddress = OPT_ADDR;
-    transaction.arg = NULL;
-
     if (i2cHandle == NULL) {
         stop_all(FAILED_I2C_INIT);
     }
+    else {
+        dbgOutputLoc(INIT_I2C);
+    }
+
+    /* Initialize slave address of transaction */
+    I2C_Transaction transactionEnable = {0};
+    transactionEnable.slaveAddress = OPT_ADDR;
+    uint8_t txBufferEnable[3] = {0x00, 0x01, 0x03};
+    transactionEnable.writeBuf = txBufferEnable;
+    transactionEnable.writeCount = 3;
+    transactionEnable.readBuf = NULL;
+    transactionEnable.readCount = 0;
+    if (I2C_transfer(i2cHandle, &transactionEnable)) {
+        dbgOutputLoc(RECV_RGBQREAD);
+    }
+
+
+    /* Setup data transfer */
+    I2C_Transaction transaction = {0};
+    transaction.slaveAddress = OPT_ADDR;
+    uint8_t txBuffer[1] = {0x96};
+    uint8_t rxBuffer[1] = {0};
+    transaction.writeBuf = txBuffer;
+    transaction.writeCount = 1;
+    transaction.readBuf = rxBuffer;
+    transaction.readCount = 1;
 
     while (1) {
 
         /* Read from I2C slave device */
-        I2C_transfer(i2cHandle, &transaction);
+        if (I2C_transfer(i2cHandle, &transaction)) {
+            dbgOutputLoc(RECV_RGBQREAD);
+        }
+        else {
+            stop_all(FAILED_I2C_CALLBACK);
+        }
 
         /* Waits for post to continue thread */
-        sem_wait(&semaphoreHandle);
+        //(&semaphoreHandle);
     }
 }
 
@@ -82,7 +105,7 @@ void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status) {
         //sendToRGBQ(value);
 
         /* Perform a semaphore post to signal complete */
-        sem_post((sem_t *) (msg->arg));
+        //sem_post((sem_t *) (msg->arg));
     }
     else {
         stop_all(FAILED_RGB_BADVAL);

@@ -58,31 +58,33 @@ int main(void) {
     int                 retcDebug;
 
     /* Proximity Sensor Read */
-    pthread_t           threadProx;
-    pthread_attr_t      attrsProx;
-    int                 retcProx;
+    //pthread_t           threadProx;
+    //pthread_attr_t      attrsProx;
+    //int                 retcProx;
 
     /* RGB Sensor Read */
     pthread_t           threadRGB;
     pthread_attr_t      attrsRGB;
     int                 retcRGB;
 
+
     /* P1 Queue Read */
-    pthread_t           threadP1Q;
-    pthread_attr_t      attrsP1Q;
-    int                 retcP1Q;
+    //pthread_t           threadP1Q;
+    //pthread_attr_t      attrsP1Q;
+    //int                 retcP1Q;
 
     pthread_attr_init(&attrsDebug);
-    pthread_attr_init(&attrsProx);
     pthread_attr_init(&attrsRGB);
-    pthread_attr_init(&attrsP1Q);
+    pthread_attr_setstacksize(&attrsRGB, 8000);
+    //pthread_attr_init(&attrsProx);
+    //pthread_attr_init(&attrsP1Q);
 
     retcDebug = pthread_create(&threadDebug, &attrsDebug, uartThread, NULL);
     retcRGB = pthread_create(&threadRGB, &attrsRGB, readRGBThread, NULL);
-    retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
-    retcP1Q = pthread_create(&threadP1Q, &attrsP1Q, proxQ1ReadThread, NULL);
+    //retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
+    //retcP1Q = pthread_create(&threadP1Q, &attrsP1Q, proxQ1ReadThread, NULL);
 
-    if (retcDebug != 0 && retcProx != 0 && retcRGB != 0 && retcP1Q != 0) {
+    if (retcDebug != 0 && retcRGB != 0) { //retcProx != 0 && && retcP1Q != 0) {
         stop_all(FAILED_INIT_THREADS);
         while (1) {
 
