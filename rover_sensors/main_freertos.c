@@ -72,12 +72,13 @@ int main(void)
     GPIO_init();
     Timer_init();
     UART_init();
-    SPI_init();
+//    SPI_init();
+    I2C_init();
     debug_init();
     queues_init();
     uart_debug_init();
-    spi_pixy_init();
     uart_lidar_init();
+    spi_pixy_init();
 
     dbgOutputLoc(INIT_ALL);
 

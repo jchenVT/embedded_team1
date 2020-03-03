@@ -1,6 +1,6 @@
 #include "spi_pixy.h"
 
-static SPI_Handle spi = NULL;
+static I2C_Handle i2c = NULL;
 static Timer_Handle timer_pixy = NULL;
 static const uint8_t request_packet_ccc [] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
 static const uint8_t request_packet_version [] = {0xc1, 0xae, 14, 0};
@@ -10,18 +10,16 @@ static uint8_t recv_packet_ccc[60];
 
 void spi_pixy_init()
 {
-    SPI_Params spi_params;
-    SPI_Params_init(&spi_params);
-    spi_params.transferMode = SPI_MODE_CALLBACK;
-    spi_params.transferCallbackFxn = spi_pixy_callback;
-    spi_params.frameFormat = SPI_POL1_PHA1;
-    spi_params.bitRate = 2000000;
-    spi_params.dataSize = 1;
+    I2C_Params i2c_params;
+    I2C_Params_init(&i2c_params);
+    i2c_params.transferMode = I2C_MODE_CALLBACK;
+    i2c_params.transferCallbackFxn = i2c_pixy_callback;
+    i2c_params.bitRate = I2C_400kHz;
     /*****************************/
     dbgOutputLoc(SPI_SPI_OPEN);
     /*****************************/
-    spi = SPI_open(CONFIG_SPI_0, &spi_params);
-    if (spi == NULL)
+    i2c = I2C_open(CONFIG_I2C_0, &i2c_params);
+    if (i2c == NULL)
         stop_all(FAIL_SPI_INIT);
 
     Timer_Params timer_pixy_params;
@@ -43,34 +41,41 @@ void spi_pixy_init()
 }
 
 
-void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction)
+void i2c_pixy_callback(I2C_Handle handle, I2C_Transaction *transaction, bool status)
 {
     
     /*****************************/
     dbgOutputLoc(SPI_PIXY_CALLBACK);
     /*****************************/
-    uint8_t num_blocks = transaction->count / 20;
+
+
+    // Check if transaction went through fine
+    if (status == false)
+    {
+        uart_message_t uart_msg;
+        uart_msg.array_len = snprintf(uart_msg.msg, 100, "fako\n");
+        xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
+        return;
+    }
+    else
+    {
+        uart_message_t uart_msg;
+        uart_msg.array_len = snprintf(uart_msg.msg, 100, "not fako?\n");
+        xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
+        return;
+    }
+
+    /*
     Block_t block;
     uart_message_t uart_msg;
-    size_t i = 0, msg_size;
-    /*
-    if (num_blocks == 0)
-    {
-        uart_msg.array_len = snprintf(uart_msg.msg, 100, "Not found, tc=%zu", transaction->count);
-        xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
-    }
+    block = convert_to_block_t(recv_packet_ccc);
+    
+    uart_msg.array_len = snprintf(uart_msg.msg, 100, "pixy,sig:%u,x:%u,y:%u,w:%u,h:%u",
+             block.signature, block.x_center, block.y_center,
+             block.width, block.height);
+    
+    xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
     */
-
-    for (; i<num_blocks; i++)
-    {
-        block = convert_to_block_t(recv_packet_ccc + (num_blocks * 20));
-
-        msg_size = snprintf(uart_msg.msg, 100, "pixy,sig:%u,x:%u,y:%u,w:%u,h:%u",
-                 block.signature, block.x_center, block.y_center,
-                 block.width, block.height);
-        uart_msg.array_len = msg_size;
-        xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
-    }
 }
 
 void timer_spi_callback(Timer_Handle timer_handle)
@@ -79,13 +84,6 @@ void timer_spi_callback(Timer_Handle timer_handle)
     dbgOutputLoc(SPI_TIMER_CALLBACK);
     /*****************************/
     
-    GPIO_toggle(CONFIG_GPIO_LED_0);
-    /*
-    uart_message_t uart_msg;
-    uart_msg.array_len = 14;
-    strncpy(uart_msg.msg, "timer callbacc", 14);
-    xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
-    */
     send_pixy_ccc_spi();
 }
 
@@ -95,15 +93,16 @@ void send_pixy_ccc_spi()
     /*****************************/
     dbgOutputLoc(SPI_SEND_TRANSACTION);
     /*****************************/
-    SPI_Transaction spi_transaction;
-    bool transferOK;
-    spi_transaction.count = 4 * 8;
-    // TODO switch back
-    spi_transaction.txBuf = (void *)request_packet_version;
-    spi_transaction.rxBuf = (void *)recv_packet_ccc;
-    transferOK = SPI_transfer(spi, &spi_transaction);
-    if (!transferOK)
+    I2C_Transaction i2c_transaction;
+    i2c_transaction.slaveAddress = 0x69;
+    i2c_transaction.writeBuf = (void *)request_packet_ccc;
+    i2c_transaction.writeCount = 6;
+    i2c_transaction.readBuf = (void *)recv_packet_ccc;
+    i2c_transaction.readCount = 20;
+    if (i2c == NULL)
         stop_all(FAIL_SPI_TRANSACTION);
+
+    I2C_transfer(i2c, &i2c_transaction);
 }
 
 Block_t convert_to_block_t(uint8_t block_array[])
