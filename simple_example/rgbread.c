@@ -8,10 +8,6 @@
 #include "rgbread.h"
 
 I2C_Handle i2cHandle;
-I2C_Transaction transaction = {0};
-uint8_t txBuffer[6] = {0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B};
-uint8_t rxBuffer[6] = {0};
-
 
 /*
  *  @function   readRGBThread()
@@ -51,13 +47,6 @@ void *readRGBThread(void *arg0) {
         dbgOutputLoc(RECV_RGBQREAD);
     }
 
-    /* Setup data transfer for the three channels */
-    transaction.slaveAddress = OPT_ADDR;
-    transaction.writeBuf = txBuffer;
-    transaction.writeCount = 6;
-    transaction.readBuf = rxBuffer;
-    transaction.readCount = 6;
-
     /* One-time initialization of software timer */
     TimerHandle_t timerRGB = xTimerCreate("RGB", pdMS_TO_TICKS(100), pdTRUE, NULL, timerRGBCallback);
     xTimerStart(timerRGB, 0);
@@ -73,6 +62,17 @@ void *readRGBThread(void *arg0) {
 void timerRGBCallback(TimerHandle_t xTimer) {
 
     dbgOutputLoc(TIMER_CALLBACK);
+
+    I2C_Transaction transaction = {0};
+    uint8_t txBuffer[6] = {0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B}; // r, g, b
+    uint8_t rxBuffer[6] = {0};
+
+    /* Setup data transfer for the three channels */
+    transaction.slaveAddress = OPT_ADDR;
+    transaction.writeBuf = txBuffer;
+    transaction.writeCount = 6;
+    transaction.readBuf = rxBuffer;
+    transaction.readCount = 6;
 
     /* Read from I2C slave device */
     dbgOutputLoc(WAIT_RGBQREAD);
