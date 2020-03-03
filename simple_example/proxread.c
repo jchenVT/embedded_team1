@@ -21,8 +21,8 @@ void *readProximityThread(void *arg0) {
     dbgOutputLoc(INIT_TIMER);
 
     /* One-time initialization of software timer */
-    TimerHandle_t timer = xTimerCreate("Prox", pdMS_TO_TICKS(50), pdTRUE, NULL, timerCallback);
-    xTimerStart(timer, 0);
+    TimerHandle_t timerProx = xTimerCreate("Prox", pdMS_TO_TICKS(50), pdTRUE, NULL, timerCallback);
+    xTimerStart(timerProx, 0);
 
     /* Initialize pin to read proximity sensors */
     GPIO_setConfig(CONFIG_GPIO_PROX1, GPIO_CFG_INPUT);
