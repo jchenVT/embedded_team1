@@ -16,6 +16,9 @@
 #define movqLENGTH      32
 #define movqITEMSIZE    64
 
+#define ackQLENGTH      32
+#define ackQITEMSIZE    8
+
 typedef struct movqData {
     uint16_t yee_value; // x
     uint16_t haw_value; // y
@@ -27,5 +30,9 @@ typedef struct movqData {
 bool createMovQ();
 int sendMsgToMovQ(movqData_t inMsg);
 bool receiveFromMovQ(movqData_t *m);
+
+bool createAckQ();
+int sendMsgToAckQ(uint8_t ack);
+bool receiveFromAckQ(uint8_t *ack);
 
 #endif /* ARM_QUEUES_H_ */

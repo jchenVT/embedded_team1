@@ -8,6 +8,7 @@
 #include "arm_queues.h"
 
 static QueueHandle_t movQ = NULL;
+static QueueHandle_t ackQ = NULL;
 
 bool createMovQ() {
 
@@ -29,7 +30,29 @@ int sendMsgToMovQ(movqData_t newMsg) {
 
 bool receiveFromMovQ(movqData_t *m) {
 
-    xQueueReceive(movQ, m, portMAX_DELAY);
+    xQueueReceive(movQ, m, 0);
 
     return m != NULL;
+}
+
+bool createAckQ() {
+    ackQ = xQueueCreate(ackQLENGTH, ackQITEMSIZE);
+
+    return ackQ == NULL ? false : true;
+}
+
+int sendMsgToAckQ(uint8_t ack) {
+    uint8_t toAck;
+    toAck = ack;
+    return xQueueSendToBackFromISR(ackQ, &toAck, 0);
+}
+
+bool receiveFromAckQ(uint8_t *ack) {
+    uint8_t a;
+    xQueueReceive(ackQ, &a, 0);
+    if (a) {
+        *ack = a;
+        return true;
+    }
+    return false;
 }
