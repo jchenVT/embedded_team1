@@ -16,8 +16,6 @@
 #include "ti_drivers_config.h"
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/I2C.h>
-#include <semaphore.h>
-#include <unistd.h>
 
 /* Queue files */
 #include "sensor_queue.h"
@@ -31,6 +29,6 @@
 
 /* Main Thread */
 void *readRGBThread(void *arg0);
-void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status);
+//void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status);
 
 #endif /* RGBREAD_H_ */

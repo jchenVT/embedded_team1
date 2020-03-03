@@ -7,12 +7,6 @@
 
 #include "rgbread.h"
 
-/* Global semaphore handle for callback */
-sem_t semaphoreHandle;
-
-/* Buffer to push readings into */
-uint8_t rxBuffer[2];
-
 /*
  *  @function   readRGBThread()
  *              Main thread that will perform a blocking read on
@@ -58,12 +52,12 @@ void *readRGBThread(void *arg0) {
     /* Setup data transfer */
     I2C_Transaction transaction = {0};
     transaction.slaveAddress = OPT_ADDR;
-    uint8_t txBuffer[1] = {0x96};
-    uint8_t rxBuffer[1] = {0};
+    uint8_t txBuffer[3] = {0x97, 0x99, 0x9B};
+    uint8_t rxBuffer[3] = {0};
     transaction.writeBuf = txBuffer;
-    transaction.writeCount = 1;
+    transaction.writeCount = 3;
     transaction.readBuf = rxBuffer;
-    transaction.readCount = 1;
+    transaction.readCount = 3;
 
     while (1) {
 
@@ -74,9 +68,6 @@ void *readRGBThread(void *arg0) {
         else {
             stop_all(FAILED_I2C_CALLBACK);
         }
-
-        /* Waits for post to continue thread */
-        //(&semaphoreHandle);
     }
 }
 
