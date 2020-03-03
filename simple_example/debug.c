@@ -82,7 +82,7 @@ void dbgOutputLoc(unsigned int outLoc) {
 
 void dbgUARTVal(unsigned char outVal) {
 
-    xQueueSendToBackFromISR( uartQ, &outVal, 0);
+    xQueueSendToBackFromISR(uartQ, &outVal, 0);
 }
 
 unsigned char receiveFromUARTQ() {

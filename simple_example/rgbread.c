@@ -48,11 +48,10 @@ void *readRGBThread(void *arg0) {
         dbgOutputLoc(RECV_RGBQREAD);
     }
 
-
     /* Setup data transfer */
     I2C_Transaction transaction = {0};
     transaction.slaveAddress = OPT_ADDR;
-    uint8_t txBuffer[3] = {0x97, 0x99, 0x9B};
+    uint8_t txBuffer[3] = {0x97, 0x99, 0x9B}; // r, g, b higher bits
     uint8_t rxBuffer[3] = {0};
     transaction.writeBuf = txBuffer;
     transaction.writeCount = 3;
@@ -62,8 +61,30 @@ void *readRGBThread(void *arg0) {
     while (1) {
 
         /* Read from I2C slave device */
+        dbgOutputLoc(WAIT_RGBQREAD);
         if (I2C_transfer(i2cHandle, &transaction)) {
             dbgOutputLoc(RECV_RGBQREAD);
+
+            int r = rxBuffer[0];
+            int g = rxBuffer[1];
+            int b = rxBuffer[2];
+
+            //dbgUARTVal('I');
+            //dbgUARTVal('N');
+            //dbgUARTVal(':');
+
+            /* Parse higher bits to */
+            if (r > 3) {
+                dbgUARTVal('R');
+            }
+            if (g > 3) {
+                dbgUARTVal('G');
+            }
+            if (b > 3) {
+                dbgUARTVal('B');
+            }
+
+            dbgUARTVal(' ');
         }
         else {
             stop_all(FAILED_I2C_CALLBACK);
@@ -76,7 +97,7 @@ void *readRGBThread(void *arg0) {
  *              Callback for when the I2C is done writing.
  *
  *  @params     handle, msg, status
- *  @return     void
+ *  @return     voids
  */
 void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status) {
 
