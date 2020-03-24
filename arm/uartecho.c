@@ -56,6 +56,67 @@ static movqData_t current_pos, goal_pos;
 static aState a;
 static dState d;
 
+uint16_t angleXToPWM(uint16_t x) {
+    uint16_t degreePWM = (X_HIGH - X_LOW) / 180;
+    return x * degreePWM + X_LOW;
+}
+
+uint16_t angleYToPWM(uint16_t y) {
+    uint16_t degreePWM = (Y_HIGH - Y_LOW) / 180;
+    return y * degreePWM + Y_LOW;
+}
+
+uint16_t angleZToPWM(uint16_t z) {
+    uint16_t degreePWM = (Z_HIGH - Z_LOW) / 180;
+    return z * degreePWM + Z_LOW;
+}
+
+uint16_t angleClawToPWM(uint16_t c) {
+    uint16_t degreePWM = (CLAW_HIGH - CLAW_LOW) / 180;
+    return c * degreePWM + CLAW_LOW;
+}
+
+uint16_t pwmXToAngle(uint16_t x) {
+    uint16_t pwmDegree = 180 / (X_HIGH - X_LOW);
+    return (x - X_LOW) * pwmDegree;
+}
+
+uint16_t pwmYToAngle(uint16_t y) {
+    uint16_t pwmDegree = 180 / (Y_HIGH - Y_LOW);
+    return (y - Y_LOW) * pwmDegree;
+}
+
+uint16_t pwmZToAngle(uint16_t z) {
+    uint16_t pwmDegree = 180 / (Z_HIGH - Z_LOW);
+    return (z - Z_LOW) * pwmDegree;
+}
+
+uint16_t pwmClawToAngle(uint16_t c) {
+    uint16_t pwmDegree = 180 / (CLAW_HIGH - CLAW_LOW);
+    return (c - CLAW_LOW) * pwmDegree;
+}
+
+void convertCurrentStructToPWM() {
+    current_pos.yee_value = angleXToPWM(current_pos.yee_value) / 10 * 10;
+    current_pos.haw_value = angleYToPWM(current_pos.haw_value) / 10 * 10;
+    current_pos.cow_value = angleZToPWM(current_pos.cow_value) / 10 * 10;
+    current_pos.boy_value = angleClawToPWM(current_pos.boy_value) / 10 * 10;
+}
+
+void convertGoalStructToPWM() {
+    goal_pos.yee_value = angleXToPWM(goal_pos.yee_value) / 10 * 10;
+    goal_pos.haw_value = angleYToPWM(goal_pos.haw_value) / 10 * 10;
+    goal_pos.cow_value = angleZToPWM(goal_pos.cow_value) / 10 * 10;
+    goal_pos.boy_value = angleClawToPWM(goal_pos.boy_value) / 10 * 10;
+}
+
+void convertToDegree() {
+    goal_pos.yee_value = pwmXToAngle(goal_pos.yee_value) / 10 * 10;
+    goal_pos.haw_value = pwmYToAngle(goal_pos.haw_value) / 10 * 10;
+    goal_pos.cow_value = pwmZToAngle(goal_pos.cow_value) / 10 * 10;
+    goal_pos.boy_value = pwmClawToAngle(goal_pos.boy_value) / 10 * 10;
+
+}
 // instantiates the uart for the arm messaging queue
 void arm_init() {
     UART_Params uartParams;
@@ -112,58 +173,58 @@ void arm_init() {
     PWM_start(pwm_claw);
 
     // initialize software timer for smooth arm movement
-    timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(10), pdTRUE, NULL, movementCallback);
+    //timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(10), pdTRUE, NULL, movementCallback);
 }
 
 // checks for valid char and sends the corresponding message to the queue
 bool validChar(char in) {
+    movqData_t tosend;
+    tosend = current_pos;
     switch (in) {
     case 'o':
-        goal_pos = off_pos;
-        return true;
+        tosend = off_pos;
+        break;
     case 's':
-        goal_pos = start_pos;
-        return true;
+        tosend = start_pos;
+        break;
     case 'c':
-        if (current_pos.boy_value == 800) {
-            goal_pos.boy_value = 1800;
+        if (current_pos.boy_value == CLAW_LOW) {
+            tosend.boy_value = CLAW_HIGH;
         }
         else {
-            goal_pos.boy_value = 800;
+            tosend.boy_value = CLAW_LOW;
         }
-        return true;
+        break;
     case 'l':
-        goal_pos.yee_value = 380;
-        return true;
+        tosend.yee_value = X_LOW;
+        break;
     case 'r':
-        goal_pos.yee_value = 2430;
-        return true;
+        tosend.yee_value = X_HIGH;
+        break;
     case 'd':
-        if (current_pos.cow_value == 1800) {
-            goal_pos.cow_value = 1100;
+        if (current_pos.cow_value == Z_HIGH) {
+            tosend.cow_value = Z_LOW;
         }
         else {
-            goal_pos.cow_value = 1800;
+            tosend.cow_value = Z_HIGH;
         }
-        return true;
+        break;
     case 'f':
-        if (current_pos.haw_value <= 1700 && current_pos.haw_value > 1500) {
-            goal_pos.haw_value = 1100;
+        if (current_pos.haw_value == Y_HIGH) {
+            tosend.haw_value = Y_LOW;
         }
         else {
-            goal_pos.haw_value = 1700;
+            tosend.haw_value = Y_HIGH;
         }
-        return true;
+        break;
+    case 'm':
+        tosend.haw_value = 1500;
+        break;
+    default:
+        return false;
     }
-    return false;
-}
+    return sendMsgToMovQ(tosend);
 
-int doneStruct(movqData_t s) {
-    return s.yee_value == 0 && s.haw_value == 0 && s.cow_value == 0 && s.boy_value == 0;
-}
-
-int armDone() {
-    return memcmp(&current_pos, &goal_pos, sizeof(current_pos)) == 0;
 }
 /*
  *  ========mainThread ========
@@ -171,9 +232,7 @@ int armDone() {
 void *armDebugThread(void *arg0)
 {
     char input;
-    d = WaitingForAngles;
-    movqData_t a1 = {1200, 1500, 1800, 1600};
-    movqData_t b = {1200, 1500, 1800, 800};
+
     // set the current position of the arm to its off position
     current_pos = start_pos;
     // set the current goal position of the arm to the start position
@@ -181,100 +240,33 @@ void *armDebugThread(void *arg0)
 
     /* Loop forever */
     while (1) {
-        if (d == WaitingForAngles) {
-            UART_read(uart, &input, 1);
-            UART_write(uart, &input, 1);
-            if (validChar(input)) {
-                UART_write(uart, "valid\r\n", 7);
-                d = WaitingForAck;
-                a = Moving;
-            }
+        UART_read(uart, &input, 1);
+        UART_write(uart, &input, 1);
+        if (!validChar(input)) {
+            continue;
         }
-        if (d == WaitingForAck) {
-            UART_write(uart, "ack\r\n", 5);
-            if (a == NotMoving) {
-                UART_write(uart, "angle\r\n", 7);
-                d = WaitingForAngles;
-            }
-        }
+
+        uint8_t a;
+        receiveFromAckQ(&a);
+
+        char buf[2];
+        snprintf(buf, 2, "%d\n", a);
+        UART_write(uart, buf, 2);
     }
 }
 
 void *mainArmThread(void *arg0) {
 
     while (1) {
-        if (a == Moving) {
-            UART_write(uart, "move\r\n", 6);
-            // start timer if it is not active
-            if (xTimerIsTimerActive(timer10ms) == pdFALSE) {
-                xTimerStart(timer10ms, 0);
-            }
-            if (armDone()) {
-                char buf[40];
-                int ret = snprintf(buf, 20, "current %d %d %d %d", current_pos.yee_value,
-                                   current_pos.haw_value, current_pos.cow_value, current_pos.boy_value);
-                UART_write(uart, "done\r\n", 6);
-                UART_write(uart, buf, ret);
-                a = NotMoving;
-            }
-        }
-        else if (a == NotMoving) {
-            UART_write(uart, "no move\r\n", 9);
-            if (xTimerIsTimerActive(timer10ms) == pdTRUE) {
-                UART_write(uart, "stopped\r\n", 9);
-                xTimerStop(timer10ms, 0);
-            }
-        }
+        movqData_t m;
+        receiveFromMovQ(&m);
+
+        char buf[40];
+        int ret;
+        ret = snprintf(buf, 40, "%d %d %d %d\r\n", m.yee_value, m.haw_value, m.cow_value, m.boy_value);
+        UART_write(uart, buf, ret);
+
+        sendMsgToAckQ(1);
     }
 }
 
-void movementCallback(TimerHandle_t xTimer) {
-//    UART_write(uart, "callback\r\n", 10);
-    if (current_pos.yee_value < goal_pos.yee_value) {
-        current_pos.yee_value += STEPSIZE;
-        PWM_setDuty(pwm_x, current_pos.yee_value);
-    }
-    else if (current_pos.yee_value > goal_pos.yee_value) {
-        current_pos.yee_value -= STEPSIZE;
-        PWM_setDuty(pwm_x, current_pos.yee_value);
-    }
-    else {
-        PWM_setDuty(pwm_x, current_pos.yee_value);
-    }
-
-    if (current_pos.haw_value < goal_pos.haw_value) {
-        current_pos.haw_value += STEPSIZE;
-        PWM_setDuty(pwm_y, current_pos.haw_value);
-    }
-    else if (current_pos.haw_value > goal_pos.haw_value) {
-        current_pos.haw_value -= STEPSIZE;
-        PWM_setDuty(pwm_y, current_pos.haw_value);
-    }
-    else {
-        PWM_setDuty(pwm_y, current_pos.haw_value);
-    }
-
-    if (current_pos.cow_value < goal_pos.cow_value) {
-        current_pos.cow_value += STEPSIZE;
-        PWM_setDuty(pwm_z, current_pos.cow_value);
-    }
-    else if (current_pos.cow_value > goal_pos.cow_value) {
-        current_pos.cow_value -= STEPSIZE;
-        PWM_setDuty(pwm_z, current_pos.cow_value);
-    }
-    else {
-        PWM_setDuty(pwm_z, current_pos.cow_value);
-    }
-
-    if (current_pos.boy_value < goal_pos.boy_value) {
-        current_pos.boy_value += STEPSIZE;
-        PWM_setDuty(pwm_claw, current_pos.boy_value);
-    }
-    else if (current_pos.boy_value > goal_pos.boy_value) {
-        current_pos.boy_value -= STEPSIZE;
-        PWM_setDuty(pwm_claw, current_pos.boy_value);
-    }
-    else {
-        PWM_setDuty(pwm_claw, current_pos.boy_value);
-    }
-}

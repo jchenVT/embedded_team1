@@ -30,7 +30,7 @@ int sendMsgToMovQ(movqData_t newMsg) {
 
 bool receiveFromMovQ(movqData_t *m) {
 
-    xQueueReceive(movQ, m, 0);
+    xQueueReceive(movQ, m, portMAX_DELAY);
 
     return m != NULL;
 }
@@ -49,7 +49,7 @@ int sendMsgToAckQ(uint8_t ack) {
 
 bool receiveFromAckQ(uint8_t *ack) {
     uint8_t a;
-    xQueueReceive(ackQ, &a, 0);
+    xQueueReceive(ackQ, &a, portMAX_DELAY);
     if (a) {
         *ack = a;
         return true;

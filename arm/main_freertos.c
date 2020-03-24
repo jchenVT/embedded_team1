@@ -78,6 +78,7 @@ int main(void)
     Board_init();
     arm_init();
     createMovQ();
+    createAckQ();
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs);
