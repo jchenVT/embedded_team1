@@ -8,6 +8,9 @@
 #ifndef RGBREAD_H_
 #define RGBREAD_H_
 
+/* STD Libraries */
+#include <math.h>
+
 /* POSIX Header files */
 #include <pthread.h>
 

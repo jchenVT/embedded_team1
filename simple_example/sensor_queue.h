@@ -17,8 +17,8 @@
 #define PROX1_DATA      0x1000000000000000
 #define PROX2_DATA      0x2000000000000000
 #define RGB_DATA        0x3000000000000000
-#define TYPE_MASK       0xFFFFFFFF00000000
-#define VALUE_MASK      0x00000000FFFFFFFF
+#define TYPE_MASK       0xF000000000000000
+#define VALUE_MASK      0x0FFFFFFFFFFFFFFF
 
 /* Queue variables */
 #define qLENGTH         32
@@ -34,7 +34,7 @@ struct qData {
 bool setupQs();
 int sendToProx1Q(int value);
 int sendToProx2Q(int value);
-int sendToRGBQ(int value);
+int sendToRGBQ(int r, int g, int b);
 void receiveFromProx1Q(struct qData *oldData);
 void receiveFromProx2Q(struct qData *oldData);
 void receiveFromRGBQ(struct qData *oldData);

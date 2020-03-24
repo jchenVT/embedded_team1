@@ -16,6 +16,7 @@
 #include "proxread.h"
 #include "rgbread.h"
 #include "proxq1read.h"
+#include "rgbqread.h"
 #include "sensor_queue.h"
 
 /* Debug files */
@@ -26,6 +27,7 @@ extern void *uartThread(void *arg0);
 extern void *readProximityThread(void *arg0);
 extern void *readRGBThread(void *arg0);
 extern void *proxQ1ReadThread(void *arg0);
+extern void *rgbQReadThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -67,24 +69,30 @@ int main(void) {
     pthread_attr_t      attrsRGB;
     int                 retcRGB;
 
-
     /* P1 Queue Read */
     pthread_t           threadP1Q;
     pthread_attr_t      attrsP1Q;
     int                 retcP1Q;
 
+    /* RGB Sensor Queue Read */
+    pthread_t           threadRGBQ;
+    pthread_attr_t      attrsRGBQ;
+    int                 retcRGBQ;
+
     pthread_attr_init(&attrsDebug);
     pthread_attr_init(&attrsRGB);
+    pthread_attr_init(&attrsRGBQ);
     pthread_attr_setstacksize(&attrsRGB, 8000);
     pthread_attr_init(&attrsProx);
     pthread_attr_init(&attrsP1Q);
 
     retcDebug = pthread_create(&threadDebug, &attrsDebug, uartThread, NULL);
     retcRGB = pthread_create(&threadRGB, &attrsRGB, readRGBThread, NULL);
+    retcRGBQ = pthread_create(&threadRGBQ, &attrsRGBQ, rgbQReadThread, NULL);
     //retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
     //retcP1Q = pthread_create(&threadP1Q, &attrsP1Q, proxQ1ReadThread, NULL);
 
-    if (retcDebug != 0 && retcRGB != 0 && retcProx != 0 && retcP1Q != 0) {
+    if (retcDebug != 0 && retcRGB != 0 && retcRGBQ != 0 && retcProx != 0 && retcP1Q != 0) {
         stop_all(FAILED_INIT_THREADS);
         while (1) {
         }

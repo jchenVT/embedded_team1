@@ -64,15 +64,15 @@ void timerRGBCallback(TimerHandle_t xTimer) {
     dbgOutputLoc(TIMER_CALLBACK);
 
     I2C_Transaction transaction = {0};
-    uint8_t txBuffer[6] = {0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B}; // r, g, b
-    uint8_t rxBuffer[6] = {0};
+    uint8_t txBuffer[8] = {0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B}; // r, g, b, c
+    uint8_t rxBuffer[8] = {0};
 
     /* Setup data transfer for the three channels */
     transaction.slaveAddress = OPT_ADDR;
     transaction.writeBuf = txBuffer;
-    transaction.writeCount = 6;
+    transaction.writeCount = 8;
     transaction.readBuf = rxBuffer;
-    transaction.readCount = 6;
+    transaction.readCount = 8;
 
     /* Read from I2C slave device */
     dbgOutputLoc(WAIT_RGBQREAD);
@@ -80,15 +80,22 @@ void timerRGBCallback(TimerHandle_t xTimer) {
         dbgOutputLoc(RECV_RGBQREAD);
 
         /* Combine higher and lower bit readings */
-        uint16_t r = rxBuffer[1];
-        r = (r << 8) + rxBuffer[0];
-        uint16_t g = rxBuffer[3];
-        g = (g << 8) + rxBuffer[2];
-        uint16_t b = rxBuffer[5];
-        b = (b << 8) + rxBuffer[4];
+        uint16_t c = rxBuffer[1];
+        c = (c << 8) + rxBuffer[0];
+        uint16_t r = rxBuffer[3];
+        r = (r << 8) + rxBuffer[2];
+        uint16_t g = rxBuffer[5];
+        g = (g << 8) + rxBuffer[4];
+        uint16_t b = rxBuffer[7];
+        b = (b << 8) + rxBuffer[6];
+
+        /* Normalize each reading based on clear bit */
+        r = (r*256) / c;
+        g = (g*256) / c;
+        b = (b*256) / c;
 
         /* Output the RGB values for color channel */
-        int i;
+        /*int i;
         char sensorOut[16];
         int size = snprintf(sensorOut, 32, "R=%d", r);
         for (i=0; i<size; i++) {
@@ -104,19 +111,18 @@ void timerRGBCallback(TimerHandle_t xTimer) {
         for (i=0; i<size; i++) {
             dbgUARTVal(sensorOut[i]);
         }
-
-        /* Find most prominent color */
-        if (r > 10000) {
-            dbgUARTVal('R');
-        }
-        if (g > 10000) {
-            dbgUARTVal('G');
-        }
-        if (b > 10000) {
-            dbgUARTVal('B');
-        }
-
         dbgUARTVal(' ');
+
+        size = snprintf(sensorOut, 32, " C=%d", c);
+        for (i=0; i<size; i++) {
+            dbgUARTVal(sensorOut[i]);
+        }
+        dbgUARTVal(' ');*/
+
+        /* Send to RGB message queue */
+        dbgOutputLoc(SEND_RGBQ);
+        sendToRGBQ(r, g, b);
+
     }
     else {
         stop_all(FAILED_I2C_CALLBACK);

@@ -61,9 +61,13 @@ int sendToProx2Q(int value) {
  *  @params     value - value from RGB callback
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int sendToRGBQ(int value) {
+int sendToRGBQ(int r, int g, int b) {
 
-    long long int newMsg = RGB_DATA | value;
+    long long int msg = r; // assume r, g, b are 8 bits (0-256)
+    msg = (msg << 8) + g;
+    msg = (msg << 8) + b;
+
+    long long int newMsg = RGB_DATA | msg;
     return xQueueSendToBackFromISR( rgbQ, &newMsg, 0 );
 }
 
@@ -107,7 +111,7 @@ void receiveFromProx2Q(struct qData *oldData) {
  *              This function will block. Refer to page 113 of RTOS doc.
  *
  *  @params     oldData - reference to the struct holding the old data
- *  @return     None
+ *  @return     Nones
  */
 void receiveFromRGBQ(struct qData *oldData) {
 

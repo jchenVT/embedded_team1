@@ -63,7 +63,7 @@
 
 #define FAILED_PQ1_BADVAL           0x7D
 #define FAILED_PQ2_BADVAL           0x7E
-//#define FAILED_RGBQ_BADVAL          0x7F
+#define FAILED_RGBQ_BADVAL          0x7F
 
 #define FAILED_UNKNOWN_CODE         0x7F
 
