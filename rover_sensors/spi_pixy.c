@@ -1,22 +1,22 @@
 #include "spi_pixy.h"
 
+#define CCC_MSG 0xC1AE2002FF03
+
 static SPI_Handle spi = NULL;
 static Timer_Handle timer_pixy = NULL;
-static const uint8_t request_packet_ccc [] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
-static const uint8_t request_packet_version [] = {0xc1, 0xae, 14, 0};
-// static void * request_packet_ccc = malloc(sizeof(uint8_t) * 6);
-
-static uint8_t recv_packet_ccc[60];
+uint8_t request_packet_ccc [6] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
+uint8_t request_packet_version [] = {0xc1, 0xae, 14, 0};
+uint8_t receive_buffer[60];
 
 void spi_pixy_init()
 {
     SPI_Params spi_params;
     SPI_Params_init(&spi_params);
-    spi_params.transferMode = SPI_MODE_CALLBACK;
-    spi_params.transferCallbackFxn = spi_pixy_callback;
+    spi_params.transferMode = SPI_MODE_BLOCKING;
+    // spi_params.transferCallbackFxn = spi_pixy_callback;
     spi_params.frameFormat = SPI_POL1_PHA1;
     spi_params.bitRate = 2000000;
-    spi_params.dataSize = 1;
+    spi_params.dataSize = 8;
     /*****************************/
     dbgOutputLoc(SPI_SPI_OPEN);
     /*****************************/
@@ -42,6 +42,54 @@ void spi_pixy_init()
             
 }
 
+void * spiThread(void *arg0)
+{
+    
+    memset((void *) receive_buffer, 0, 60);
+    request_packet_ccc[0] = 0xC1;
+    request_packet_ccc[1] = 0xAE;
+    request_packet_ccc[2] = 0x20;
+    request_packet_ccc[3] = 0x02;
+    request_packet_ccc[4] = 0xFF;
+    request_packet_ccc[5] = 0x03;
+    char temp;
+    uart_message_t uart_msg;
+    uint8_t i, msg_size;
+    while(1)
+    {
+        xQueueReceive(spi_start_q, &temp, portMAX_DELAY);
+
+        SPI_Transaction spi_transaction;
+        bool transferOK;
+        spi_transaction.count = 4;
+        spi_transaction.txBuf = (void *) request_packet_ccc;
+        spi_transaction.rxBuf = (void *)receive_buffer;
+        transferOK = SPI_transfer(spi, &spi_transaction);
+        if (!transferOK)
+            stop_all(FAIL_SPI_TRANSACTION);
+          
+        uint8_t num_blocks = spi_transaction.count / 20;
+        if (num_blocks == 0) 
+        {
+            uart_msg.array_len = snprintf(uart_msg.msg, 100, "Not found, tc=%zu | ", spi_transaction.count);
+            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+        }
+        Block_t block;
+
+        for (i=0; i<1; i++)// num_blocks; i++)
+        {
+            block = convert_to_block_t(receive_buffer + (i * 20));
+
+            msg_size = snprintf(uart_msg.msg, 100, "pixy,sig:%u,x:%u,y:%u,w:%u,h:%u",
+                     block.signature, block.x_center, block.y_center,
+                     block.width, block.height);
+            uart_msg.array_len = msg_size;
+            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+        }
+        
+    }
+}
+
 
 void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction)
 {
@@ -63,7 +111,7 @@ void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction)
 
     for (; i<num_blocks; i++)
     {
-        block = convert_to_block_t(recv_packet_ccc + (num_blocks * 20));
+        block = convert_to_block_t(receive_buffer + (num_blocks * 20));
 
         msg_size = snprintf(uart_msg.msg, 100, "pixy,sig:%u,x:%u,y:%u,w:%u,h:%u",
                  block.signature, block.x_center, block.y_center,
@@ -86,7 +134,8 @@ void timer_spi_callback(Timer_Handle timer_handle)
     strncpy(uart_msg.msg, "timer callbacc", 14);
     xQueueSendFromISR(uart_debug_q, &uart_msg, NULL);
     */
-    send_pixy_ccc_spi();
+    char placeholder;
+    xQueueSendFromISR(spi_start_q, &placeholder, NULL);
 }
 
 
@@ -99,8 +148,8 @@ void send_pixy_ccc_spi()
     bool transferOK;
     spi_transaction.count = 4 * 8;
     // TODO switch back
-    spi_transaction.txBuf = (void *)request_packet_version;
-    spi_transaction.rxBuf = (void *)recv_packet_ccc;
+    // spi_transaction.txBuf = (void *)request_packet_version;
+    spi_transaction.rxBuf = (void *)receive_buffer;
     transferOK = SPI_transfer(spi, &spi_transaction);
     if (!transferOK)
         stop_all(FAIL_SPI_TRANSACTION);

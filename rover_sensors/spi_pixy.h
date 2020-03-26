@@ -4,7 +4,7 @@
 #include <FreeRTOS.h>
 #include <task.h>
 
-#include <stdlib.h>
+#include <stdlib.h> 
 #include <stdbool.h>
 
 #include <ti/drivers/SPI.h>
@@ -33,6 +33,8 @@ typedef struct block {
 
 
 void spi_pixy_init();
+
+void * spiThread(void *arg0);
 
 void spi_pixy_callback( SPI_Handle handle, SPI_Transaction *transaction );
 

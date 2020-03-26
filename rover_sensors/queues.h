@@ -19,6 +19,7 @@ typedef struct uart_message {
 
 extern QueueHandle_t uart_debug_q;
 extern QueueHandle_t lidar_data_q;
+extern QueueHandle_t spi_start_q;
 
 void queues_init();
 
