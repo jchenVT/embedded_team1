@@ -117,7 +117,7 @@ void timerRGBCallback(TimerHandle_t xTimer) {
         for (i=0; i<size; i++) {
             dbgUARTVal(sensorOut[i]);
         }
-        dbgUARTVal(' ');*/
+        dbgUARTVal(' '); */
 
         /* Send to RGB message queue */
         dbgOutputLoc(SEND_RGBQ);
