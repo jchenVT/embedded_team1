@@ -5,9 +5,9 @@
 
 var RTOS = scripting.addModule("/ti/drivers/RTOS");
 var GPIO = scripting.addModule("/ti/drivers/GPIO");
-var GPIO1 = GPIO.addInstance();
 var UART = scripting.addModule("/ti/drivers/UART", {}, false);
 var UART1 = UART.addInstance();
+var GPIO1 = GPIO.addInstance();
 var GPIO2 = GPIO.addInstance();
 var GPIO3 = GPIO.addInstance();
 var GPIO4 = GPIO.addInstance();
@@ -15,14 +15,13 @@ var GPIO5 = GPIO.addInstance();
 var GPIO6 = GPIO.addInstance();
 var GPIO7 = GPIO.addInstance();
 var GPIO8 = GPIO.addInstance();
-var GPIO9 = GPIO.addInstance();
 var SPI = scripting.addModule("/ti/drivers/SPI");
 var SPI1 = SPI.addInstance();
+var GPIO9 = GPIO.addInstance();
 var GPIO10 = GPIO.addInstance();
 var GPIO11 = GPIO.addInstance();
 var GPIO12 = GPIO.addInstance();
 var GPIO13 = GPIO.addInstance();
-var GPIO14 = GPIO.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -30,10 +29,6 @@ var Power = scripting.addModule("/ti/drivers/Power", {}, false);
 Power.parkPins.$name = "ti_drivers_power_PowerCC32XXPins0";
 var Board = scripting.addModule("/ti/drivers/Board", {}, false);
 var DriverLib = scripting.addModule("/ti/devices/DriverLib", {}, false);
-// Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO1.$hardware = system.deviceData.board.components.LED_RED;
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO1.$name = "CONFIG_GPIO_LED_0";
 // Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
 UART1.$name = "CONFIG_UART_0";
 // Data Direction
@@ -45,55 +40,55 @@ UART1.uart.$name = "MyUART1";
 // Use Peripheral
 UART1.uart.$assign = "UART0";
 // Assign pin
-UART1.uart.txPin.$assign = "boosterpack.4"; // P03
+UART1.uart.txPin.$assign = "boosterpack.8"; // P62
+// Mode - Select the GPIO mode
+GPIO1.mode = "Output";
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO1.$name = "CONFIG_GPIO_TOGGLE";
+// Assign pin
+GPIO1.gpioPin.$assign = "boosterpack.5"; // P61
 // Mode - Select the GPIO mode
 GPIO2.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO2.$name = "CONFIG_GPIO_TOGGLE";
+GPIO2.$name = "CONFIG_GPIO_0";
 // Assign pin
-GPIO2.gpioPin.$assign = "boosterpack.5"; // P61
+GPIO2.gpioPin.$assign = "boosterpack.4"; // P03
 // Mode - Select the GPIO mode
 GPIO3.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO3.$name = "CONFIG_GPIO_0";
+GPIO3.$name = "CONFIG_GPIO_1";
 // Assign pin
-GPIO3.gpioPin.$assign = "boosterpack.8"; // P62
+GPIO3.gpioPin.$assign = "boosterpack.9"; // P01
 // Mode - Select the GPIO mode
 GPIO4.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO4.$name = "CONFIG_GPIO_1";
+GPIO4.$name = "CONFIG_GPIO_2";
 // Assign pin
-GPIO4.gpioPin.$assign = "boosterpack.9"; // P01
+GPIO4.gpioPin.$assign = "boosterpack.10"; // P02
 // Mode - Select the GPIO mode
 GPIO5.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO5.$name = "CONFIG_GPIO_2";
-// Assign pin
-GPIO5.gpioPin.$assign = "boosterpack.10"; // P02
+GPIO5.$name = "CONFIG_GPIO_3";
+// Use Hardware - Select the hardware to use, or 'None' to use available header pins
+GPIO5.$hardware = system.deviceData.board.components.LED_RED;
 // Mode - Select the GPIO mode
 GPIO6.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO6.$name = "CONFIG_GPIO_3";
+GPIO6.$name = "CONFIG_GPIO_4";
 // Assign pin
-GPIO6.gpioPin.$assign = "boosterpack.2"; // P58*
+GPIO6.gpioPin.$assign = "boosterpack.27"; // P63
 // Mode - Select the GPIO mode
 GPIO7.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO7.$name = "CONFIG_GPIO_4";
+GPIO7.$name = "CONFIG_GPIO_5";
 // Assign pin
-GPIO7.gpioPin.$assign = "boosterpack.27"; // P63
+GPIO7.gpioPin.$assign = "boosterpack.14"; // P06
 // Mode - Select the GPIO mode
 GPIO8.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO8.$name = "CONFIG_GPIO_5";
+GPIO8.$name = "CONFIG_GPIO_6";
 // Assign pin
-GPIO8.gpioPin.$assign = "boosterpack.28"; // P53
-// Mode - Select the GPIO mode
-GPIO9.mode = "Output";
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO9.$name = "CONFIG_GPIO_6";
-// Assign pin
-GPIO9.gpioPin.$assign = "boosterpack.30"; // P50
+GPIO8.gpioPin.$assign = "boosterpack.30"; // P50
 var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
 // Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
 SPI1.$name = "CONFIG_SPI_MASTER";
@@ -101,43 +96,43 @@ SPI1.$name = "CONFIG_SPI_MASTER";
 SPI1.spi.$name = "MySPI1";
 // Assign pin
 SPI1.spi.sclkPin.$assign = "boosterpack.7"; // P05
+// Assign pin
+SPI1.spi.misoPin.$assign = "boosterpack.28"; // P53
+// Assign pin
+SPI1.spi.mosiPin.$assign = "boosterpack.15"; // P07
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO10.$name = "CONFIG_SPI_MASTER_READY";
+GPIO9.$name = "CONFIG_SPI_MASTER_READY";
+// Mode - Select the GPIO mode
+GPIO9.mode = "Dynamic";
+// Assign pin
+GPIO9.gpioPin.$assign = "boosterpack.13"; // P21
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO10.$name = "CONFIG_SPI_SLAVE128_READY";
 // Mode - Select the GPIO mode
 GPIO10.mode = "Dynamic";
 // Assign pin
-GPIO10.gpioPin.$assign = "boosterpack.13"; // P21
+GPIO10.gpioPin.$assign = "boosterpack.19"; // P18
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO11.$name = "CONFIG_SPI_SLAVE128_READY";
+GPIO11.$name = "CONFIG_SPI_SLAVE129_READY";
 // Mode - Select the GPIO mode
 GPIO11.mode = "Dynamic";
 // Assign pin
-GPIO11.gpioPin.$assign = "boosterpack.19"; // P18
+GPIO11.gpioPin.$assign = "boosterpack.18"; // P08
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO12.$name = "CONFIG_SPI_SLAVE129_READY";
-// Mode - Select the GPIO mode
-GPIO12.mode = "Dynamic";
+GPIO12.$name = "CONFIG_SPI_SLAVE130_READY";
 // Assign pin
-GPIO12.gpioPin.$assign = "boosterpack.18"; // P08
+GPIO12.gpioPin.$assign = "boosterpack.24"; // P60
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO13.$name = "CONFIG_SPI_SLAVE130_READY";
-// Assign pin
-GPIO13.gpioPin.$assign = "boosterpack.24"; // P60
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO14.$name = "CONFIG_GPIO_7";
+GPIO13.$name = "CONFIG_GPIO_7";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO14.$hardware = system.deviceData.board.components.SW3;
+GPIO13.$hardware = system.deviceData.board.components.SW3;
 // Suggest solution
-GPIO1.gpioPin.$suggestSolution = "64";
+GPIO5.gpioPin.$suggestSolution = "64";
 // Suggest solution
 SPI1.spi.$suggestSolution = "SPI0";
-// Suggest solution
-SPI1.spi.misoPin.$suggestSolution = "6";
-// Suggest solution
-SPI1.spi.mosiPin.$suggestSolution = "7";
 // Suggest solution
 SPI1.spi.dmaRxChannel.$suggestSolution = "UDMA_CH30";
 // Suggest solution
 SPI1.spi.dmaTxChannel.$suggestSolution = "UDMA_CH31";
 // Suggest solution
-GPIO14.gpioPin.$suggestSolution = "15";
+GPIO13.gpioPin.$suggestSolution = "15";

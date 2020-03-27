@@ -51,10 +51,13 @@
 #define RQ_MQTTSend_RECEIVE     0x33
 
 // uart locations
-#define UART_INITIALIZE         0x40
-#define UART_OPENING            0x41
-#define UART_WRITING            0x42
-#define UART_CLOSING            0x43
+#define UART_MOTOR_INITIALIZE   0x40
+#define UART_MOTOR_OPENING      0x41
+#define UART_MOTOR_WRITING      0x42
+#define UART_OUTPUT_INITIALIZE  0x43
+#define UART_OUTPUT_OPENING     0x44
+#define UART_OUTPUT_WRITING     0x45
+#define UART_CLOSING            0x46
 
 // spi locations
 #define SPI_INITIALIZE          0x50
@@ -67,6 +70,7 @@
 
 #define SPI_ENCODER_INIT        0x57
 #define SPI_ENCODER_CLEARING    0x47
+#define SPI_DATA                0x37
 
 // timer locations
 #define SPI_TIMER_INITIALIZE    0x60

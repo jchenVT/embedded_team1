@@ -12,7 +12,7 @@ static UART_Params uartParams;
 void uart_setup()
 {
     /*****************************/
-    dbgOutputLoc(UART_INITIALIZE);
+    dbgOutputLoc(UART_MOTOR_INITIALIZE);
     /*****************************/
 
     UART_init();
@@ -24,12 +24,13 @@ void uart_setup()
     uartParams.baudRate = 9600;
 
     /*****************************/
-    dbgOutputLoc(UART_OPENING);
+    dbgOutputLoc(UART_MOTOR_OPENING);
     /*****************************/
 
     uart = UART_open(CONFIG_UART_0, &uartParams);
     if (uart == NULL)
         stop_all(FAIL_UART_INIT);
+
 }
 
 void uart_close() {
@@ -42,24 +43,22 @@ void uart_close() {
 // Output UART to rover motors
 void *uartThread(void *arg0)
 {
-    uart_setup();
-
-    struct motorData curData = {0,0,0};
+    struct motorData uartData = {0,0,0};
 
     while(1)
     {
-        bool outVal = receiveFromMotorsQ(&curData);
+        bool outVal = receiveFromMotorsQ(&uartData);
 
         if (!outVal)
             stop_all(FAIL_UART_RECEIVE);
         
-        dbgOutputLoc(UART_WRITING);
+        dbgOutputLoc(UART_MOTOR_WRITING);
 
-        const char checkSum[1] = {(curData.address[0] + curData.command[0] + curData.speed[0]) & 0b01111111};
+        const char checkSum[1] = {(uartData.address + uartData.command + uartData.speed) & 0b01111111};
 
-        UART_write(uart, curData.address, 1);
-        UART_write(uart, curData.command, 1);
-        UART_write(uart, curData.speed, 1);
+        UART_write(uart, &uartData.address, 1);
+        UART_write(uart, &uartData.command, 1);
+        UART_write(uart, &uartData.speed, 1);
         UART_write(uart, checkSum, 1);
     }
 }

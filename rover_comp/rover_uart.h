@@ -12,6 +12,7 @@
 // Set up function
 void uart_setup();
 void uart_close();
+void uart_OutputData(long msg, long encoderVal);
 void *uartThread(void *arg0);
 
 #endif

@@ -54,7 +54,6 @@
 #include <rover_uart.h>
 #include <rover_queues.h>
 #include <rover_debug.h>
-#include <uart_tester.h>
 
 extern void *mainThread(void *arg0);
 extern void *uartThread(void *arg0);
@@ -95,6 +94,7 @@ int main(void)
     /* Call driver init functions */
     Board_init();
     debug_setup();
+    uart_setup();
 
     if (!createMotorQ()) {
         stop_all(FAIL_MotorQ_INIT);
@@ -108,8 +108,6 @@ int main(void)
     if (!createMQTTSendQ()) {
         stop_all(FAIL_MQTTSendQ_INIT);
     }
-
-    uartTimer_setup();
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&mainControlsAttrs);

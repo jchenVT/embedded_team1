@@ -31,9 +31,9 @@
 
 /* Struct used in RETURNING message from queue */
 struct motorData {
-    char address[1];
-    char command[1];
-    char speed[1];
+    char address;
+    char command;
+    char speed;
 };
 
 struct receiveData {

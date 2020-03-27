@@ -66,7 +66,7 @@ bool createMQTTSendQ() {
  */
 int sendMsgToMotorsQ(char address, char command, char speed) {
 
-    struct motorData newMsg = {{address}, {command}, {speed}};
+    struct motorData newMsg = {address, command, speed};
     /**************************/
     dbgOutputLoc(RQ_MotorQ_SEND);
     /**************************/

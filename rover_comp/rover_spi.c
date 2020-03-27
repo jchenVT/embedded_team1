@@ -7,8 +7,7 @@
 
 #include <rover_spi.h>
 
-static char clearCountBuffer[1] = {0xE0};
-static char clearDTRBuffer[5] = {0x98, 0x00, 0x00, 0x00, 0x00};
+static char clearCountBuffer[1] = {0x20};
 static char initBuffer[2] = {0x88, 0x03};
 static char readTxBuffer[SPI_MSG_LENGTH] = {0x60, 0x00, 0x00, 0x00, 0x00};
 static char readRxBuffer[SPI_MSG_LENGTH] = {0x00, 0x00, 0x00, 0x00, 0x00};
@@ -27,41 +26,27 @@ void spi_setup() {
     SPI_init();
     SPI_Params      spiParams;
 
-    /* Set Master as an output and slaves as inputs */
-    GPIO_setConfig(CONFIG_SPI_MASTER_READY, GPIO_CFG_OUTPUT | GPIO_CFG_OUT_LOW);
-    GPIO_setConfig(CONFIG_SPI_SLAVE130_READY, GPIO_CFG_INPUT);
-    GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_INPUT);
-    GPIO_setConfig(CONFIG_SPI_SLAVE129_READY, GPIO_CFG_INPUT);
-    /*
-     * Handshake - Set CONFIG_SPI_MASTER_READY high to indicate master is ready
-     * to run.  Wait CONFIG_SPI_SLAVE_READY to be high.
-     */
-    GPIO_write(CONFIG_SPI_MASTER_READY, 1);
+    /* Set slave controllers as outputs */
+    GPIO_setConfig(CONFIG_SPI_SLAVE130_READY, GPIO_CFG_OUTPUT);
+    GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_OUTPUT);
+    GPIO_setConfig(CONFIG_SPI_SLAVE129_READY, GPIO_CFG_OUTPUT);
+
+    /* Set slaves high (high->low is Slave Select) */
     GPIO_write(CONFIG_SPI_SLAVE128_READY, 1);
     GPIO_write(CONFIG_SPI_SLAVE129_READY, 1);
     GPIO_write(CONFIG_SPI_SLAVE130_READY, 1);
 
-    /* Handshake complete; now configure interrupt on CONFIG_SPI_SLAVE_READY */
-    GPIO_setConfig(CONFIG_SPI_SLAVE128_READY, GPIO_CFG_IN_PU | GPIO_CFG_IN_INT_FALLING);
-    GPIO_setConfig(CONFIG_SPI_SLAVE129_READY, GPIO_CFG_IN_PU | GPIO_CFG_IN_INT_FALLING);
-    GPIO_setConfig(CONFIG_SPI_SLAVE130_READY, GPIO_CFG_IN_PU | GPIO_CFG_IN_INT_FALLING);
-
-    /* Open SPI as master (default) */
     SPI_Params_init(&spiParams);
     spiParams.mode = SPI_MASTER;
-    spiParams.frameFormat = SPI_POL0_PHA1;
-    spiParams.bitRate = 9600;
+    spiParams.frameFormat = SPI_POL0_PHA0;
+    spiParams.bitRate = 10000;
     spiParams.dataSize = 8;
 
-    /*****************************/
     dbgOutputLoc(SPI_OPENING);
-    /*****************************/
 
     masterSpi = SPI_open(CONFIG_SPI_MASTER, &spiParams);
     if (masterSpi == NULL) {
-        /*****************************/
         stop_all(FAIL_SPI_INIT);
-        /*****************************/
     }
 
 }
@@ -121,10 +106,13 @@ void readEncoder(int encoder) {
         }
     }
 
-    long data;
+    dbgOutputLoc(SPI_DATA);
+
+    long data = 0;
     int i;
-    for (i=0;i<sizeof(readRxBuffer); i++) {
+    for (i=1;i<sizeof(readRxBuffer); i++) {
         data = (data << 8) + readRxBuffer[i];
+        dbgOutputLoc(readRxBuffer[i]);
     }
 
     if (sendMsgToReceiveQ(false, data, encoder) != pdPASS) {
@@ -133,10 +121,9 @@ void readEncoder(int encoder) {
 }
 
 void initEncoders() {
-    memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
     transaction.count = 2;
     transaction.txBuf = (void*)initBuffer;
-    transaction.rxBuf = (void*)readRxBuffer;
+    transaction.rxBuf = NULL;
 
     dbgOutputLoc(SPI_ENCODER_INIT);
 
@@ -149,30 +136,13 @@ void initEncoders() {
     if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
         stop_all(FAIL_SPI_READING_130);
     }
+
 }
 
 void clearEncoderCounts() {
-    memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
-    transaction.count = 5;
-    transaction.txBuf = (void*)clearDTRBuffer;
-    transaction.rxBuf = (void*)readRxBuffer;
-
-    dbgOutputLoc(SPI_ENCODER_CLEARING);
-
-    if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
-        stop_all(FAIL_SPI_READING_128);
-    }
-    if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
-        stop_all(FAIL_SPI_READING_129);
-    }
-    if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
-        stop_all(FAIL_SPI_READING_130);
-    }
-
-    memset((void *) readRxBuffer, 0, SPI_MSG_LENGTH);
     transaction.count = 1;
     transaction.txBuf = (void*)clearCountBuffer;
-    transaction.rxBuf = (void*)readRxBuffer;
+    transaction.rxBuf = NULL;
 
     dbgOutputLoc(SPI_ENCODER_CLEARING);
 
@@ -202,7 +172,6 @@ bool transferData(int encoder) {
 void *spiThread(void *arg0) {
 
     spi_setup();
-
     initEncoders();
     clearEncoderCounts();
     timer_setup();

@@ -6,7 +6,6 @@
  */
 
 #include <rover_debug.h>
-#include <uart_tester.h>
 
 void debug_setup()
 {
@@ -31,9 +30,6 @@ void debug_setup()
     GPIO_write(CONFIG_GPIO_5, GPIO_CFG_OUT_LOW);
     GPIO_write(CONFIG_GPIO_6, GPIO_CFG_OUT_LOW);
     GPIO_write(CONFIG_GPIO_7, GPIO_CFG_OUT_LOW);
-
-    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-    GPIO_toggle(CONFIG_GPIO_LED_0);
 }
 
 void dbgOutputLoc(char outLoc)
@@ -64,7 +60,6 @@ void stop_all(unsigned int FAILURE_CODE)
 
     uart_close();
     spi_close();
-    testing_stop();
 
     /*****************************/
     dbgOutputLoc(FAILURE_CODE);
@@ -72,10 +67,6 @@ void stop_all(unsigned int FAILURE_CODE)
 
     while(1)
     {
-        GPIO_toggle(CONFIG_GPIO_LED_0);
-        // blink LED forever
-        int i = 0;
-        for (;i<10000;i++) ;
     }
 
     taskEXIT_CRITICAL();
