@@ -2,14 +2,15 @@
 
 #define CCC_MSG 0xC1AE2002FF03
 
-static SPI_Handle spi = NULL;
+// static SPI_Handle spi = NULL;
 static Timer_Handle timer_pixy = NULL;
 uint8_t request_packet_ccc [6] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
 uint8_t request_packet_version [] = {0xc1, 0xae, 14, 0};
 uint8_t receive_buffer[60];
 
-void spi_pixy_init()
+SPI_Handle spi_pixy_init()
 {
+   SPI_Handle spi;
     SPI_Params spi_params;
     SPI_Params_init(&spi_params);
     spi_params.transferMode = SPI_MODE_BLOCKING;
@@ -20,6 +21,8 @@ void spi_pixy_init()
     /*****************************/
     dbgOutputLoc(SPI_SPI_OPEN);
     /*****************************/
+
+    spi = SPI_open(CONFIG_SPI_0, &spi_params);
 
     Timer_Params timer_pixy_params;
     Timer_Params_init(&timer_pixy_params);
@@ -37,10 +40,13 @@ void spi_pixy_init()
     if (Timer_start(timer_pixy) == Timer_STATUS_ERROR)
         stop_all(FAIL_SPI_TIMER_INIT);
             
+    return spi;
 }
 
 void * spiThread(void *arg0)
 {
+   SPI_Handle spi;
+   spi = spi_pixy_init();
     
     memset((void *) receive_buffer, 0, 60);
     request_packet_ccc[0] = 0xC1;
@@ -56,14 +62,21 @@ void * spiThread(void *arg0)
     {
         xQueueReceive(spi_start_q, &temp, portMAX_DELAY);
 
+        dbgOutputLoc(0x28);
+
         SPI_Transaction spi_transaction;
         bool transferOK;
-        spi_transaction.count = 4;
+        spi_transaction.count = 6;
         spi_transaction.txBuf = (void *) request_packet_ccc;
         spi_transaction.rxBuf = (void *)receive_buffer;
+        dbgOutputLoc(0x29);
         transferOK = SPI_transfer(spi, &spi_transaction);
+        dbgOutputLoc(0x2A);
         if (!transferOK)
+        {
+            dbgOutputLoc(0x7A);
             stop_all(FAIL_SPI_TRANSACTION);
+        }
           
         uint8_t num_blocks = spi_transaction.count / 20;
         if (num_blocks == 0) 
@@ -99,8 +112,8 @@ void timer_spi_callback(Timer_Handle timer_handle)
     dbgOutputLoc(SPI_TIMER_CALLBACK);
     /*****************************/
     
-    char placeholder;
-    xQueueSendFromISR(spi_start_q, &placeholder, NULL);
+    char placeholder = 0;
+    xQueueSendFromISR(spi_start_q, &placeholder, 0);
 }
 
 
@@ -115,7 +128,7 @@ void send_pixy_ccc_spi()
     // TODO switch back
     // spi_transaction.txBuf = (void *)request_packet_version;
     spi_transaction.rxBuf = (void *)receive_buffer;
-    transferOK = SPI_transfer(spi, &spi_transaction);
+    //transferOK = SPI_transfer(spi, &spi_transaction);
     if (!transferOK)
         stop_all(FAIL_SPI_TRANSACTION);
 

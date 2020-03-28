@@ -12,6 +12,7 @@ var UART = scripting.addModule("/ti/drivers/UART", {}, false);
 var UART1 = UART.addInstance();
 var Timer2 = Timer.addInstance();
 var SPI = scripting.addModule("/ti/drivers/SPI");
+var SPI1 = SPI.addInstance();
 var UART2 = UART.addInstance();
 var GPIO2 = GPIO.addInstance();
 var GPIO3 = GPIO.addInstance();
@@ -21,8 +22,6 @@ var GPIO6 = GPIO.addInstance();
 var GPIO7 = GPIO.addInstance();
 var GPIO8 = GPIO.addInstance();
 var GPIO9 = GPIO.addInstance();
-var I2C = scripting.addModule("/ti/drivers/I2C", {}, false);
-var I2C1 = I2C.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -30,12 +29,10 @@ var Power = scripting.addModule("/ti/drivers/Power", {}, false);
 Power.parkPins.$name = "ti_drivers_power_PowerCC32XXPins0";
 var Board = scripting.addModule("/ti/drivers/Board", {}, false);
 var DriverLib = scripting.addModule("/ti/devices/DriverLib", {}, false);
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO1.$name = "CONFIG_GPIO_LED_0";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
 GPIO1.$hardware = system.deviceData.board.components.LED_RED;
-// Assign pin
-GPIO1.gpioPin.$assign = "boosterpack.29"; // P64
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO1.$name = "CONFIG_GPIO_LED_0";
 // Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
 Timer1.$name = "CONFIG_TIMER_0";
 // Timer Type
@@ -69,13 +66,10 @@ Timer2.timer.$name = "MyTimer1";
 // Use Peripheral
 Timer2.timer.$assign = "Timer1";
 var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
-<<<<<<< HEAD
 // Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
 SPI1.$name = "CONFIG_SPI_0";
 // Name
 SPI1.spi.$name = "MySPI1";
-=======
->>>>>>> a8f877f7998fabd0097aec4d9effc9ea9076c18d
 // Name - The C/C++ identifier used in applications as the index parameter passed to UART runtime APIs
 UART2.$name = "CONFIG_UART_1";
 // Name
@@ -127,13 +121,12 @@ GPIO8.$name = "CONFIG_GPIO_6";
 // Mode - Select the GPIO mode
 GPIO8.mode = "Output";
 // Assign pin
-GPIO8.gpioPin.$assign = "boosterpack.28"; // P53
+GPIO8.gpioPin.$assign = "boosterpack.9"; // P01
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO9.$name = "CONFIG_GPIO_7";
 // Mode - Select the GPIO mode
 GPIO9.mode = "Output";
 // Assign pin
-<<<<<<< HEAD
 GPIO9.gpioPin.$assign = "boosterpack.10"; // P02
 // Suggest solution
 GPIO1.gpioPin.$suggestSolution = "64";
@@ -147,16 +140,5 @@ SPI1.spi.misoPin.$suggestSolution = "6";
 SPI1.spi.mosiPin.$suggestSolution = "7";
 // Suggest solution
 SPI1.spi.dmaRxChannel.$suggestSolution = "UDMA_CH30";
-=======
-GPIO9.gpioPin.$assign = "boosterpack.30"; // P50
-// Name - The C/C++ identifier used in applications as the index parameter passed to I2C runtime APIs
-I2C1.$name = "CONFIG_I2C_0";
-// Name
-I2C1.i2c.$name = "MyI2C1";
-// Assign pin
-I2C1.i2c.sdaPin.$assign = "boosterpack.10"; // P02
-// Assign pin
-I2C1.i2c.sclPin.$assign = "boosterpack.9"; // P01
->>>>>>> a8f877f7998fabd0097aec4d9effc9ea9076c18d
 // Suggest solution
-I2C1.i2c.$suggestSolution = "I2C0";
+SPI1.spi.dmaTxChannel.$suggestSolution = "UDMA_CH31";

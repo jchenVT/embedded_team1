@@ -53,6 +53,8 @@
 #include "uart_lidar.h"
 
 extern void *uartDebugThread(void *arg0);
+extern void *uartLidarThread(void *arg0);
+extern void *spiThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -72,13 +74,12 @@ int main(void)
     GPIO_init();
     Timer_init();
     UART_init();
-//    SPI_init();
-    I2C_init();
+    SPI_init();
     debug_init();
     queues_init();
     uart_debug_init();
     uart_lidar_init();
-    spi_pixy_init();
+//    spi_pixy_init();
 
     dbgOutputLoc(INIT_ALL);
 
@@ -95,7 +96,7 @@ int main(void)
     retcUARTLidar = pthread_create(&thread2, &attrs2, uartLidarThread, NULL);
     retcSPI = pthread_create(&thread3, &attrs3, spiThread, NULL);
 
-    if (retcUARTDebug != 0 || retcUARTLidar != 0 || retcUARTLidar != 0) {
+    if (retcUARTDebug != 0 || retcUARTLidar != 0 || retcSPI != 0) {
         /* pthread_create() failed */
         while (1) {}
     }

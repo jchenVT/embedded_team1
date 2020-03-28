@@ -33,11 +33,12 @@ typedef struct block {
 } Block_t;
 
 
-void spi_pixy_init();
+//void spi_pixy_init();
+SPI_Handle spi_pixy_init();
 
 void * spiThread(void *arg0);
 
-void spi_pixy_callback( SPI_Handle handle, SPI_Transaction *transaction );
+void spi_pixy_callback( SPI_Handle handle, SPI_Transaction *transaction, bool status);
 
 void send_pixy_ccc_spi();
 
