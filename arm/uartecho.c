@@ -48,13 +48,11 @@ static UART_Handle uart;
 static PWM_Handle pwm_x, pwm_y, pwm_z, pwm_claw;
 static TimerHandle_t timer10ms;
 
-static movqData_t off_pos = {1600, 1100, 1000, 800};
-static movqData_t start_pos = {1600, 1500, 1800, 800};
+static movqData_t off_pos = {0, 1600, 1100, 1000, 800};
+static movqData_t start_pos = {0, 1600, 1500, 1800, 800};
 
 static movqData_t current_pos, goal_pos;
 
-static aState a;
-static dState d;
 
 uint16_t angleXToPWM(uint16_t x) {
     uint16_t degreePWM = (X_HIGH - X_LOW) / 180;
@@ -173,7 +171,7 @@ void arm_init() {
     PWM_start(pwm_claw);
 
     // initialize software timer for smooth arm movement
-    //timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(10), pdTRUE, NULL, movementCallback);
+    timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(20), pdTRUE, NULL, movementCallback);
 }
 
 // checks for valid char and sends the corresponding message to the queue
@@ -234,7 +232,7 @@ void *armDebugThread(void *arg0)
     char input;
 
     // set the current position of the arm to its off position
-    current_pos = start_pos;
+    current_pos = off_pos;
     // set the current goal position of the arm to the start position
     goal_pos = off_pos;
 
@@ -249,24 +247,99 @@ void *armDebugThread(void *arg0)
         uint8_t a;
         receiveFromAckQ(&a);
 
-        char buf[2];
-        snprintf(buf, 2, "%d\n", a);
-        UART_write(uart, buf, 2);
+//        char buf[2];
+//        snprintf(buf, 2, "%d\n", a);
+//        UART_write(uart, buf, 2);
+    }
+}
+
+int armDone() {
+    return memcmp(&current_pos, &goal_pos, sizeof(current_pos)) == 0;
+}
+
+void movementHelper() {
+    //UART_write(uart, "callback\r\n", 10);
+    if (current_pos.yee_value < goal_pos.yee_value) {
+        current_pos.yee_value += STEPSIZE;
+        PWM_setDuty(pwm_x, current_pos.yee_value);
+    }
+    else if (current_pos.yee_value > goal_pos.yee_value) {
+        current_pos.yee_value -= STEPSIZE;
+        PWM_setDuty(pwm_x, current_pos.yee_value);
+    }
+    else {
+        PWM_setDuty(pwm_x, current_pos.yee_value);
+    }
+
+    if (current_pos.haw_value < goal_pos.haw_value) {
+        current_pos.haw_value += STEPSIZE;
+        PWM_setDuty(pwm_y, current_pos.haw_value);
+    }
+    else if (current_pos.haw_value > goal_pos.haw_value) {
+        current_pos.haw_value -= STEPSIZE;
+        PWM_setDuty(pwm_y, current_pos.haw_value);
+    }
+    else {
+        PWM_setDuty(pwm_y, current_pos.haw_value);
+    }
+
+    if (current_pos.cow_value < goal_pos.cow_value) {
+        current_pos.cow_value += STEPSIZE;
+        PWM_setDuty(pwm_z, current_pos.cow_value);
+    }
+    else if (current_pos.cow_value > goal_pos.cow_value) {
+        current_pos.cow_value -= STEPSIZE;
+        PWM_setDuty(pwm_z, current_pos.cow_value);
+    }
+    else {
+        PWM_setDuty(pwm_z, current_pos.cow_value);
+    }
+
+    if (current_pos.boy_value < goal_pos.boy_value) {
+        current_pos.boy_value += STEPSIZE;
+        PWM_setDuty(pwm_claw, current_pos.boy_value);
+    }
+    else if (current_pos.boy_value > goal_pos.boy_value) {
+        current_pos.boy_value -= STEPSIZE;
+        PWM_setDuty(pwm_claw, current_pos.boy_value);
+    }
+    else {
+        PWM_setDuty(pwm_claw, current_pos.boy_value);
     }
 }
 
 void *mainArmThread(void *arg0) {
-
     while (1) {
         movqData_t m;
         receiveFromMovQ(&m);
+//        UART_write(uart, "recv\n", 5);
+//        char buf[2];
+//        snprintf(buf, 2, "%d\n", m.type);
+//        UART_write(uart, buf, 2);
 
-        char buf[40];
-        int ret;
-        ret = snprintf(buf, 40, "%d %d %d %d\r\n", m.yee_value, m.haw_value, m.cow_value, m.boy_value);
-        UART_write(uart, buf, ret);
+        if (m.type) {
+            //UART_write(uart, "move\n", 5);
+            movementHelper();
+        }
+        else {
+            goal_pos = m;
+            if (xTimerIsTimerActive(timer10ms) == pdFALSE) {
+                xTimerStart(timer10ms, 0);
+            }
+        }
 
-        sendMsgToAckQ(1);
+        if (armDone()) {
+            sendMsgToAckQ(1);
+            if (xTimerIsTimerActive(timer10ms) == pdTRUE) {
+                //UART_write(uart, "stopped\r\n", 9);
+                xTimerStop(timer10ms, 0);
+            }
+        }
     }
 }
 
+void movementCallback(TimerHandle_t xTimer) {
+    movqData_t m = {1, 0, 0, 0, 0};
+    m.type = 1;
+    sendMsgToMovQ(m);
+}

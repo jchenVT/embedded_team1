@@ -20,6 +20,7 @@
 #define ackQITEMSIZE    8
 
 typedef struct movqData {
+    uint8_t type;
     uint16_t yee_value; // x
     uint16_t haw_value; // y
     uint16_t cow_value; // z
