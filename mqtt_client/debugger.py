@@ -14,23 +14,35 @@ with open(args.filename, "r") as file:
 
 def on_connect(client, userdata, flags, rc):
     print("connected")
-    client.subscribe("$SYS/#")
+    for key in topics:
+        client.subscribe(key)
 
 def on_message(client, userdata, msg):
+    print ('received')
     fields = topics.get(msg.topic)
-    msg_dict = json.dumps(msg.payload)
+    try:
+        msg_dict = json.loads(msg.payload)
+    except:
+        print('Impropert json format!')
+        client.publish(f'{msg.topic}/debug', json.dumps({'success': False, 'error' : 'improper json'}))
     missing_fields = []
     for field in fields:
         if msg_dict.get(field) is None:
             missing_fields.append(field) 
         else:
             continue
-    if missing_fields.count() > 0:
-        client.publish(f'debug/{msg.topic}', f"missing: {' ,'.join(missing_fields)}")
-    else:
-        client.publish(f'debug/{msg.topic}', 'success')
 
-        
+    if len(missing_fields) > 0:
+        print("some missing")
+        try:
+            client.publish(f'{msg.topic}/debug', json.dumps({'success': False, 'error' : 'missing field', 'missing': ' ,'.join(missing_fields)}))
+        except:
+            print('publish fail')
+            return
+    else:
+        print("none missing")
+        client.publish(f'{msg.topic}/debug', json.dumps({'success': True}))
+
 
 
 client = mqtt.Client()
@@ -38,7 +50,5 @@ client.on_connect = on_connect
 client.on_message = on_message
 client.connect("josephcchen.com", 1883, 60)
 
-for key in topics:
-    client.subscribe(key)
 
 client.loop_forever()

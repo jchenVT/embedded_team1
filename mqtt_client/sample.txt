@@ -1,1 +1,2 @@
+example/topic some example fields
 thing/yeet one two red blue
