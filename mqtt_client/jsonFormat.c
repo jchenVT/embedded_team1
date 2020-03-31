@@ -17,7 +17,7 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
   return -1;
 }
 
-int jsonParser(enum topicVal topic, char * JSON_STRING) {
+int jsonParser(const char *topic, char *JSON_STRING) {
 
     static bool initParser = false;
 
@@ -34,7 +34,7 @@ int jsonParser(enum topicVal topic, char * JSON_STRING) {
         // ERROR
     }
 
-    switch(topic) {
+    switch(atoi(topic)) {
         case ARM:
             // Currently does not check data
             if (jsoneq(JSON_STRING, &tokens[0], "state") != 0 || num != 2) {

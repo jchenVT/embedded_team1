@@ -48,6 +48,7 @@
 
 /* Application includes                                                      */
 #include "client_cbs.h"
+#include <jsonFormat.h>
 
 extern bool gResetApplication;
 
@@ -132,7 +133,7 @@ void MqttClientCallback(int32_t event,
     case MQTTClient_RECV_CB_EVENT:
     {
         APP_PRINT("\n\rMsg Recvd. by client\n\r");
-        jsonParse(((MQTTClient_RecvMetaDataCB *)metaData)->topic, data);
+        jsonParser(((MQTTClient_RecvMetaDataCB *)metaData)->topic, (char *)data);
         break;
     }
     }
