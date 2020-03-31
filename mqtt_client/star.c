@@ -1,3 +1,10 @@
+/*
+ * star.c
+ *
+ *  Created on: Mar 31, 2020
+ *      Author: giffen
+ */
+
 #include "star.h"
 
 /*
@@ -15,12 +22,12 @@ void *starThread(void *arg0) {
     xTimerStart(timerPub, 0);
 
     /* Data to be recv from the subQ */
-    struct qData data = {0,0};
+    struct qData subData = {0, 0};
 
     while(1) {
 
         // blocking read on subQ
-        receiveFromSubQ(&data);
+        receiveFromArmSensorQ(&subData);
 
         // process data
     }
@@ -37,5 +44,5 @@ void *starThread(void *arg0) {
 void timerCallback(TimerHandle_t xTimer) {
 
     // publish to message queue
-    sendToPubQ(PUB_TOPIC, 0);
+    packageArmJSON(0);
 }

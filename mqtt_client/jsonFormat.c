@@ -4,7 +4,11 @@
 #include <stdbool.h>
 #include <jsmn.h>
 #include <string.h>
+<<<<<<< HEAD
 #include <jsonFormat.h>
+=======
+#include "jsonFormat.h"
+>>>>>>> 12bf8838af7c36274ff11087561f3d359c252c24
 
 #define JSON_LEN 120
 jsmn_parser parser;

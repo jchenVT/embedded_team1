@@ -1,3 +1,10 @@
+/*
+ * star.h
+ *
+ *  Created on: Mar 31, 2020
+ *      Author: giffen
+ */
+
 #ifndef STAR_H_
 #define STAR_H_
 
@@ -6,11 +13,14 @@
 #include <FreeRTOS.h>
 #include <timers.h>
 
-/* Message queues */
+/* Message queue wrapper for recv msgs */
 #include "mqtt_queue.h"
 
-#define SUB_TOPIC   0
-#define PUB_TOPIC   1
+/* JSON formatting used to push to msg queues */
+#include "jsonFormat.h"
+
+#define SUB_TOPIC   ARM_SENSORS
+#define PUB_TOPIC   ARM
 
 void *starThread(void *arg0);
 void timerCallback(TimerHandle_t xTimer);
