@@ -6,7 +6,7 @@
 #include <timers.h>
 
 /* Message queues */
-#include <mqtt_queue.h>
+#include "mqtt_queue.h"
 
 #define SUB_TOPIC   0
 #define PUB_TOPIC   1
