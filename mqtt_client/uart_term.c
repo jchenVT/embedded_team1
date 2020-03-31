@@ -40,6 +40,10 @@
 #include <string.h>
 
 #include "uart_term.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include <ti/drivers/GPIO.h>
+void Mqtt_Stop();
 
 extern int vsnprintf(char * s,
                      size_t n,
@@ -337,4 +341,31 @@ char getch(void)
 void putch(char ch)
 {
     UART_writePolling(uartHandle, &ch, 1);
+}
+
+void stop_all() {
+    vTaskSuspendAll();
+    taskENTER_CRITICAL();
+
+//    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
+//    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
+
+    /*****************************/
+//    dbgOutputLoc(UART_CLOSING);
+    /*****************************/
+    UART_close(uartHandle);
+    /*****************************/
+//    dbgOutputLoc(FAILURE_CODE);
+    /*****************************/
+    Mqtt_Stop();
+
+    while(1)
+    {
+//        GPIO_toggle(CONFIG_GPIO_LED_0);
+        // blink LED forever
+        int i = 0;
+        for (;i<100000;i++) ;
+    }
+
+    taskEXIT_CRITICAL();
 }
