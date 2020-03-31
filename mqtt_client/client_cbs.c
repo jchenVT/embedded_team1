@@ -38,7 +38,6 @@
 //*****************************************************************************
 /* Standard includes                                                         */
 #include <stdlib.h>
-FCK
 
 /* Kernel (Non OS/Free-RTOS/TI-RTOS) includes                                */
 #include "pthread.h"
@@ -69,7 +68,6 @@ extern bool gResetApplication;
 //*****************************************************************************
 
 /* Message Queue                                                              */
-extern mqd_t g_PBQueue;
 extern char *topic[];
 struct client_info client_info_table[MAX_CONNECTION];
 
@@ -104,8 +102,6 @@ void MqttClientCallback(int32_t event,
                         void *data,
                         uint32_t dataLen)
 {
-    int32_t i = 0;
-
     switch((MQTTClient_EventCB)event)
     {
     case MQTTClient_OPERATION_CB_EVENT:
@@ -128,35 +124,6 @@ void MqttClientCallback(int32_t event,
             }
             break;
         }
-
-        case MQTTCLIENT_OPERATION_EVT_PUBACK:
-        {
-            char *PubAck = (char *) data;
-            APP_PRINT("PubAck:\n\r");
-            APP_PRINT("%s\n\r", PubAck);
-            break;
-        }
-
-        case MQTTCLIENT_OPERATION_SUBACK:
-        {
-            APP_PRINT("Sub Ack:\n\r");
-            APP_PRINT("Granted QoS Levels are:\n\r");
-            for(i = 0; i < dataLen; i++)
-            {
-                APP_PRINT("%s :QoS %d\n\r", topic[i],
-                          ((unsigned char*) data)[i]);
-            }
-            break;
-        }
-
-        case MQTTCLIENT_OPERATION_UNSUBACK:
-        {
-            char *UnSub = (char *) data;
-            APP_PRINT("UnSub Ack \n\r");
-            APP_PRINT("%s\n\r", UnSub);
-            break;
-        }
-
         default:
             break;
         }
@@ -164,80 +131,8 @@ void MqttClientCallback(int32_t event,
     }
     case MQTTClient_RECV_CB_EVENT:
     {
-        MQTTClient_RecvMetaDataCB *recvMetaData =
-            (MQTTClient_RecvMetaDataCB *)metaData;
-        uint32_t bufSizeReqd = 0;
-        uint32_t topicOffset;
-        uint32_t payloadOffset;
-
-        struct publishMsgHeader msgHead;
-
-        char *pubBuff = NULL;
-        struct msgQueue queueElem;
-
-        topicOffset = sizeof(struct publishMsgHeader);
-        payloadOffset = sizeof(struct publishMsgHeader) +
-                        recvMetaData->topLen + 1;
-
-        bufSizeReqd += sizeof(struct publishMsgHeader);
-        bufSizeReqd += recvMetaData->topLen + 1;
-        bufSizeReqd += dataLen + 1;
-        pubBuff = (char *) malloc(bufSizeReqd);
-
-        if(pubBuff == NULL)
-        {
-            APP_PRINT("malloc failed: recv_cb\n\r");
-            return;
-        }
-
-        msgHead.topicLen = recvMetaData->topLen;
-        msgHead.payLen = dataLen;
-        msgHead.retain = recvMetaData->retain;
-        msgHead.dup = recvMetaData->dup;
-        msgHead.qos = recvMetaData->qos;
-        memcpy((void*) pubBuff, &msgHead, sizeof(struct publishMsgHeader));
-
-        /* copying the topic name into the buffer                        */
-        memcpy((void*) (pubBuff + topicOffset),
-               (const void*)recvMetaData->topic,
-               recvMetaData->topLen);
-        memset((void*) (pubBuff + topicOffset + recvMetaData->topLen),'\0',1);
-
-        /* copying the payload into the buffer                           */
-        memcpy((void*) (pubBuff + payloadOffset), (const void*) data, dataLen);
-        memset((void*) (pubBuff + payloadOffset + dataLen), '\0', 1);
-
         APP_PRINT("\n\rMsg Recvd. by client\n\r");
-        APP_PRINT("TOPIC: %s\n\r", pubBuff + topicOffset);
-        APP_PRINT("PAYLOAD: %s\n\r", pubBuff + payloadOffset);
-        APP_PRINT("QOS: %d\n\r", recvMetaData->qos);
-
-        if(recvMetaData->retain)
-        {
-            APP_PRINT("Retained\n\r");
-        }
-
-        if(recvMetaData->dup)
-        {
-            APP_PRINT("Duplicate\n\r");
-        }
-
-        /* filling the queue element details                              */
-        queueElem.event = MSG_RECV_BY_CLIENT;
-        queueElem.msgPtr = pubBuff;
-        queueElem.topLen = recvMetaData->topLen;
-
-        /* signal to the main task                                        */
-        if(MQTT_SendMsgToQueue(&queueElem))
-        {
-            UART_PRINT("\n\n\rQueue is full\n\n\r");
-        }
-        break;
-    }
-    case MQTTClient_DISCONNECT_CB_EVENT:
-    {
-        gResetApplication = true;
-        APP_PRINT("BRIDGE DISCONNECTION\n\r");
+        jsonParse(((MQTTClient_RecvMetaDataCB *)metaData)->topic, data);
         break;
     }
     }
