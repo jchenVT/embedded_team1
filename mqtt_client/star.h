@@ -2,7 +2,7 @@
 #define STAR_H_
 
 /* Timer */
-#include <ti/drivers/timer.h>
+#include <ti/drivers/Timer.h>
 #include <timers.h>
 
 /* Message queues */
