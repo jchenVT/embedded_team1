@@ -27,19 +27,52 @@ int jsonParser(char * jsonMsg) {
 
     switch(topic) {
         case ARM:
-            pushToArmQ();
+            // Currently does not check data
+            if (jsoneq(JSON_STRING, &tokens[2], "State") != 0 || num != 4) {
+                // ERROR
+            }
+
+            uint8_t state = atoi(tokens[3].end - tokens[3].start);
+
+            pushToArmQ(state);
             break;
 
         case ARM_SENSOR:
-            pushToArmSensorQ();
+            if (jsoneq(JSON_STRING, &tokens[2], "Move_to_point") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[4], "Point_x") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[6], "Point_y") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[8], "Angle_rotate") != 0 ||
+                    num != 10) {
+                // ERROR
+            }
+
+            bool movePoint = atoi(tokens[3].end - tokens[3].start);
+            double pointX = atoi(tokens[5].end - tokens[5].start);
+            double pointY = atoi(tokens[7].end - tokens[7].start);
+            double angleRotate = atoi(tokens[9].end - tokens[9].start);
+
+            pushToArmSensorQ(movePoint, pointX, pointY, angleRotate);
             break;
 
         case ROVER:
-            pushToRoverQ();
+            if (jsoneq(JSON_STRING, &tokens[2], "State") != 0 || num != 4) {
+                // ERROR
+            }
+
+            uint8_t state = atoi(tokens[3].end - tokens[3].start);
+
+            pushToRoverQ(state);
             break;
 
         case ROVER_SENSOR:
-            pushToRoverSensorQ();
+            if (jsoneq(JSON_STRING, &tokens[2], "SensorID") != 0 || jsoneq(JSON_STRING, &tokens[4], "SensorValue") != 0 || num != 6) {
+                // ERROR
+            }
+
+            int sensorID = atoi(tokens[3].end - tokens[3].start);
+            int sensorValue = atoi(tokens[5].end - tokens[5].start);
+
+            pushToRoverSensorQ(sensorID, sensorValue);
             break;
     }
 
