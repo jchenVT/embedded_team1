@@ -1,5 +1,6 @@
 #include "star.h"
 
+
 /*
  *  @function   mainThread
  *              Main thread that will pull from the sensor queue to
@@ -15,12 +16,12 @@ void *starThread(void *arg0) {
     xTimerStart(timerPub, 0);
 
     /* Data to be recv from the subQ */
-    struct qData data = {0,0};
+    struct qData subData = {0, 0};
 
     while(1) {
 
         // blocking read on subQ
-        receiveFromSubQ(&data);
+        receiveFromSubQ(&subData);
 
         // process data
     }

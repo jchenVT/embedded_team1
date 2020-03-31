@@ -6,8 +6,8 @@
 #include <FreeRTOS.h>
 #include <timers.h>
 
-/* Message queues */
-#include "mqtt_queue.h"
+/* JSON formatting used to push to msg queues */
+#include "jsonFormat.h"
 
 #define SUB_TOPIC   0
 #define PUB_TOPIC   1
