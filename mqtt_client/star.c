@@ -1,5 +1,11 @@
-#include "star.h"
+/*
+ * star.c
+ *
+ *  Created on: Mar 31, 2020
+ *      Author: giffen
+ */
 
+#include "star.h"
 
 /*
  *  @function   mainThread
@@ -21,7 +27,7 @@ void *starThread(void *arg0) {
     while(1) {
 
         // blocking read on subQ
-        receiveFromSubQ(&subData);
+        receiveFromArmSensorQ(&subData);
 
         // process data
     }
@@ -38,5 +44,5 @@ void *starThread(void *arg0) {
 void timerCallback(TimerHandle_t xTimer) {
 
     // publish to message queue
-    sendToPubQ(PUB_TOPIC, 0);
+    packageArmJSON(0);
 }
