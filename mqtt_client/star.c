@@ -15,6 +15,7 @@ void *starThread(void *arg0) {
     xTimerStart(timerPub, 0);
 
     /* Data to be recv from the subQ */
+    struct qData data = {0,0};
 
     while(1) {
 

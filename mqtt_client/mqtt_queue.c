@@ -75,7 +75,7 @@ int sendToSubQ(int topic, long long int msg) {
  *              msg     - msg to be published to the topic
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int receiveFromPubQ(int topic, long long int msg) {
+int receiveFromPubQ(struct qData *oldData) {
 
     xQueueReceive( pubQ, &oldData, portMAX_DELAY );
 }
