@@ -61,11 +61,7 @@ int jsonParser(enum topicVal topic, char * JSON_STRING) {
 
             char *ptr;
             double pointX = strtod(JSON_STRING + tokens[3].start, &ptr);
-
-            char *ptr;
             double pointY = strtod(JSON_STRING + tokens[5].start, &ptr);
-
-            char *ptr;
             double angleRotate = strtod(JSON_STRING + tokens[7].start, &ptr);
 
             pushToArmSensorQ(atoi(movePoint), pointX, pointY, angleRotate);
@@ -76,10 +72,10 @@ int jsonParser(enum topicVal topic, char * JSON_STRING) {
                 // ERROR
             }
 
-            char *state;
-            strncpy(state, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
+            char *roverState;
+            strncpy(roverState, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToRoverQ(atoi(state));
+            pushToRoverQ(atoi(roverState));
             break;
 
         case ROVER_SENSOR:
@@ -122,7 +118,7 @@ int packageRoverJSON(int state) {
 
 int packageRoverSensorJSON(bool move_to_point, int point_x, int point_y, int angle_rotate) {
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{ \"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d }", move_to_point ? "true"; "false", point_x, point_y, angle_rotate);
+    snprintf(json, JSON_LEN, "{ \"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d }", move_to_point ? "true": "false", point_x, point_y, angle_rotate);
 //    return sendToPubQ(3, &json);
     return 1;
 }

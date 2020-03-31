@@ -11,7 +11,7 @@
 #define MaxTokens       50
 enum topicVal {ARM, ARM_SENSOR, ROVER, ROVER_SENSOR};
 
-int jsonParser(char * jsonMsg);
+int jsonParser(enum topicVal topic, char * jsonMsg);
 
 int packageArmJSON(int state);
 int packageArmSensorJSON(int sensorID, int sensorValue);
