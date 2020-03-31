@@ -3,4 +3,4 @@
 *.settings/
 simple_example/.launches/*
 */.ycm_extra_conf.py
-
+*/venv
