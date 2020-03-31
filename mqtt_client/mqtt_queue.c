@@ -8,7 +8,10 @@
 #include "mqtt_queue.h"
 
 static QueueHandle_t pubQ = NULL;
-static QueueHandle_t subQ = NULL;
+static QueueHandle_t subArmQ = NULL;
+static QueueHandle_t subArmSensorQ = NULL;
+static QueueHandle_t subRoverQ = NULL;
+static QueueHandle_t subRoverSensorQ = NULL;
 
 /*
  *  @function   createQs
@@ -20,13 +23,28 @@ static QueueHandle_t subQ = NULL;
  */
 bool createQs() {
 
-    pubQ = xQueueCreate( qLENGTH, qITEMSIZE );
+    pubQ = xQueueCreate( qLENGTH, sizeof(struct qStringData));
     if (pubQ == NULL) {
         return false;
     }
 
-    subQ = xQueueCreate( qLENGTH, qITEMSIZE );
-    if (subQ == NULL) {
+    subArmQ = xQueueCreate( qLENGTH, sizeof(struct qArmMsg));
+    if (subArmQ == NULL) {
+        return false;
+    }
+
+    subArmSensorQ = xQueueCreate( qLENGTH, sizeof(struct qArmSensorMsg));
+    if (subArmSensorQ == NULL) {
+        return false;
+    }
+
+    subRoverQ = xQueueCreate( qLENGTH, sizeof(struct qRoverMsg));
+    if (subRoverQ == NULL) {
+        return false;
+    }
+
+    subRoverSensorQ = xQueueCreate( qLENGTH, sizeof(struct qRoverSensorMsg));
+    if (subRoverSensorQ == NULL) {
         return false;
     }
 
@@ -43,14 +61,16 @@ bool createQs() {
  *              msg     - msg to be published to the topic
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int sendToPubQ(int topic, long long int msg) {
+int sendToPubQ(int topic, char msg []) {
 
-    struct qData data = {topic, msg};
+    struct qStringData data;
+    data.topic = topic;
+    strncpy(data.str, msg, 120);
     return xQueueSendToBackFromISR( pubQ, &data, 0 );
 }
 
 /*
- *  @function   sendToSubQ
+ *  @function   sendToSub***Q
  *              Wrapper for the RTOS function to send data through
  *              the queue. Holds data that needs to be published
  *              using the mqtt_client_app.c file.
@@ -59,10 +79,20 @@ int sendToPubQ(int topic, long long int msg) {
  *              msg     - msg to be published to the topic
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int sendToSubQ(int topic, long long int msg) {
+int sendToSubArmQ(struct qArmMsg msg) {
+    return xQueueSendToBackFromISR( subArmQ, &msg, 0 );
+}
 
-    struct qData data = {topic, msg};
-    return xQueueSendToBackFromISR( subQ, &data, 0 );
+int sendToSubArmSensorQ(struct qArmSensorMsg msg) {
+    return xQueueSendToBackFromISR(subArmSensorQ, &msg, 0 );
+}
+
+int sendToSubRoverQ(struct qRoverMsg msg) {
+    return xQueueSendToBackFromISR(subRoverQ, &msg, 0 );
+}
+
+int sendToSubRoverSensorQ(struct qRoverSensorMsg msg) {
+    return xQueueSendToBackFromISR(subRoverSensorQ, &msg, 0 );
 }
 
 /*
@@ -75,9 +105,8 @@ int sendToSubQ(int topic, long long int msg) {
  *              msg     - msg to be published to the topic
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int receiveFromPubQ(struct qData *oldData) {
-
-    xQueueReceive( pubQ, &oldData, portMAX_DELAY );
+int receiveFromPubQ(struct qStringData *oldData) {
+    return xQueueReceive( pubQ, &oldData, portMAX_DELAY );
 }
 
 /*
@@ -88,7 +117,16 @@ int receiveFromPubQ(struct qData *oldData) {
  *  @params     oldData - `reference to the struct holding the old data
  *  @return     None
  */
-void receiveFromSubQ(struct qData *oldData) {
+int receiveFromSubArmQ(struct qArmMsg *oldData) {
+    return xQueueReceive( subArmQ, &oldData, portMAX_DELAY );
+}
+int receiveFromSubArmSensorQ(struct qArmSensorMsg *oldData) {
+    return xQueueReceive( subArmSensorQ, &oldData, portMAX_DELAY );
+}
+int receiveFromSubRoverQ(struct qRoverMsg *oldData) {
+    return xQueueReceive( subRoverQ, &oldData, portMAX_DELAY );
+}
 
-    xQueueReceive( subQ, &oldData, portMAX_DELAY );
+int receiveFromSubRoverSensorQ(struct qRoverSensorMsg *oldData) {
+    return xQueueReceive( subRoverSensorQ, &oldData, portMAX_DELAY );
 }
