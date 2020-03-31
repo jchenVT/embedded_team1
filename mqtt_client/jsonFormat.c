@@ -1,6 +1,49 @@
 #include <stdio.h>
 #include <mqtt_queue.h>
 #include <stdbool.h>
+#include <jsmn.h>
+#include <string.h>
+
+jsmn_parser parser;
+
+int jsonParser(char * jsonMsg) {
+
+    static bool initParser = false;
+
+    if (!initParser) {
+        jsmn_init(&parser);
+    }
+
+    jsmntok_t tokens[MaxTokens];
+    int num;
+
+    num = jsmn_parse(&parser, jsonMsg, strlen(jsonMsg), tokens, MaxTokens);
+
+    if (num == 0 || jsoneq(JSON_STRING, &tokens[0], "Topic") != 0) {
+        // ERROR
+    }
+
+    int topic = atoi(tokens[1].end - tokens[1].start);
+
+    switch(topic) {
+        case ARM:
+            pushToArmQ();
+            break;
+
+        case ARM_SENSOR:
+            pushToArmSensorQ();
+            break;
+
+        case ROVER:
+            pushToRoverQ();
+            break;
+
+        case ROVER_SENSOR:
+            pushToRoverSensorQ();
+            break;
+    }
+
+}
 
 int packageArmJSON(int state) {
     char json[20];
