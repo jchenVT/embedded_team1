@@ -3,6 +3,7 @@
 
 /* Timer */
 #include <ti/drivers/Timer.h>
+#include <FreeRTOS.h>
 #include <timers.h>
 
 /* Message queues */
