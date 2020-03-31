@@ -38,6 +38,7 @@
 //*****************************************************************************
 /* Standard includes                                                         */
 #include <stdlib.h>
+FCK
 
 /* Kernel (Non OS/Free-RTOS/TI-RTOS) includes                                */
 #include "pthread.h"
