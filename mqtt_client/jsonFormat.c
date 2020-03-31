@@ -1,13 +1,23 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <mqtt_queue.h>
 #include <stdbool.h>
 #include <jsmn.h>
 #include <string.h>
+#include <jsonFormat.h>
 
 #define JSON_LEN 120
 jsmn_parser parser;
 
-int jsonParser(char * jsonMsg) {
+static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+  if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
+      strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+    return 0;
+  }
+  return -1;
+}
+
+int jsonParser(enum topicVal topic, char * JSON_STRING) {
 
     static bool initParser = false;
 
@@ -18,62 +28,72 @@ int jsonParser(char * jsonMsg) {
     jsmntok_t tokens[MaxTokens];
     int num;
 
-    num = jsmn_parse(&parser, jsonMsg, strlen(jsonMsg), tokens, MaxTokens);
+    num = jsmn_parse(&parser, JSON_STRING, strlen(JSON_STRING), tokens, MaxTokens);
 
-    if (num == 0 || jsoneq(JSON_STRING, &tokens[0], "Topic") != 0) {
+    if (num == 0) {
         // ERROR
     }
-
-    int topic = atoi(tokens[1].end - tokens[1].start);
 
     switch(topic) {
         case ARM:
             // Currently does not check data
-            if (jsoneq(JSON_STRING, &tokens[2], "State") != 0 || num != 4) {
+            if (jsoneq(JSON_STRING, &tokens[0], "state") != 0 || num != 2) {
                 // ERROR
             }
 
-            uint8_t state = atoi(tokens[3].end - tokens[3].start);
+            char *state;
+            strncpy(state, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToArmQ(state);
+            pushToArmQ(atoi(state));
             break;
 
         case ARM_SENSOR:
-            if (jsoneq(JSON_STRING, &tokens[2], "Move_to_point") != 0 ||
-                    jsoneq(JSON_STRING, &tokens[4], "Point_x") != 0 ||
-                    jsoneq(JSON_STRING, &tokens[6], "Point_y") != 0 ||
-                    jsoneq(JSON_STRING, &tokens[8], "Angle_rotate") != 0 ||
-                    num != 10) {
+            if (jsoneq(JSON_STRING, &tokens[0], "move_to_point") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[2], "point_x") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[4], "point_y") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[6], "angle_rotate") != 0 ||
+                    num != 8) {
                 // ERROR
             }
 
-            bool movePoint = atoi(tokens[3].end - tokens[3].start);
-            double pointX = atoi(tokens[5].end - tokens[5].start);
-            double pointY = atoi(tokens[7].end - tokens[7].start);
-            double angleRotate = atoi(tokens[9].end - tokens[9].start);
+            char *movePoint;
+            strncpy(movePoint, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToArmSensorQ(movePoint, pointX, pointY, angleRotate);
+            char *ptr;
+            double pointX = strtod(JSON_STRING + tokens[3].start, &ptr);
+
+            char *ptr;
+            double pointY = strtod(JSON_STRING + tokens[5].start, &ptr);
+
+            char *ptr;
+            double angleRotate = strtod(JSON_STRING + tokens[7].start, &ptr);
+
+            pushToArmSensorQ(atoi(movePoint), pointX, pointY, angleRotate);
             break;
 
         case ROVER:
-            if (jsoneq(JSON_STRING, &tokens[2], "State") != 0 || num != 4) {
+            if (jsoneq(JSON_STRING, &tokens[0], "state") != 0 || num != 2) {
                 // ERROR
             }
 
-            uint8_t state = atoi(tokens[3].end - tokens[3].start);
+            char *state;
+            strncpy(state, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToRoverQ(state);
+            pushToRoverQ(atoi(state));
             break;
 
         case ROVER_SENSOR:
-            if (jsoneq(JSON_STRING, &tokens[2], "SensorID") != 0 || jsoneq(JSON_STRING, &tokens[4], "SensorValue") != 0 || num != 6) {
+            if (jsoneq(JSON_STRING, &tokens[0], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[2], "sensorValue") != 0 || num != 6) {
                 // ERROR
             }
 
-            int sensorID = atoi(tokens[3].end - tokens[3].start);
-            int sensorValue = atoi(tokens[5].end - tokens[5].start);
+            char *sensorID;
+            strncpy(sensorID, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToRoverSensorQ(sensorID, sensorValue);
+            char *sensorValue;
+            strncpy(sensorValue, JSON_STRING + tokens[3].start, tokens[3].end - tokens[3].start);
+
+            pushToRoverSensorQ(atoi(sensorID), atoi(sensorValue));
             break;
     }
 
