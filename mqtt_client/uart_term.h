@@ -13,8 +13,8 @@
 
 UART_Handle InitTerm(void);
 
-int Report(const char *pcFormat,
-           ...);
+//int Report(const char *pcFormat,
+//           ...);
 
 int TrimSpace(char * pcInput);
 
