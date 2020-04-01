@@ -25,7 +25,7 @@
 
 /* Struct used in RETURNING message from queue */
 struct qData {
-    int topic;
+    char * topic;
     long long int msg;
 };
 
@@ -56,7 +56,7 @@ struct qRoverSensorMsg {
 
 /* Routine declarations */
 bool createQs();
-int sendToPubQ(int topic, char msg []);
+int sendToPubQ(char * topic, char msg []);
 int receiveFromPubQ(struct qStringData *oldData);
 
 int sendToSubArmQ(struct qArmMsg msg);
