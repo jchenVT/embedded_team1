@@ -125,10 +125,10 @@
 #define SUBSCRIPTION_TOPIC_COUNT 1
 
 /* Defining Subscription Topic Values                                        */
-#define SUBSCRIPTION_TOPIC0      "ARM"
-#define SUBSCRIPTION_TOPIC1      "ARM_SENSOR"
-#define SUBSCRIPTION_TOPIC2      "ROVER"
-#define SUBSCRIPTION_TOPIC3      "ROVER_SENSOR"
+#define SUBSCRIPTION_TOPIC0      "arm"
+#define SUBSCRIPTION_TOPIC1      "arm_sensor"
+#define SUBSCRIPTION_TOPIC2      "rover"
+#define SUBSCRIPTION_TOPIC3      "rover_sensor"
 
 /* Spawn task priority and Task and Thread Stack Size                        */
 #define TASKSTACKSIZE            2048
@@ -314,24 +314,24 @@ void * MqttClient(void *pvParameters)
         }
     }
 
-    struct qStringData pubData = {0, ""};
+    struct qStringData pubData = {"", ""};
 
     for(;; )
     {
         // blocking read on pubQ
         int success = receiveFromPubQ(&pubData);
 
-        char pubTopic[1];
-        snprintf(pubTopic, 1, "%d", pubData.topic);
-
         /*send publish message                                       */
         if (success) {
             lRetVal = MQTTClient_publish(gMqttClient,
-                                         pubTopic,
-                                         strlen((char*)pubData.topic),
+                                         pubData.topic,
+                                         strlen((const char*)pubData.topic),
                                          pubData.str,
                                          strlen((const char*)pubData.str),
                                          MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+        }
+        else {
+            lRetVal = -1;
         }
 
         if (lRetVal > 0) {

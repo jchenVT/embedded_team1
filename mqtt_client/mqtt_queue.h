@@ -30,7 +30,7 @@ struct qData {
 };
 
 struct qStringData {
-    int topic;
+    char * topic;
     char str[120];
 };
 
