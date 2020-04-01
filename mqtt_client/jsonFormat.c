@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <mqtt_queue.h>
-#include <stdbool.h>
-#include <jsmn.h>
-#include <string.h>
 #include "jsonFormat.h"
 
 #define JSON_LEN 120
@@ -44,10 +38,38 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             char *state;
             strncpy(state, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToArmQ(atoi(state));
+            struct qArmMsg arm_msg = {atoi(state)};
+            sendToSubArmQ(arm_msg);
             break;
 
         case ARM_SENSOR:
+            if (jsoneq(JSON_STRING, &tokens[0], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[2], "sensorValue") != 0 || num != 6) {
+                // ERROR
+            }
+
+            char *sensorID;
+            strncpy(sensorID, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
+
+            char *sensorValue;
+            strncpy(sensorValue, JSON_STRING + tokens[3].start, tokens[3].end - tokens[3].start);
+
+            struct qArmSensorMsg arm_sensor_msg = {atoi(sensorID), atoi(sensorValue)};
+            sendToSubArmSensorQ(arm_sensor_msg);
+            break;
+
+        case ROVER:
+            if (jsoneq(JSON_STRING, &tokens[0], "state") != 0 || num != 2) {
+                // ERROR
+            }
+
+            char *roverState;
+            strncpy(roverState, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
+
+            struct qRoverMsg rover_msg = {atoi(roverState)};
+            sendToSubRoverQ(rover_msg);
+            break;
+
+        case ROVER_SENSOR:
             if (jsoneq(JSON_STRING, &tokens[0], "move_to_point") != 0 ||
                     jsoneq(JSON_STRING, &tokens[2], "point_x") != 0 ||
                     jsoneq(JSON_STRING, &tokens[4], "point_y") != 0 ||
@@ -64,33 +86,11 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             double pointY = strtod(JSON_STRING + tokens[5].start, &ptr);
             double angleRotate = strtod(JSON_STRING + tokens[7].start, &ptr);
 
-            pushToArmSensorQ(atoi(movePoint), pointX, pointY, angleRotate);
+            struct qRoverSensorMsg rover_sensor_msg = {atoi(movePoint), pointX, pointY, angleRotate};
+            sendToSubRoverSensorQ(rover_sensor_msg);
             break;
 
-        case ROVER:
-            if (jsoneq(JSON_STRING, &tokens[0], "state") != 0 || num != 2) {
-                // ERROR
-            }
 
-            char *roverState;
-            strncpy(roverState, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
-
-            pushToRoverQ(atoi(roverState));
-            break;
-
-        case ROVER_SENSOR:
-            if (jsoneq(JSON_STRING, &tokens[0], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[2], "sensorValue") != 0 || num != 6) {
-                // ERROR
-            }
-
-            char *sensorID;
-            strncpy(sensorID, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
-
-            char *sensorValue;
-            strncpy(sensorValue, JSON_STRING + tokens[3].start, tokens[3].end - tokens[3].start);
-
-            pushToRoverSensorQ(atoi(sensorID), atoi(sensorValue));
-            break;
     }
 
 }

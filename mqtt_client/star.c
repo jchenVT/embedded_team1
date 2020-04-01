@@ -22,12 +22,12 @@ void *starThread(void *arg0) {
     xTimerStart(timerPub, 0);
 
     /* Data to be recv from the subQ */
-    struct qData subData = {0, 0};
+    struct qArmSensorMsg subData;
 
     while(1) {
 
         // blocking read on subQ
-        receiveFromArmSensorQ(&subData);
+        receiveFromSubArmSensorQ(&subData);
 
         // process data
     }
