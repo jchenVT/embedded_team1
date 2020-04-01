@@ -19,8 +19,8 @@
 /* JSON formatting used to push to msg queues */
 #include "jsonFormat.h"
 
-#define SUB_TOPIC   ARM_SENSORS
-#define PUB_TOPIC   ARM
+#define SUB_TOPIC   (enum topicVal) ARM_SENSORS
+#define PUB_TOPIC   (enum topicVal) ARM
 
 void *starThread(void *arg0);
 void timerCallback(TimerHandle_t xTimer);

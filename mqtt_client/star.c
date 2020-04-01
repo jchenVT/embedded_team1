@@ -41,5 +41,5 @@ void *starThread(void *arg0) {
 void timerCallback(TimerHandle_t xTimer) {
 
     // publish to message queue
-    packageArmJSON(0);
+    packageArmJSON(1);
 }

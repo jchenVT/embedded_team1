@@ -7,11 +7,7 @@
 
 //Defines
 
-#define UART_PRINT Report
-#define DBG_PRINT  Report
-#define ERR_PRINT(x) Report("Error [%d] at line [%d] in function [%s]  \n\r",\
-                                                                x, __LINE__, \
-                                                                 __FUNCTION__)
+#define UART_PRINT Message
 
 /* API */
 
@@ -32,5 +28,7 @@ void ClearTerm();
 char getch(void);
 
 void putch(char ch);
+
+void stop_all();
 
 #endif // __UART_IF_H__

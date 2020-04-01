@@ -133,14 +133,6 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pSlWlanEvent)
                pSlWlanEvent->Data.Connect.SsidLen);
         memcpy(g_ucConnectionBSSID, pSlWlanEvent->Data.Connect.Bssid,
                SL_WLAN_BSSID_LENGTH);
-
-        UART_PRINT(
-            "[WLAN EVENT] STA Connected to the AP: %s , BSSID: "
-            "%x:%x:%x:%x:%x:%x\n\r", g_ucConnectionSSID,
-            g_ucConnectionBSSID[0], g_ucConnectionBSSID[1],
-            g_ucConnectionBSSID[2],
-            g_ucConnectionBSSID[3], g_ucConnectionBSSID[4],
-            g_ucConnectionBSSID[5]);
         break;
 
     case SL_WLAN_EVENT_DISCONNECT:
@@ -174,7 +166,6 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pSlWlanEvent)
         break;
 
     default:
-        UART_PRINT("[WLAN EVENT] Unexpected event %d\n\r", pSlWlanEvent->Id);
         break;
     }
 }

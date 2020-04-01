@@ -56,9 +56,9 @@
 #include <time.h>
 #include <unistd.h>
 
-/* TI-Driver includes                                                        */
-#include <ti/drivers/GPIO.h>
-#include <ti/drivers/SPI.h>
+///* TI-Driver includes                                                        */
+//#include <ti/drivers/GPIO.h>
+//#include <ti/drivers/SPI.h>
 
 /* Simplelink includes                                                       */
 #include <ti/drivers/net/wifi/simplelink.h>
@@ -78,6 +78,9 @@
 
 /* Application includes                                                      */
 #include "client_cbs.h"
+
+/* Message queue */
+#include "mqtt_queue.h"
 
 //*****************************************************************************
 //                          LOCAL DEFINES
@@ -102,13 +105,12 @@
 
 #define WILL_TOPIC               "Client"
 #define WILL_MSG                 "Client Stopped"
-#define WILL_QOS                 MQTT_QOS_2
+#define WILL_QOS                 MQTT_QOS_0
 #define WILL_RETAIN              false
 
 /* Defining Broker IP address and port Number                                */
-//#define SERVER_ADDRESS           "messagesight.demos.ibm.com"
-#define SERVER_ADDRESS           "m2m.eclipse.org"
-#define SERVER_IP_ADDRESS        "192.168.178.67"
+#define SERVER_ADDRESS           "josephcchen.com"
+#define SERVER_IP_ADDRESS        "174.138.33.176"
 #define PORT_NUMBER              1883
 #define SECURED_PORT_NUMBER      8883
 #define LOOPBACK_PORT            1882
@@ -117,21 +119,16 @@
 #define CLEAN_SESSION            true
 
 /* Retain Flag. Used in publish message.                                     */
-#define RETAIN_ENABLE            1
+#define RETAIN_ENABLE            0
 
 /* Defining Number of subscription topics                                    */
-#define SUBSCRIPTION_TOPIC_COUNT 4
+#define SUBSCRIPTION_TOPIC_COUNT 1
 
 /* Defining Subscription Topic Values                                        */
-#define SUBSCRIPTION_TOPIC0      "/Broker/To/cc32xx"
-#define SUBSCRIPTION_TOPIC1      "/cc3200/ToggleLEDCmdL1"
-#define SUBSCRIPTION_TOPIC2      "/cc3200/ToggleLEDCmdL2"
-#define SUBSCRIPTION_TOPIC3      "/cc3200/ToggleLEDCmdL3"
-
-/* Defining Publish Topic Values                                             */
-#define PUBLISH_TOPIC0           "/cc32xx/ButtonPressEvtSw2"
-#define PUBLISH_TOPIC0_DATA \
-    "Push Button SW2 has been pressed on CC32xx device"
+#define SUBSCRIPTION_TOPIC0      "ARM"
+#define SUBSCRIPTION_TOPIC1      "ARM_SENSOR"
+#define SUBSCRIPTION_TOPIC2      "ROVER"
+#define SUBSCRIPTION_TOPIC3      "ROVER_SENSOR"
 
 /* Spawn task priority and Task and Thread Stack Size                        */
 #define TASKSTACKSIZE            2048
@@ -164,21 +161,12 @@
 //*****************************************************************************
 //                      LOCAL FUNCTION PROTOTYPES
 //*****************************************************************************
-void pushButtonInterruptHandler2(uint_least8_t index);
-void pushButtonInterruptHandler3(uint_least8_t index);
-void TimerPeriodicIntHandler(sigval val);
-void LedTimerConfigNStart();
-void LedTimerDeinitStop();
-static void DisplayBanner(char * AppName);
 void * MqttClient(void *pvParameters);
 void Mqtt_ClientStop(uint8_t disconnect);
-void Mqtt_ServerStop();
 void Mqtt_Stop();
 void Mqtt_start();
 int32_t Mqtt_IF_Connect();
-int32_t MqttServer_start();
 int32_t MqttClient_start();
-int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement);
 
 //*****************************************************************************
 //                 GLOBAL VARIABLES
@@ -188,7 +176,6 @@ int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement);
 int32_t gApConnectionState = -1;
 uint32_t gInitState = 0;
 uint32_t memPtrCounterfree = 0;
-bool gResetApplication = false;
 static MQTTClient_Handle gMqttClient;
 MQTTClient_Params MqttClientExmple_params;
 unsigned short g_usTimerInts;
@@ -201,8 +188,6 @@ uint32_t gUiConnFlag = 0;
 SlWlanSecParams_t SecurityParams = { 0 };
 
 /* Client ID                                                                 */
-/* If ClientId isn't set, the MAC address of the device will be copied into  */
-/* the ClientID parameter.                                                   */
 char ClientId[13] = {'\0'};
 
 /* Client User Name and Password                                             */
@@ -211,24 +196,14 @@ const char *ClientPassword = "pwd1";
 
 /* Subscription topics and qos values                                        */
 char *topic[SUBSCRIPTION_TOPIC_COUNT] =
-{ SUBSCRIPTION_TOPIC0, SUBSCRIPTION_TOPIC1, \
-    SUBSCRIPTION_TOPIC2, SUBSCRIPTION_TOPIC3 };
+{ SUBSCRIPTION_TOPIC1 };
 
 unsigned char qos[SUBSCRIPTION_TOPIC_COUNT] =
-{ MQTT_QOS_2, MQTT_QOS_2, MQTT_QOS_2, MQTT_QOS_2 };
-
-/* Publishing topics and messages                                            */
-const char *publish_topic = { PUBLISH_TOPIC0 };
-const char *publish_data = { PUBLISH_TOPIC0_DATA };
+{ MQTT_QOS_0 };
 
 /* Message Queue                                                             */
-mqd_t g_PBQueue;
 pthread_t mqttThread = (pthread_t) NULL;
 pthread_t appThread = (pthread_t) NULL;
-timer_t g_timer;
-
-/* Printing new line                                                         */
-char lineBreak[] = "\n\r";
 
 //*****************************************************************************
 //                 Banner VARIABLES
@@ -300,207 +275,10 @@ MQTTClient_Will will_param =
     WILL_RETAIN
 };
 
-//*****************************************************************************
-//
-//! MQTT_SendMsgToQueue - Utility function that receive msgQueue parameter and
-//! tries to push it the queue with minimal time for timeout of 0.
-//! If the queue isn't full the parameter will be stored and the function
-//! will return 0.
-//! If the queue is full and the timeout expired (because the timeout parameter
-//! is 0 it will expire immediately), the parameter is thrown away and the
-//! function will return -1 as an error for full queue.
-//!
-//! \param[in] struct msgQueue *queueElement
-//!
-//! \return 0 on success, -1 on error
-//
-//*****************************************************************************
-int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement)
-{
-    struct timespec abstime = {0};
-
-    clock_gettime(CLOCK_REALTIME, &abstime);
-
-    if(g_PBQueue)
-    {
-        /* send message to the queue                                        */
-        if(mq_timedsend(g_PBQueue, (char *) queueElement,
-                        sizeof(struct msgQueue), 0, &abstime) == 0)
-        {
-            return(0);
-        }
-    }
-    return(-1);
-}
-
-//*****************************************************************************
-//
-//! Push Button Handler1(GPIOSW2). Press push button1 (GPIOSW2) Whenever user
-//! wants to publish a message. Write message into message queue signaling the
-//! event publish messages
-//!
-//! \param none
-//!
-//! return none
-//
-//*****************************************************************************
-void pushButtonInterruptHandler2(uint_least8_t index)
-{
-    struct msgQueue queueElement;
-
-    /* Disable the SW2 interrupt */
-    GPIO_disableInt(CONFIG_GPIO_BUTTON_0); // SW2
-
-    queueElement.event = PUBLISH_PUSH_BUTTON_PRESSED;
-    queueElement.msgPtr = NULL;
-
-    /* write message indicating publish message                             */
-    if(MQTT_SendMsgToQueue(&queueElement))
-    {
-        UART_PRINT("\n\n\rQueue is full\n\n\r");
-    }
-}
-
-//*****************************************************************************
-//
-//! Push Button Handler2(GPIOSW3). Press push button3 Whenever user wants to
-//! disconnect from the remote broker. Write message into message queue
-//! indicating disconnect from broker.
-//!
-//! \param none
-//!
-//! return none
-//
-//*****************************************************************************
-void pushButtonInterruptHandler3(uint_least8_t index)
-{
-    struct msgQueue queueElement;
-    struct msgQueue queueElemRecv;
-
-    queueElement.event = DISC_PUSH_BUTTON_PRESSED;
-    queueElement.msgPtr = NULL;
-
-    /* write message indicating disconnect push button pressed message      */
-    if(MQTT_SendMsgToQueue(&queueElement))
-    {
-        UART_PRINT(
-            "\n\n\rQueue is full, throw first msg and send the new one\n\n\r");
-        mq_receive(g_PBQueue, (char*) &queueElemRecv, sizeof(struct msgQueue),
-                   NULL);
-        MQTT_SendMsgToQueue(&queueElement);
-    }
-}
-
-//*****************************************************************************
-//
-//! Periodic Timer Interrupt Handler
-//!
-//! \param None
-//!
-//! \return None
-//
-//*****************************************************************************
-void TimerPeriodicIntHandler(sigval val)
-{
-    /* Increment our interrupt counter.                                      */
-    g_usTimerInts++;
-
-    if(!(g_usTimerInts & 0x1))
-    {
-        /* Turn Led Off                                                      */
-        GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
-    }
-    else
-    {
-        /* Turn Led On                                                       */
-        GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
-    }
-}
-
-//*****************************************************************************
-//
-//! Function to configure and start timer to blink the LED while device is
-//! trying to connect to an AP
-//!
-//! \param none
-//!
-//! return none
-//
-//*****************************************************************************
-void LedTimerConfigNStart()
-{
-    struct itimerspec value;
-    sigevent sev;
-
-    /* Create Timer                                                          */
-    sev.sigev_notify = SIGEV_SIGNAL;
-    sev.sigev_notify_function = &TimerPeriodicIntHandler;
-    timer_create(2, &sev, &g_timer);
-
-    /* start timer                                                           */
-    value.it_interval.tv_sec = 0;
-    value.it_interval.tv_nsec = TIMER_EXPIRATION_VALUE;
-    value.it_value.tv_sec = 0;
-    value.it_value.tv_nsec = TIMER_EXPIRATION_VALUE;
-
-    timer_settime(g_timer, 0, &value, NULL);
-}
-
-//*****************************************************************************
-//
-//! Disable the LED blinking Timer as Device is connected to AP
-//!
-//! \param none
-//!
-//! return none
-//
-//*****************************************************************************
-void LedTimerDeinitStop()
-{
-    /* Disable the LED blinking Timer as Device is connected to AP.          */
-    timer_delete(g_timer);
-}
-
-//*****************************************************************************
-//
-//! Application startup display on UART
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//*****************************************************************************
-static void DisplayBanner(char * AppName)
-{
-    UART_PRINT("\n\n\n\r");
-    UART_PRINT("\t\t *************************************************\n\r");
-    UART_PRINT("\t\t    CC32xx %s Application       \n\r", AppName);
-    UART_PRINT("\t\t *************************************************\n\r");
-    UART_PRINT("\n\n\n\r");
-}
-
 void * MqttClientThread(void * pvParameters)
 {
-    struct msgQueue queueElement;
-    struct msgQueue queueElemRecv;
-
     MQTTClient_run((MQTTClient_Handle)pvParameters);
-
-    queueElement.event = LOCAL_CLIENT_DISCONNECTION;
-    queueElement.msgPtr = NULL;
-
-    /*write message indicating disconnect Broker message.                   */
-    if(MQTT_SendMsgToQueue(&queueElement))
-    {
-        UART_PRINT(
-            "\n\n\rQueue is full, throw first msg and send the new one\n\n\r");
-        mq_receive(g_PBQueue, (char*) &queueElemRecv, sizeof(struct msgQueue),
-                   NULL);
-        MQTT_SendMsgToQueue(&queueElement);
-    }
-
     pthread_exit(0);
-
     return(NULL);
 }
 
@@ -522,9 +300,7 @@ void * MqttClientThread(void * pvParameters)
 //*****************************************************************************
 void * MqttClient(void *pvParameters)
 {
-    struct msgQueue queueElemRecv;
     long lRetVal = -1;
-    char *tmpBuff;
 
     /*Initializing Client and Subscribing to the Broker.                     */
     if(gApConnectionState >= 0)
@@ -538,86 +314,37 @@ void * MqttClient(void *pvParameters)
         }
     }
 
-    /*handling the signals from various callbacks including the push button  */
-    /*prompting the client to publish a msg on PUB_TOPIC OR msg received by  */
-    /*the server on enrolled topic(for which the on-board client ha enrolled)*/
-    /*from a local client(will be published to the remote broker by the      */
-    /*client) OR msg received by the client from the remote broker (need to  */
-    /*be sent to the server to see if any local client has subscribed on the */
-    /*same topic).                                                           */
+    struct qStringData pubData = {0, ""};
+
     for(;; )
     {
-        /*waiting for signals                                                */
-        mq_receive(g_PBQueue, (char*) &queueElemRecv, sizeof(struct msgQueue),
-                   NULL);
+        // blocking read on pubQ
+        int success = receiveFromPubQ(&pubData);
 
-        switch(queueElemRecv.event)
-        {
-        case PUBLISH_PUSH_BUTTON_PRESSED:
+        char pubTopic[1];
+        snprintf(pubTopic, 1, "%d", pubData.topic);
 
-            /*send publish message                                       */
-            lRetVal =
-                MQTTClient_publish(gMqttClient, (char*) publish_topic, strlen(
-                                      (char*)publish_topic),
-                                  (char*)publish_data,
-                                  strlen((char*) publish_data), MQTT_QOS_2 |
-                                  ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+        /*send publish message                                       */
+        if (success) {
+            lRetVal = MQTTClient_publish(gMqttClient,
+                                         pubTopic,
+                                         strlen((char*)pubData.topic),
+                                         pubData.str,
+                                         strlen((const char*)pubData.str),
+                                         MQTT_QOS_0 | ((RETAIN_ENABLE) ? MQTT_PUBLISH_RETAIN : 0));
+        }
 
-            UART_PRINT("\n\r CC3200 Publishes the following message \n\r");
-            UART_PRINT("Topic: %s\n\r", publish_topic);
-            UART_PRINT("Data: %s\n\r", publish_data);
-
-            /* Clear and enable again the SW2 interrupt */
-            GPIO_clearInt(CONFIG_GPIO_BUTTON_0);     // SW2
-            GPIO_enableInt(CONFIG_GPIO_BUTTON_0);     // SW2
-
-            break;
-
-        /*msg received by client from remote broker (on a topic      */
-        /*subscribed by local client)                                */
-        case MSG_RECV_BY_CLIENT:
-            tmpBuff = (char *) ((char *) queueElemRecv.msgPtr + 12);
-            if(strncmp
-                (tmpBuff, SUBSCRIPTION_TOPIC1, queueElemRecv.topLen) == 0)
-            {
-                GPIO_toggle(CONFIG_GPIO_LED_0);
-            }
-            else if(strncmp(tmpBuff, SUBSCRIPTION_TOPIC2,
-                            queueElemRecv.topLen) == 0)
-            {
-                GPIO_toggle(CONFIG_GPIO_LED_1);
-            }
-            else if(strncmp(tmpBuff, SUBSCRIPTION_TOPIC3,
-                            queueElemRecv.topLen) == 0)
-            {
-                GPIO_toggle(CONFIG_GPIO_LED_2);
-            }
-
-            free(queueElemRecv.msgPtr);
-            break;
-
-        /*On-board client disconnected from remote broker, only      */
-        /*local MQTT network will work                               */
-        case LOCAL_CLIENT_DISCONNECTION:
-            UART_PRINT("\n\rOn-board Client Disconnected\n\r\r\n");
-            gUiConnFlag = 0;
-            break;
-
-        /*Push button for full restart check                         */
-        case DISC_PUSH_BUTTON_PRESSED:
-            gResetApplication = true;
-            break;
-
-        case THREAD_TERMINATE_REQ:
-            gUiConnFlag = 0;
-            pthread_exit(0);
-            return(NULL);
-
-        default:
-            sleep(1);
-            break;
+        if (lRetVal > 0) {
+            UART_PRINT("\n\r Publishing the following message \n\r");
+            //        UART_PRINT("Topic: %s\n\r", publish_topic);
+            //        UART_PRINT("Data: %s\n\r", publish_data);
+        }
+        else {
+            UART_PRINT("\n\r Publishing failed \n\r");
         }
     }
+
+    return 0;
 }
 
 //*****************************************************************************
@@ -647,13 +374,6 @@ int32_t Mqtt_IF_Connect()
         strncpy(SSID_Remote_Name, SSID_NAME, Str_Length);
     }
 
-    /*Display Application Banner                                             */
-    DisplayBanner(APPLICATION_NAME);
-
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
-    GPIO_write(CONFIG_GPIO_LED_1, CONFIG_GPIO_LED_OFF);
-    GPIO_write(CONFIG_GPIO_LED_2, CONFIG_GPIO_LED_OFF);
-
     /*Reset The state of the machine                                         */
     Network_IF_ResetMCUStateMachine();
 
@@ -661,15 +381,9 @@ int32_t Mqtt_IF_Connect()
     lRetVal = Network_IF_InitDriver(ROLE_STA);
     if(lRetVal < 0)
     {
-        UART_PRINT("Failed to start SimpleLink Device\n\r", lRetVal);
+        UART_PRINT("Failed to start SimpleLink Device\n\r");
         return(-1);
     }
-
-    /*switch on CONFIG_GPIO_LED_2 to indicate Simplelink is properly up.       */
-    GPIO_write(CONFIG_GPIO_LED_2, CONFIG_GPIO_LED_ON);
-
-    /*Start Timer to blink CONFIG_GPIO_LED_0 till AP connection                */
-    LedTimerConfigNStart();
 
     /*Initialize AP security params                                          */
     SecurityParams.Key = (signed char *) SECURITY_KEY;
@@ -683,18 +397,6 @@ int32_t Mqtt_IF_Connect()
         UART_PRINT("Connection to an AP failed\n\r");
         return(-1);
     }
-
-    /*Disable the LED blinking Timer as Device is connected to AP.           */
-    LedTimerDeinitStop();
-
-    /*Switch ON CONFIG_GPIO_LED_0 to indicate that Device acquired an IP.      */
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
-
-    sleep(1);
-
-    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_OFF);
-    GPIO_write(CONFIG_GPIO_LED_1, CONFIG_GPIO_LED_OFF);
-    GPIO_write(CONFIG_GPIO_LED_2, CONFIG_GPIO_LED_OFF);
 
     return(0);
 }
@@ -715,20 +417,7 @@ void Mqtt_start()
     pthread_attr_t pAttrs;
     struct sched_param priParam;
     int32_t retc = 0;
-    mq_attr attr;
     unsigned mode = 0;
-
-    /*sync object for inter thread communication                             */
-    attr.mq_maxmsg = 10;
-    attr.mq_msgsize = sizeof(struct msgQueue);
-    g_PBQueue = mq_open("g_PBQueue", O_CREAT, mode, &attr);
-
-    if(g_PBQueue == NULL)
-    {
-        UART_PRINT("MQTT Message Queue create fail\n\r");
-        gInitState &= ~MQTT_INIT_STATE;
-        return;
-    }
 
     /*Set priority and stack size attributes                                 */
     pthread_attr_init(&pAttrs);
@@ -752,13 +441,6 @@ void Mqtt_start()
         return;
     }
 
-    /*enable interrupt for the GPIO 13 (SW3) and GPIO 22 (SW2).              */
-    GPIO_setCallback(CONFIG_GPIO_BUTTON_0, pushButtonInterruptHandler2);
-    GPIO_enableInt(CONFIG_GPIO_BUTTON_0); // SW2
-
-    GPIO_setCallback(CONFIG_GPIO_BUTTON_1, pushButtonInterruptHandler3);
-    GPIO_enableInt(CONFIG_GPIO_BUTTON_1); // SW3
-
     gInitState &= ~MQTT_INIT_STATE;
 }
 
@@ -775,44 +457,18 @@ void Mqtt_start()
 
 void Mqtt_Stop()
 {
-    struct msgQueue queueElement;
-    struct msgQueue queueElemRecv;
-
     if(gApConnectionState >= 0)
     {
         Mqtt_ClientStop(1);
     }
 
-    queueElement.event = THREAD_TERMINATE_REQ;
-    queueElement.msgPtr = NULL;
-
-    /*write message indicating publish message                               */
-    if(MQTT_SendMsgToQueue(&queueElement))
-    {
-        UART_PRINT(
-            "\n\n\rQueue is full, throw first msg and send the new one\n\n\r");
-        mq_receive(g_PBQueue, (char*) &queueElemRecv, sizeof(struct msgQueue),
-                   NULL);
-        MQTT_SendMsgToQueue(&queueElement);
-    }
-
-    sleep(2);
-
-    mq_close(g_PBQueue);
-    g_PBQueue = NULL;
-
     sl_Stop(SL_STOP_TIMEOUT);
     UART_PRINT("\n\r Client Stop completed\r\n");
-
-    /*Disable the SW2 and SW3 interrupt */
-    GPIO_disableInt(CONFIG_GPIO_BUTTON_0); // SW2
-    GPIO_disableInt(CONFIG_GPIO_BUTTON_1); // SW3
 }
 
 int32_t MqttClient_start()
 {
     int32_t lRetVal = -1;
-    int32_t iCount = 0;
 
     int32_t threadArg = 100;
     pthread_attr_t pAttrs;
@@ -889,8 +545,7 @@ int32_t MqttClient_start()
         if(0 > lRetVal)
         {
             /*lib initialization failed                                      */
-            UART_PRINT("Connection to broker failed, Error code: %d\n\r",
-                       lRetVal);
+            UART_PRINT("Connection to broker failed");
 
             gUiConnFlag = 0;
         }
@@ -914,16 +569,15 @@ int32_t MqttClient_start()
             if(MQTTClient_subscribe(gMqttClient, subscriptionInfo,
                                     SUBSCRIPTION_TOPIC_COUNT) < 0)
             {
+                // ERROR
+                stop_all();
                 UART_PRINT("\n\r Subscription Error \n\r");
                 MQTTClient_disconnect(gMqttClient);
                 gUiConnFlag = 0;
             }
             else
             {
-                for(iCount = 0; iCount < SUBSCRIPTION_TOPIC_COUNT; iCount++)
-                {
-                    UART_PRINT("Client subscribed on %s\n\r,", topic[iCount]);
-                }
+                UART_PRINT("Client subscribed to all topics");
             }
         }
     }
@@ -957,179 +611,15 @@ void Mqtt_ClientStop(uint8_t disconnect)
 
     MQTTClient_unsubscribe(gMqttClient, subscriptionInfo,
                            SUBSCRIPTION_TOPIC_COUNT);
-    for(iCount = 0; iCount < SUBSCRIPTION_TOPIC_COUNT; iCount++)
-    {
-        UART_PRINT("Unsubscribed from the topic %s\r\n", topic[iCount]);
-    }
+    UART_PRINT("Unsubscribed from topics");
     gUiConnFlag = 0;
 
     /*exiting the Client library                                             */
     MQTTClient_delete(gMqttClient);
 }
 
-//*****************************************************************************
-//!
-//! Utility function which prints the borders
-//!
-//! \param[in] ch  -  hold the charater for the border.
-//! \param[in] n   -  hold the size of the border.
-//!
-//! \return none.
-//!
-//*****************************************************************************
-
-void printBorder(char ch,
-                 int n)
-{
-    int i = 0;
-
-    for(i = 0; i < n; i++)
-    {
-        putch(ch);
-    }
-}
-
-//*****************************************************************************
-//!
-//! Set the ClientId with its own mac address
-//! This routine converts the mac address which is given
-//! by an integer type variable in hexadecimal base to ASCII
-//! representation, and copies it into the ClientId parameter.
-//!
-//! \param  macAddress  -   Points to string Hex.
-//!
-//! \return void.
-//!
-//*****************************************************************************
-int32_t SetClientIdNamefromMacAddress()
-{
-    int32_t ret = 0;
-    uint8_t Client_Mac_Name[2];
-    uint8_t Index;
-    uint16_t macAddressLen = SL_MAC_ADDR_LEN;
-    uint8_t macAddress[SL_MAC_ADDR_LEN];
-
-    /*Get the device Mac address */
-    ret = sl_NetCfgGet(SL_NETCFG_MAC_ADDRESS_GET, 0, &macAddressLen,
-                       &macAddress[0]);
-
-    /*When ClientID isn't set, use the mac address as ClientID               */
-    if(ClientId[0] == '\0')
-    {
-        /*6 bytes is the length of the mac address                           */
-        for(Index = 0; Index < SL_MAC_ADDR_LEN; Index++)
-        {
-            /*Each mac address byte contains two hexadecimal characters      */
-            /*Copy the 4 MSB - the most significant character                */
-            Client_Mac_Name[0] = (macAddress[Index] >> 4) & 0xf;
-            /*Copy the 4 LSB - the least significant character               */
-            Client_Mac_Name[1] = macAddress[Index] & 0xf;
-
-            if(Client_Mac_Name[0] > 9)
-            {
-                /*Converts and copies from number that is greater than 9 in  */
-                /*hexadecimal representation (a to f) into ascii character   */
-                ClientId[2 * Index] = Client_Mac_Name[0] + 'a' - 10;
-            }
-            else
-            {
-                /*Converts and copies from number 0 - 9 in hexadecimal       */
-                /*representation into ascii character                        */
-                ClientId[2 * Index] = Client_Mac_Name[0] + '0';
-            }
-            if(Client_Mac_Name[1] > 9)
-            {
-                /*Converts and copies from number that is greater than 9 in  */
-                /*hexadecimal representation (a to f) into ascii character   */
-                ClientId[2 * Index + 1] = Client_Mac_Name[1] + 'a' - 10;
-            }
-            else
-            {
-                /*Converts and copies from number 0 - 9 in hexadecimal       */
-                /*representation into ascii character                        */
-                ClientId[2 * Index + 1] = Client_Mac_Name[1] + '0';
-            }
-        }
-    }
-    return(ret);
-}
-
-//*****************************************************************************
-//!
-//! Utility function which Display the app banner
-//!
-//! \param[in] appName     -  holds the application name.
-//! \param[in] appVersion  -  holds the application version.
-//!
-//! \return none.
-//!
-//*****************************************************************************
-
-int32_t DisplayAppBanner(char* appName,
-                         char* appVersion)
-{
-    int32_t ret = 0;
-    uint8_t macAddress[SL_MAC_ADDR_LEN];
-    uint16_t macAddressLen = SL_MAC_ADDR_LEN;
-    uint16_t ConfigSize = 0;
-    uint8_t ConfigOpt = SL_DEVICE_GENERAL_VERSION;
-    SlDeviceVersion_t ver = {0};
-
-    ConfigSize = sizeof(SlDeviceVersion_t);
-
-    /*Print device version info. */
-    ret =
-        sl_DeviceGet(SL_DEVICE_GENERAL, &ConfigOpt, &ConfigSize,
-                     (uint8_t*)(&ver));
-
-    /*Print device Mac address */
-    ret |= (int32_t)sl_NetCfgGet(SL_NETCFG_MAC_ADDRESS_GET, 0, &macAddressLen,
-                       &macAddress[0]);
-
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t");
-    printBorder('=', 44);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t   %s Example Ver: %s",appName, appVersion);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t");
-    printBorder('=', 44);
-    UART_PRINT(lineBreak);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t CHIP: 0x%x",ver.ChipId);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t MAC:  %d.%d.%d.%d",ver.FwVersion[0],ver.FwVersion[1],
-               ver.FwVersion[2],
-               ver.FwVersion[3]);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t PHY:  %d.%d.%d.%d",ver.PhyVersion[0],ver.PhyVersion[1],
-               ver.PhyVersion[2],
-               ver.PhyVersion[3]);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t NWP:  %d.%d.%d.%d",ver.NwpVersion[0],ver.NwpVersion[1],
-               ver.NwpVersion[2],
-               ver.NwpVersion[3]);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t ROM:  %d",ver.RomVersion);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t HOST: %s", SL_DRIVER_VERSION);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t MAC address: %02x:%02x:%02x:%02x:%02x:%02x", macAddress[0],
-               macAddress[1], macAddress[2], macAddress[3], macAddress[4],
-               macAddress[5]);
-    UART_PRINT(lineBreak);
-    UART_PRINT(lineBreak);
-    UART_PRINT("\t");
-    printBorder('=', 44);
-    UART_PRINT(lineBreak);
-    UART_PRINT(lineBreak);
-
-    return(ret);
-}
-
 void mainThread(void * args)
 {
-    uint32_t count = 0;
     pthread_t spawn_thread = (pthread_t) NULL;
     pthread_attr_t pAttrs_spawn;
     struct sched_param priParam;
@@ -1144,9 +634,6 @@ void mainThread(void * args)
 
     SlNetSock_init(0);
     SlNetUtil_init(0);
-
-    GPIO_init();
-    SPI_init();
 
     /*Configure the UART                                                     */
     tUartHndl = InitTerm();
@@ -1166,10 +653,7 @@ void mainThread(void * args)
     if(retc != 0)
     {
         UART_PRINT("could not create simplelink task\n\r");
-        while(1)
-        {
-            ;
-        }
+        stop_all();
     }
 
     retc = sl_Start(0, 0, 0);
@@ -1177,16 +661,11 @@ void mainThread(void * args)
     {
         /*Handle Error */
         UART_PRINT("\n sl_Start failed\n");
-        while(1)
-        {
-            ;
-        }
+        stop_all();
     }
 
-    /*Output device information to the UART terminal */
-    retc = DisplayAppBanner(APPLICATION_NAME, APPLICATION_VERSION);
     /*Set the ClientId with its own mac address */
-    retc |= SetClientIdNamefromMacAddress();
+    retc |= 0; // CHANGE THIS for ID
 
 
     retc = sl_Stop(SL_STOP_TIMEOUT);
@@ -1194,57 +673,32 @@ void mainThread(void * args)
     {
         /*Handle Error */
         UART_PRINT("\n sl_Stop failed\n");
-        while(1)
-        {
-            ;
-        }
+        stop_all();
     }
 
     if(retc < 0)
     {
         /*Handle Error */
         UART_PRINT("mqtt_client - Unable to retrieve device information \n");
-        while(1)
-        {
-            ;
-        }
+        stop_all();
     }
 
-    while(1)
-    {
-        gResetApplication = false;
-        topic[0] = SUBSCRIPTION_TOPIC0;
-        topic[1] = SUBSCRIPTION_TOPIC1;
-        topic[2] = SUBSCRIPTION_TOPIC2;
-        topic[3] = SUBSCRIPTION_TOPIC3;
-        gInitState = 0;
+    topic[0] = SUBSCRIPTION_TOPIC0;
+    topic[1] = SUBSCRIPTION_TOPIC1;
+    topic[2] = SUBSCRIPTION_TOPIC2;
+    topic[3] = SUBSCRIPTION_TOPIC3;
 
-        /*Connect to AP                                                      */
-        gApConnectionState = Mqtt_IF_Connect();
+    gInitState = 0;
 
-        gInitState |= MQTT_INIT_STATE;
-        /*Run MQTT Main Thread (it will open the Client and Server)          */
-        Mqtt_start();
+    /*Connect to AP                                                      */
+    gApConnectionState = Mqtt_IF_Connect();
 
-        /*Wait for init to be completed!!!                                   */
-        while(gInitState != 0)
-        {
-            UART_PRINT(".");
-            sleep(1);
-        }
-        UART_PRINT(".\r\n");
+    gInitState |= MQTT_INIT_STATE;
+    /*Run MQTT Main Thread (it will open the Client and Server)          */
+    Mqtt_start();
 
-        while(gResetApplication == false)
-        {
-            ;
-        }
+    while(1) {
 
-        UART_PRINT("TO Complete - Closing all threads and resources\r\n");
-
-        /*Stop the MQTT Process                                              */
-        Mqtt_Stop();
-
-        UART_PRINT("reopen MQTT # %d  \r\n", ++count);
     }
 }
 

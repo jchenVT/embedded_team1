@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define JSON_LEN        120
 #define MaxTokens       50
 enum topicVal {ARM, ARM_SENSOR, ROVER, ROVER_SENSOR};
 

@@ -7,11 +7,11 @@
 
 #include "mqtt_queue.h"
 
-static QueueHandle_t pubQ = NULL;
-static QueueHandle_t subArmQ = NULL;
-static QueueHandle_t subArmSensorQ = NULL;
-static QueueHandle_t subRoverQ = NULL;
-static QueueHandle_t subRoverSensorQ = NULL;
+static QueueHandle_t pubQ = (void *)0;
+static QueueHandle_t subArmQ = (void *)0;
+static QueueHandle_t subArmSensorQ = (void *)0;
+static QueueHandle_t subRoverQ = (void *)0;
+static QueueHandle_t subRoverSensorQ = (void *)0;
 
 /*
  *  @function   createQs
@@ -24,27 +24,27 @@ static QueueHandle_t subRoverSensorQ = NULL;
 bool createQs() {
 
     pubQ = xQueueCreate( qLENGTH, sizeof(struct qStringData));
-    if (pubQ == NULL) {
+    if (pubQ == (void *)0) {
         return false;
     }
 
     subArmQ = xQueueCreate( qLENGTH, sizeof(struct qArmMsg));
-    if (subArmQ == NULL) {
+    if (subArmQ == (void *)0) {
         return false;
     }
 
     subArmSensorQ = xQueueCreate( qLENGTH, sizeof(struct qArmSensorMsg));
-    if (subArmSensorQ == NULL) {
+    if (subArmSensorQ == (void *)0) {
         return false;
     }
 
     subRoverQ = xQueueCreate( qLENGTH, sizeof(struct qRoverMsg));
-    if (subRoverQ == NULL) {
+    if (subRoverQ == (void *)0) {
         return false;
     }
 
     subRoverSensorQ = xQueueCreate( qLENGTH, sizeof(struct qRoverSensorMsg));
-    if (subRoverSensorQ == NULL) {
+    if (subRoverSensorQ == (void *)0) {
         return false;
     }
 
@@ -65,7 +65,7 @@ int sendToPubQ(int topic, char msg []) {
 
     struct qStringData data;
     data.topic = topic;
-    strncpy(data.str, msg, 120);
+    strncpy(data.str, msg, MAXJSONSIZE);
     return xQueueSendToBackFromISR( pubQ, &data, 0 );
 }
 
@@ -84,15 +84,15 @@ int sendToSubArmQ(struct qArmMsg msg) {
 }
 
 int sendToSubArmSensorQ(struct qArmSensorMsg msg) {
-    return xQueueSendToBackFromISR(subArmSensorQ, &msg, 0 );
+    return xQueueSendToBackFromISR( subArmSensorQ, &msg, 0 );
 }
 
 int sendToSubRoverQ(struct qRoverMsg msg) {
-    return xQueueSendToBackFromISR(subRoverQ, &msg, 0 );
+    return xQueueSendToBackFromISR( subRoverQ, &msg, 0 );
 }
 
 int sendToSubRoverSensorQ(struct qRoverSensorMsg msg) {
-    return xQueueSendToBackFromISR(subRoverSensorQ, &msg, 0 );
+    return xQueueSendToBackFromISR( subRoverSensorQ, &msg, 0 );
 }
 
 /*

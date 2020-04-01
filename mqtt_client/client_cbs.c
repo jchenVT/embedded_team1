@@ -50,12 +50,10 @@
 #include "client_cbs.h"
 #include <jsonFormat.h>
 
-extern bool gResetApplication;
-
 //*****************************************************************************
 //                          LOCAL DEFINES
 //*****************************************************************************
-#define APP_PRINT               Report
+#define APP_PRINT               Message
 
 #define OS_WAIT_FOREVER         (0xFFFFFFFF)
 #define OS_NO_WAIT              (0)
@@ -69,13 +67,13 @@ extern bool gResetApplication;
 //*****************************************************************************
 
 /* Message Queue                                                              */
-extern char *topic[];
+//extern char *topic[];
 struct client_info client_info_table[MAX_CONNECTION];
 
 //*****************************************************************************
 //                 Queue external function
 //*****************************************************************************
-extern int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement);
+//extern int32_t MQTT_SendMsgToQueue(struct msgQueue *queueElement);
 
 //****************************************************************************
 //                      CLIENT CALLBACKS
@@ -121,7 +119,9 @@ void MqttClientCallback(int32_t event,
             }
             else
             {
-                APP_PRINT("Connection Error: %d\n\r", *ConnACK);
+                // ERROR
+                APP_PRINT("Connection Error");
+                stop_all();
             }
             break;
         }
@@ -132,7 +132,7 @@ void MqttClientCallback(int32_t event,
     }
     case MQTTClient_RECV_CB_EVENT:
     {
-        APP_PRINT("\n\rMsg Recvd. by client\n\r");
+        APP_PRINT("Msg Recvd. by client\n\r");
         jsonParser(((MQTTClient_RecvMetaDataCB *)metaData)->topic, (char *)data);
         break;
     }

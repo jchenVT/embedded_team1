@@ -21,6 +21,7 @@
 
 #define qLENGTH         12
 #define qITEMSIZE       8
+#define MAXJSONSIZE     120
 
 /* Struct used in RETURNING message from queue */
 struct qData {
@@ -57,7 +58,6 @@ struct qRoverSensorMsg {
 bool createQs();
 int sendToPubQ(int topic, char msg []);
 int receiveFromPubQ(struct qStringData *oldData);
-
 
 int sendToSubArmQ(struct qArmMsg msg);
 int sendToSubArmSensorQ(struct qArmSensorMsg msg);
