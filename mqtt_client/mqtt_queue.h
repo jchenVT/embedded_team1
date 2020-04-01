@@ -60,7 +60,7 @@ int receiveFromPubQ(struct qStringData *oldData);
 
 
 int sendToSubArmQ(struct qArmMsg msg);
-int sendToSubArmSEnsorQ(struct qArmSensorMsg msg);
+int sendToSubArmSensorQ(struct qArmSensorMsg msg);
 int sendToSubRoverQ(struct qRoverMsg msg);
 int sendToSubRoverSensorQ(struct qRoverSensorMsg msg);
 

@@ -44,10 +44,12 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             char *state;
             strncpy(state, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToArmQ(atoi(state));
+            struct qArmMsg armMsg = {atoi(state)};
+
+            sendToSubArmQ(armMsg);
             break;
 
-        case ARM_SENSOR:
+        case ROVER_SENSOR:
             if (jsoneq(JSON_STRING, &tokens[0], "move_to_point") != 0 ||
                     jsoneq(JSON_STRING, &tokens[2], "point_x") != 0 ||
                     jsoneq(JSON_STRING, &tokens[4], "point_y") != 0 ||
@@ -56,15 +58,18 @@ int jsonParser(const char *topic, char *JSON_STRING) {
                 // ERROR
             }
 
+            struct qRoverSensorMsg roverSensorMsg;
+
+            char *ptr;
             char *movePoint;
             strncpy(movePoint, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            char *ptr;
-            double pointX = strtod(JSON_STRING + tokens[3].start, &ptr);
-            double pointY = strtod(JSON_STRING + tokens[5].start, &ptr);
-            double angleRotate = strtod(JSON_STRING + tokens[7].start, &ptr);
+            roverSensorMsg.move_to_point = atoi(movePoint);
+            roverSensorMsg.point_x = strtod(JSON_STRING + tokens[3].start, &ptr);
+            roverSensorMsg.point_y = strtod(JSON_STRING + tokens[5].start, &ptr);
+            roverSensorMsg.angle_rotate = strtod(JSON_STRING + tokens[7].start, &ptr);
 
-            pushToArmSensorQ(atoi(movePoint), pointX, pointY, angleRotate);
+            sendToSubRoverSensorQ(roverSensorMsg);
             break;
 
         case ROVER:
@@ -75,10 +80,12 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             char *roverState;
             strncpy(roverState, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
-            pushToRoverQ(atoi(roverState));
+            struct qRoverMsg roverMsg = {atoi(roverState)};
+
+            sendToSubRoverQ(roverMsg);
             break;
 
-        case ROVER_SENSOR:
+        case ARM_SENSOR:
             if (jsoneq(JSON_STRING, &tokens[0], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[2], "sensorValue") != 0 || num != 6) {
                 // ERROR
             }
@@ -89,7 +96,9 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             char *sensorValue;
             strncpy(sensorValue, JSON_STRING + tokens[3].start, tokens[3].end - tokens[3].start);
 
-            pushToRoverSensorQ(atoi(sensorID), atoi(sensorValue));
+            struct qArmSensorMsg armSensorMsg = {atoi(sensorID), atoi(sensorValue)};
+
+            sendToSubArmSensorQ(armSensorMsg);
             break;
     }
 
