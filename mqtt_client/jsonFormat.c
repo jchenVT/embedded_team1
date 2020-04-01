@@ -1,14 +1,16 @@
 #include "jsonFormat.h"
+#include "mqtt_queue.h"
+#include "jsmn.h"
 
 #define JSON_LEN 120
-jsmn_parser parser;
+static jsmn_parser parser;
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-  if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
-      strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
-    return 0;
-  }
-  return -1;
+    if (tok->type == JSMN_STRING && (int)strlen(s) == tok->end - tok->start &&
+            strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+        return 0;
+    }
+    return -1;
 }
 
 int jsonParser(const char *topic, char *JSON_STRING) {

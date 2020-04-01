@@ -11,9 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "mqtt_queue.h"
 #include <stdbool.h>
-#include "jsmn.h"
 #include <string.h>
 
 #define MaxTokens       50
