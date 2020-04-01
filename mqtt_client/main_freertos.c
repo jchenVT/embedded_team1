@@ -49,7 +49,11 @@
 /* TI-DRIVERS Header files */
 #include "ti_drivers_config.h"
 
+#include "uart_term.h"
+#include "mqtt_queue.h"
+
 extern void * mainThread(void *arg0);
+extern void * starThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   4096
@@ -60,21 +64,38 @@ extern void * mainThread(void *arg0);
 int main(void)
 {
     pthread_t thread;
+    pthread_t sThread;
     pthread_attr_t pAttrs;
+    pthread_attr_t sAttrs;
     struct sched_param priParam;
+    struct sched_param starParam;
     int retc;
+    int starRetc;
     int detachState;
 
     /* Call board init functions */
     Board_init();
     SPI_init();
 
+    createQs();
+
+    UART_Handle tUartHndl;
+
+    /*Configure the UART                                                     */
+    tUartHndl = InitTerm();
+    /*remove uart receive from LPDS dependency                               */
+    UART_control(tUartHndl, UART_CMD_RXDISABLE, (void*)0);
+
     /* Set priority and stack size attributes */
     pthread_attr_init(&pAttrs);
+    priParam.sched_priority = 1;
+    pthread_attr_init(&sAttrs);
     priParam.sched_priority = 1;
 
     detachState = PTHREAD_CREATE_DETACHED;
     retc = pthread_attr_setdetachstate(&pAttrs, detachState);
+    starRetc = pthread_attr_setdetachstate(&sAttrs, detachState);
+
     if(retc != 0)
     {
         /* pthread_attr_setdetachstate() failed */
@@ -85,8 +106,11 @@ int main(void)
     }
 
     pthread_attr_setschedparam(&pAttrs, &priParam);
+    pthread_attr_setschedparam(&sAttrs, &starParam);
+
 
     retc |= pthread_attr_setstacksize(&pAttrs, THREADSTACKSIZE);
+    starRetc |= pthread_attr_setstacksize(&sAttrs, THREADSTACKSIZE);
     if(retc != 0)
     {
         /* pthread_attr_setstacksize() failed */
@@ -97,6 +121,8 @@ int main(void)
     }
 
     retc = pthread_create(&thread, &pAttrs, mainThread, (void*)0);
+    starRetc = pthread_create(&sThread, &sAttrs, starThread, (void*)0);
+
     if(retc != 0)
     {
         /* pthread_create() failed */

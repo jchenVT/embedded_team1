@@ -318,6 +318,8 @@ void * MqttClient(void *pvParameters)
 
     for(;; )
     {
+        UART_PRINT("Main: Waiting for published message \n\r");
+
         // blocking read on pubQ
         int success = receiveFromPubQ(&pubData);
 
@@ -576,7 +578,7 @@ int32_t MqttClient_start()
             }
             else
             {
-                UART_PRINT("Client subscribed to all topics");
+                UART_PRINT("Client subscribed to all topics \n\r");
             }
         }
     }
@@ -688,7 +690,6 @@ void mainThread(void * args)
     pthread_attr_t pAttrs_spawn;
     struct sched_param priParam;
     int32_t retc = 0;
-    UART_Handle tUartHndl;
 
     /*Initialize SlNetSock layer with CC31xx/CC32xx interface */
     SlNetIf_init(0);
@@ -701,11 +702,6 @@ void mainThread(void * args)
 
     //SPI_init();
 
-    /*Configure the UART                                                     */
-    tUartHndl = InitTerm();
-    /*remove uart receive from LPDS dependency                               */
-    UART_control(tUartHndl, UART_CMD_RXDISABLE, NULL);
-
     /*Create the sl_Task                                                     */
     pthread_attr_init(&pAttrs_spawn);
     priParam.sched_priority = SPAWN_TASK_PRIORITY;
@@ -715,6 +711,8 @@ void mainThread(void * args)
                                     (&pAttrs_spawn, PTHREAD_CREATE_DETACHED);
 
     retc = pthread_create(&spawn_thread, &pAttrs_spawn, sl_Task, NULL);
+
+    UART_PRINT("Main Starting! \n\r");
 
     if(retc != 0)
     {
@@ -760,6 +758,8 @@ void mainThread(void * args)
     gInitState |= MQTT_INIT_STATE;
     /*Run MQTT Main Thread (it will open the Client and Server)          */
     Mqtt_start();
+
+    UART_PRINT("MQTT Has Started \n\r");
 
     while(1) {
 
