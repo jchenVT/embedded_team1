@@ -58,6 +58,7 @@
 #define OS_WAIT_FOREVER         (0xFFFFFFFF)
 #define OS_NO_WAIT              (0)
 #define OS_OK                   (0)
+#define topic_TopLen            12
 
 #define MQTTClientCbs_ConnackRC(data) (data & 0xff) 
 /**< CONNACK: Return Code (LSB) */
@@ -132,8 +133,30 @@ void MqttClientCallback(int32_t event,
     }
     case MQTTClient_RECV_CB_EVENT:
     {
-        APP_PRINT("Msg Recvd. by client\n\r");
-        jsonParser(((MQTTClient_RecvMetaDataCB *)metaData)->topic, (char *)data);
+        MQTTClient_RecvMetaDataCB *recvMetaData =
+                    (MQTTClient_RecvMetaDataCB *)metaData;
+
+        char topic[recvMetaData->topLen];
+        strncpy(topic, recvMetaData->topic, recvMetaData->topLen);
+        char JSON_STRING[dataLen];
+        strncpy(JSON_STRING, (char *) data, dataLen);
+
+        int retVal = jsonParser(topic, JSON_STRING);
+        if (retVal == 0) {
+            APP_PRINT("Error: Queue was too full \n\r");
+        }
+        else if (retVal < 0) {
+            char temp[12];
+            snprintf(temp, 12, "%d", retVal);
+            APP_PRINT("Error ");
+            APP_PRINT(temp);
+            APP_PRINT(" : Incorrect number of tokens expected \n\r");
+        }
+        else {
+            APP_PRINT("Msg Successfully Parsed and Sent \n\r");
+        }
+
+
         break;
     }
     }

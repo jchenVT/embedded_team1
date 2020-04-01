@@ -17,10 +17,8 @@
  */
 void *starThread(void *arg0) {
 
-    UART_PRINT("Start Starting! \n\r");
-
     /* Set up software timer (100ms -> 10 msgs a second)*/
-    TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, timerCallback);
+    TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(3000), pdTRUE, NULL, timerCallback);
     xTimerStart(timerPub, 0);
 
     struct qArmMsg data = {0};
@@ -50,7 +48,11 @@ void *starThread(void *arg0) {
 void timerCallback(TimerHandle_t xTimer) {
 
     // publish to message queue
-    packageArmJSON(1);
-    UART_PRINT("State Sent! \n\r");
+    if (packageArmJSON(1) == 1) {
+        UART_PRINT("State Successfully Sent! \n\r");
+    }
+    else {
+        UART_PRINT("State Un-Successfully Sent! \n\r");
+    }
 
 }

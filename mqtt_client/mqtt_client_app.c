@@ -277,9 +277,7 @@ MQTTClient_Will will_param =
 
 void * MqttClientThread(void * pvParameters)
 {
-    UART_PRINT("MQTTClientThread has been created \n\r");
     MQTTClient_run((MQTTClient_Handle)pvParameters);
-    UART_PRINT("Client has been run \n\r");
     pthread_exit(0);
     return(NULL);
 }
@@ -308,8 +306,6 @@ void * MqttClient(void *pvParameters)
 
     if(gApConnectionState >= 0)
     {
-       UART_PRINT("Sadness \n\r");
-
         lRetVal = MqttClient_start();
         if(lRetVal == -1)
         {
@@ -328,10 +324,11 @@ void * MqttClient(void *pvParameters)
         // blocking read on pubQ
         int success = receiveFromPubQ(&pubData);
 
-        UART_PRINT("Main: Message has been received \n\r");
-
         /*send publish message                                       */
         if (success) {
+
+            UART_PRINT("Main: Attempting to publish to MQTT \n\r");
+
             lRetVal = MQTTClient_publish(gMqttClient,
                                          pubData.topic,
                                          strlen((const char*)pubData.topic),
@@ -343,10 +340,12 @@ void * MqttClient(void *pvParameters)
             lRetVal = -1;
         }
 
-        if (lRetVal > 0) {
+        if (lRetVal >= 0) {
             UART_PRINT("\n\r Publishing the following message \n\r");
-            //        UART_PRINT("Topic: %s\n\r", publish_topic);
-            //        UART_PRINT("Data: %s\n\r", publish_data);
+            //UART_PRINT(pubData.topic);
+            //UART_PRINT("\n\r\n\r");
+            //UART_PRINT(pubData.str);
+            //UART_PRINT("\n\r\n\r");
         }
         else {
             UART_PRINT("\n\r Publishing failed \n\r");
@@ -437,8 +436,6 @@ void Mqtt_start()
     retc |= pthread_attr_setstacksize(&pAttrs, MQTTTHREADSIZE);
     retc |= pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
 
-    UART_PRINT("AFter 1 \n\r");
-
     if(retc != 0)
     {
         gInitState &= ~MQTT_INIT_STATE;
@@ -447,8 +444,6 @@ void Mqtt_start()
     }
 
     retc = pthread_create(&mqttThread, &pAttrs, MqttClient, (void *) &threadArg);
-
-    UART_PRINT("AFter 2 \n\r");
 
     if(retc != 0)
     {
@@ -501,8 +496,6 @@ int32_t MqttClient_start()
     gMqttClient = MQTTClient_create(MqttClientCallback,
                                     &MqttClientExmple_params);
 
-    UART_PRINT("Callback linked \n\r");
-
     if(gMqttClient == NULL)
     {
         /*lib initialization failed                                          */
@@ -521,7 +514,6 @@ int32_t MqttClient_start()
     lRetVal |=
         pthread_create(&g_rx_task_hndl, &pAttrs, MqttClientThread,
                        (void *) &threadArg);
-    UART_PRINT("ClientThread has been breated correctly \n\r");
 
     if(lRetVal != 0)
     {
@@ -559,9 +551,7 @@ int32_t MqttClient_start()
         /*The return code of MQTTClient_connect is the ConnACK value that
            returns from the server */
 
-        UART_PRINT("Attempting to Connect \n\r");
         lRetVal = MQTTClient_connect(gMqttClient);
-        UART_PRINT("Connected \n\r");
 
         /*negative lRetVal means error,
            0 means connection successful without session stored by the server,
@@ -733,7 +723,6 @@ void mainThread(void * args)
 
     retc = pthread_create(&spawn_thread, &pAttrs_spawn, sl_Task, NULL);
 
-    UART_PRINT("Main Starting! \n\r");
 
     if(retc != 0)
     {

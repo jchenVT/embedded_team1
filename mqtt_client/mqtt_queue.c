@@ -110,7 +110,7 @@ int sendToSubRoverSensorQ(struct qRoverSensorMsg msg) {
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
 int receiveFromPubQ(struct qStringData *oldData) {
-    return xQueueReceive( pubQ, &oldData, portMAX_DELAY );
+    return xQueueReceive( pubQ, oldData, portMAX_DELAY );
 }
 
 /*
@@ -122,15 +122,15 @@ int receiveFromPubQ(struct qStringData *oldData) {
  *  @return     None
  */
 int receiveFromSubArmQ(struct qArmMsg *oldData) {
-    return xQueueReceive( subArmQ, &oldData, portMAX_DELAY );
+    return xQueueReceive( subArmQ, oldData, portMAX_DELAY );
 }
 int receiveFromSubArmSensorQ(struct qArmSensorMsg *oldData) {
-    return xQueueReceive( subArmSensorQ, &oldData, portMAX_DELAY );
+    return xQueueReceive( subArmSensorQ, oldData, portMAX_DELAY );
 }
 int receiveFromSubRoverQ(struct qRoverMsg *oldData) {
-    return xQueueReceive( subRoverQ, &oldData, portMAX_DELAY );
+    return xQueueReceive( subRoverQ, oldData, portMAX_DELAY );
 }
 
 int receiveFromSubRoverSensorQ(struct qRoverSensorMsg *oldData) {
-    return xQueueReceive( subRoverSensorQ, &oldData, portMAX_DELAY );
+    return xQueueReceive( subRoverSensorQ, oldData, portMAX_DELAY );
 }

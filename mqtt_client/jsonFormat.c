@@ -28,104 +28,105 @@ int jsonParser(const char *topic, char *JSON_STRING) {
 
     if (num == 0) {
         // ERROR
-        return 0;
+        return -1;
     }
+
+    int retVal = 0;
 
     if (strcmp(topic, "arm") == 0) {
             // Currently does not check data
-            if (jsoneq(JSON_STRING, &tokens[0], "state") != 0 || num != 2) {
-                // ERROR
-                return 0;
+            if (jsoneq(JSON_STRING, &tokens[1], "state") != 0 || num != 3) {
+                return -2;
             }
 
             char state;
-            strncpy(&state, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
+            strncpy(&state, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
 
             struct qArmMsg armMsg = {state-'0'};
 
-            sendToSubArmQ(armMsg);
+            retVal = sendToSubArmQ(armMsg);
     }
     else if (strcmp(topic, "rover_sensor") == 0) {
-            if (jsoneq(JSON_STRING, &tokens[0], "move_to_point") != 0 ||
-                    jsoneq(JSON_STRING, &tokens[2], "point_x") != 0 ||
-                    jsoneq(JSON_STRING, &tokens[4], "point_y") != 0 ||
-                    jsoneq(JSON_STRING, &tokens[6], "angle_rotate") != 0 ||
-                    num != 8) {
+            if (jsoneq(JSON_STRING, &tokens[1], "move_to_point") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[3], "point_x") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[5], "point_y") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[7], "angle_rotate") != 0 ||
+                    num != 9) {
                 // ERROR
-                return 0;
+                return -3;
             }
 
             struct qRoverSensorMsg roverSensorMsg;
 
             char *ptr;
             char movePoint;
-            strncpy(&movePoint, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
+            strncpy(&movePoint, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
 
             roverSensorMsg.move_to_point = movePoint-'0';
-            roverSensorMsg.point_x = strtod(JSON_STRING + tokens[3].start, &ptr);
-            roverSensorMsg.point_y = strtod(JSON_STRING + tokens[5].start, &ptr);
-            roverSensorMsg.angle_rotate = strtod(JSON_STRING + tokens[7].start, &ptr);
+            roverSensorMsg.point_x = strtod(JSON_STRING + tokens[4].start, &ptr);
+            roverSensorMsg.point_y = strtod(JSON_STRING + tokens[6].start, &ptr);
+            roverSensorMsg.angle_rotate = strtod(JSON_STRING + tokens[8].start, &ptr);
 
-            sendToSubRoverSensorQ(roverSensorMsg);
+            retVal = sendToSubRoverSensorQ(roverSensorMsg);
     }
     else if (strcmp(topic, "rover") == 0) {
-            if (jsoneq(JSON_STRING, &tokens[0], "state") != 0 || num != 2) {
+            if (jsoneq(JSON_STRING, &tokens[1], "state") != 0 || num != 3) {
                 // ERROR
-                return 0;
+                return -4;
             }
 
             char roverState;
-            strncpy(&roverState, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
+            strncpy(&roverState, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
 
             struct qRoverMsg roverMsg = {roverState-'0'};
 
-            sendToSubRoverQ(roverMsg);
+            retVal = sendToSubRoverQ(roverMsg);
     }
     else if (strcmp(topic, "arm_sensor") == 0) {
-            if (jsoneq(JSON_STRING, &tokens[0], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[2], "sensorValue") != 0 || num != 6) {
+            if (jsoneq(JSON_STRING, &tokens[1], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[3], "sensorValue") != 0 || num != 7) {
                 // ERROR
-                return 0;
+                return -5;
             }
 
             char sensorID[4];
-            strncpy(sensorID, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
+            strncpy(sensorID, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
 
             char sensorValue[4];
-            strncpy(sensorValue, JSON_STRING + tokens[3].start, tokens[3].end - tokens[1].start);
+            strncpy(sensorValue, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
 
             struct qArmSensorMsg armSensorMsg = {atoi(sensorID), atoi(sensorValue)};
 
-            sendToSubArmSensorQ(armSensorMsg);
+            retVal = sendToSubArmSensorQ(armSensorMsg);
     }
     else {
         // ERROR TOPIC
-        return 0;
+        return -6;
     }
 
-    return 1;
+    return retVal;
 }
 
 int packageArmJSON(int state) {
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{ \"state\": %d }", state);
+    snprintf(json, JSON_LEN, "{\"state\": %d}", state);
     return sendToPubQ("arm", json);
 }
 
 int packageArmSensorJSON(int sensorID, int sensorValue) {
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{ \"sensorID\": %d, \"sensorValue\": %d }", sensorID, sensorValue);
+    snprintf(json, JSON_LEN, "{\"sensorID\": %d, \"sensorValue\": %d}", sensorID, sensorValue);
     return sendToPubQ("arm_sensor", json);
 }
 
 int packageRoverJSON(int state) {
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{ \"state\": %d }", state);
+    snprintf(json, JSON_LEN, "{\"state\": %d}", state);
     return sendToPubQ("rover", json);
 }
 
 int packageRoverSensorJSON(bool move_to_point, int point_x, int point_y, int angle_rotate) {
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{ \"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d }", move_to_point ? "true": "false", point_x, point_y, angle_rotate);
+    snprintf(json, JSON_LEN, "{\"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d}", move_to_point ? "true": "false", point_x, point_y, angle_rotate);
     return sendToPubQ("rover_sensor", json);
 }
 
