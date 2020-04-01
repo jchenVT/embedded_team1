@@ -19,6 +19,8 @@
 /* JSON formatting used to push to msg queues */
 #include "jsonFormat.h"
 
+#include "uart_term.h"
+
 #define SUB_TOPIC   (enum topicVal) ARM_SENSORS
 #define PUB_TOPIC   (enum topicVal) ARM
 

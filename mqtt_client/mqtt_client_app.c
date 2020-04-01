@@ -196,7 +196,7 @@ const char *ClientPassword = "pwd1";
 
 /* Subscription topics and qos values                                        */
 char *topic[SUBSCRIPTION_TOPIC_COUNT] =
-{ SUBSCRIPTION_TOPIC1 };
+{ SUBSCRIPTION_TOPIC0 };
 
 unsigned char qos[SUBSCRIPTION_TOPIC_COUNT] =
 { MQTT_QOS_0 };
@@ -685,9 +685,6 @@ void mainThread(void * args)
     }
 
     topic[0] = SUBSCRIPTION_TOPIC0;
-    topic[1] = SUBSCRIPTION_TOPIC1;
-    topic[2] = SUBSCRIPTION_TOPIC2;
-    topic[3] = SUBSCRIPTION_TOPIC3;
 
     gInitState = 0;
 
