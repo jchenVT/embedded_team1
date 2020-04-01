@@ -632,7 +632,6 @@ long Network_IF_ConnectAP(char *pcSsid,
 
     /* Get IP address                                                        */
     lRetVal = Network_IF_IpConfigGet(&ulIP, &ulSubMask, &ulDefGateway, &ulDns);
-    ASSERT_ON_ERROR(lRetVal);
 
     return(0);
 }

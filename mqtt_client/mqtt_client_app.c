@@ -119,7 +119,7 @@
 #define CLEAN_SESSION            true
 
 /* Retain Flag. Used in publish message.                                     */
-#define RETAIN_ENABLE            1
+#define RETAIN_ENABLE            0
 
 /* Defining Number of subscription topics                                    */
 #define SUBSCRIPTION_TOPIC_COUNT 1
@@ -132,7 +132,7 @@
 
 /* Spawn task priority and Task and Thread Stack Size                        */
 #define TASKSTACKSIZE            2048
-#define RXTASKSIZE               4096
+#define RXTASKSIZE               2048
 #define MQTTTHREADSIZE           2048
 #define SPAWN_TASK_PRIORITY      9
 
@@ -277,7 +277,9 @@ MQTTClient_Will will_param =
 
 void * MqttClientThread(void * pvParameters)
 {
+    UART_PRINT("MQTTClientThread has been created \n\r");
     MQTTClient_run((MQTTClient_Handle)pvParameters);
+    UART_PRINT("Client has been run \n\r");
     pthread_exit(0);
     return(NULL);
 }
@@ -303,8 +305,11 @@ void * MqttClient(void *pvParameters)
     long lRetVal = -1;
 
     /*Initializing Client and Subscribing to the Broker.                     */
+
     if(gApConnectionState >= 0)
     {
+       UART_PRINT("Sadness \n\r");
+
         lRetVal = MqttClient_start();
         if(lRetVal == -1)
         {
@@ -322,6 +327,8 @@ void * MqttClient(void *pvParameters)
 
         // blocking read on pubQ
         int success = receiveFromPubQ(&pubData);
+
+        UART_PRINT("Main: Message has been received \n\r");
 
         /*send publish message                                       */
         if (success) {
@@ -394,6 +401,9 @@ int32_t Mqtt_IF_Connect()
 
     /*Connect to the Access Point                                            */
     lRetVal = Network_IF_ConnectAP(SSID_Remote_Name, SecurityParams);
+
+    UART_PRINT("Connected to Access Point \n\r");
+
     if(lRetVal < 0)
     {
         UART_PRINT("Connection to an AP failed\n\r");
@@ -422,10 +432,12 @@ void Mqtt_start()
 
     /*Set priority and stack size attributes                                 */
     pthread_attr_init(&pAttrs);
-    priParam.sched_priority = 2;
+    priParam.sched_priority = 1;
     retc = pthread_attr_setschedparam(&pAttrs, &priParam);
     retc |= pthread_attr_setstacksize(&pAttrs, MQTTTHREADSIZE);
     retc |= pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
+
+    UART_PRINT("AFter 1 \n\r");
 
     if(retc != 0)
     {
@@ -435,6 +447,9 @@ void Mqtt_start()
     }
 
     retc = pthread_create(&mqttThread, &pAttrs, MqttClient, (void *) &threadArg);
+
+    UART_PRINT("AFter 2 \n\r");
+
     if(retc != 0)
     {
         gInitState &= ~MQTT_INIT_STATE;
@@ -485,6 +500,9 @@ int32_t MqttClient_start()
     /*Initialize MQTT client lib                                             */
     gMqttClient = MQTTClient_create(MqttClientCallback,
                                     &MqttClientExmple_params);
+
+    UART_PRINT("Callback linked \n\r");
+
     if(gMqttClient == NULL)
     {
         /*lib initialization failed                                          */
@@ -494,14 +512,17 @@ int32_t MqttClient_start()
 
     /*Open Client Receive Thread start the receive task. Set priority and    */
     /*stack size attributes                                                  */
+    UART_PRINT("Creating MQTTClientThread \n\r");
     pthread_attr_init(&pAttrs);
-    priParam.sched_priority = 2;
+    priParam.sched_priority = 1;
     lRetVal = pthread_attr_setschedparam(&pAttrs, &priParam);
     lRetVal |= pthread_attr_setstacksize(&pAttrs, RXTASKSIZE);
     lRetVal |= pthread_attr_setdetachstate(&pAttrs, PTHREAD_CREATE_DETACHED);
     lRetVal |=
         pthread_create(&g_rx_task_hndl, &pAttrs, MqttClientThread,
                        (void *) &threadArg);
+    UART_PRINT("ClientThread has been breated correctly \n\r");
+
     if(lRetVal != 0)
     {
         UART_PRINT("Client Thread Create Failed failed\n\r");
@@ -537,7 +558,10 @@ int32_t MqttClient_start()
 #endif
         /*The return code of MQTTClient_connect is the ConnACK value that
            returns from the server */
+
+        UART_PRINT("Attempting to Connect \n\r");
         lRetVal = MQTTClient_connect(gMqttClient);
+        UART_PRINT("Connected \n\r");
 
         /*negative lRetVal means error,
            0 means connection successful without session stored by the server,
@@ -696,11 +720,8 @@ void mainThread(void * args)
     SlNetIf_add(SLNETIF_ID_1, "CC32xx",
                 (const SlNetIf_Config_t *)&SlNetIfConfigWifi,
                 SLNET_IF_WIFI_PRIO);
-
     SlNetSock_init(0);
     SlNetUtil_init(0);
-
-    //SPI_init();
 
     /*Create the sl_Task                                                     */
     pthread_attr_init(&pAttrs_spawn);
@@ -720,11 +741,16 @@ void mainThread(void * args)
         stop_all();
     }
 
+    sl_Stop(0);
     retc = sl_Start(0, 0, 0);
     if(retc < 0)
     {
         /*Handle Error */
         UART_PRINT("\n sl_Start failed\n");
+
+        char temp[120];
+        snprintf(temp, 120, "%d", retc);
+        UART_PRINT(temp);
         stop_all();
     }
 

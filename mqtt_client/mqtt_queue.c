@@ -6,6 +6,7 @@
  */
 
 #include "mqtt_queue.h"
+#include <uart_term.h>
 
 static QueueHandle_t pubQ = (void *)0;
 static QueueHandle_t subArmQ = (void *)0;
@@ -66,6 +67,9 @@ int sendToPubQ(char * topic, char msg []) {
     struct qStringData data;
     data.topic = topic;
     strncpy(data.str, msg, MAXJSONSIZE);
+
+    UART_PRINT("Sending to PubQ \n\r");
+
     return xQueueSendToBackFromISR( pubQ, &data, 0 );
 }
 

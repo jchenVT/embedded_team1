@@ -56,7 +56,7 @@ extern void * mainThread(void *arg0);
 extern void * starThread(void *arg0);
 
 /* Stack size in bytes */
-#define THREADSTACKSIZE   4096
+#define THREADSTACKSIZE   8192
 
 /*
  *  ======== main ========
@@ -75,9 +75,9 @@ int main(void)
 
     /* Call board init functions */
     Board_init();
-    SPI_init();
-
     createQs();
+
+    SPI_init();
 
     UART_Handle tUartHndl;
 
@@ -110,7 +110,7 @@ int main(void)
 
 
     retc |= pthread_attr_setstacksize(&pAttrs, THREADSTACKSIZE);
-    starRetc |= pthread_attr_setstacksize(&sAttrs, THREADSTACKSIZE);
+    starRetc |= pthread_attr_setstacksize(&sAttrs, THREADSTACKSIZE/4);
     if(retc != 0)
     {
         /* pthread_attr_setstacksize() failed */

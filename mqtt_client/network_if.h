@@ -53,6 +53,7 @@ extern "C"
 
 /* Simplelink includes                                                        */
 #include <ti/drivers/net/wifi/simplelink.h>
+#include <uart_term.h>
 
 /* Values for below macros shall be modified as per access-point(AP)          */
 /* properties SimpleLink device will connect to following AP when application */

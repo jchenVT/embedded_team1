@@ -23,14 +23,14 @@ void *starThread(void *arg0) {
     TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, timerCallback);
     xTimerStart(timerPub, 0);
 
-    struct qArmMsg *data;
+    struct qArmMsg data = {0};
 
     while(1) {
 
         // blocking read on subQ
-        receiveFromSubArmQ(data);
+        receiveFromSubArmQ(&data);
 
-        if (data->state == 1) {
+        if (data.state == 1) {
             UART_PRINT("State Successfully Received! \n\r");
         }
         else {
