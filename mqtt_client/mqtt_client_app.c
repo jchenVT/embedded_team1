@@ -109,7 +109,7 @@
 #define WILL_RETAIN              false
 
 /* Defining Broker IP address and port Number                                */
-#define SERVER_ADDRESS           "josephcchen.com"
+#define SERVER_ADDRESS           "www.josephcchen.com"
 #define SERVER_IP_ADDRESS        "174.138.33.176"
 #define PORT_NUMBER              1883
 #define SECURED_PORT_NUMBER      8883
@@ -119,7 +119,7 @@
 #define CLEAN_SESSION            true
 
 /* Retain Flag. Used in publish message.                                     */
-#define RETAIN_ENABLE            0
+#define RETAIN_ENABLE            1
 
 /* Defining Number of subscription topics                                    */
 #define SUBSCRIPTION_TOPIC_COUNT 1
@@ -617,6 +617,71 @@ void Mqtt_ClientStop(uint8_t disconnect)
     MQTTClient_delete(gMqttClient);
 }
 
+//*****************************************************************************
+//!
+//! Set the ClientId with its own mac address
+//! This routine converts the mac address which is given
+//! by an integer type variable in hexadecimal base to ASCII
+//! representation, and copies it into the ClientId parameter.
+//!
+//! \param  macAddress  -   Points to string Hex.
+//!
+//! \return void.
+//!
+//*****************************************************************************
+int32_t SetClientIdNamefromMacAddress()
+{
+    int32_t ret = 0;
+    uint8_t Client_Mac_Name[2];
+    uint8_t Index;
+    uint16_t macAddressLen = SL_MAC_ADDR_LEN;
+    uint8_t macAddress[SL_MAC_ADDR_LEN];
+
+    /*Get the device Mac address */
+    ret = sl_NetCfgGet(SL_NETCFG_MAC_ADDRESS_GET, 0, &macAddressLen,
+                       &macAddress[0]);
+
+    /*When ClientID isn't set, use the mac address as ClientID               */
+    if(ClientId[0] == '\0')
+    {
+        /*6 bytes is the length of the mac address                           */
+        for(Index = 0; Index < SL_MAC_ADDR_LEN; Index++)
+        {
+            /*Each mac address byte contains two hexadecimal characters      */
+            /*Copy the 4 MSB - the most significant character                */
+            Client_Mac_Name[0] = (macAddress[Index] >> 4) & 0xf;
+            /*Copy the 4 LSB - the least significant character               */
+            Client_Mac_Name[1] = macAddress[Index] & 0xf;
+
+            if(Client_Mac_Name[0] > 9)
+            {
+                /*Converts and copies from number that is greater than 9 in  */
+                /*hexadecimal representation (a to f) into ascii character   */
+                ClientId[2 * Index] = Client_Mac_Name[0] + 'a' - 10;
+            }
+            else
+            {
+                /*Converts and copies from number 0 - 9 in hexadecimal       */
+                /*representation into ascii character                        */
+                ClientId[2 * Index] = Client_Mac_Name[0] + '0';
+            }
+            if(Client_Mac_Name[1] > 9)
+            {
+                /*Converts and copies from number that is greater than 9 in  */
+                /*hexadecimal representation (a to f) into ascii character   */
+                ClientId[2 * Index + 1] = Client_Mac_Name[1] + 'a' - 10;
+            }
+            else
+            {
+                /*Converts and copies from number 0 - 9 in hexadecimal       */
+                /*representation into ascii character                        */
+                ClientId[2 * Index + 1] = Client_Mac_Name[1] + '0';
+            }
+        }
+    }
+    return(ret);
+}
+
 void mainThread(void * args)
 {
     pthread_t spawn_thread = (pthread_t) NULL;
@@ -666,7 +731,8 @@ void mainThread(void * args)
     }
 
     /*Set the ClientId with its own mac address */
-    retc |= 0; // CHANGE THIS for ID
+    /*Set the ClientId with its own mac address */
+    retc |= SetClientIdNamefromMacAddress();
 
 
     retc = sl_Stop(SL_STOP_TIMEOUT);

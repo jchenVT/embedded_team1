@@ -122,6 +122,7 @@ void SimpleLinkNetAppRequestMemFreeEventHandler(uint8_t *buffer)
 //*****************************************************************************
 void SimpleLinkWlanEventHandler(SlWlanEvent_t *pSlWlanEvent)
 {
+
     SlWlanEventDisconnect_t* pEventData = NULL;
 
     switch(pSlWlanEvent->Id)
