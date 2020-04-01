@@ -27,6 +27,8 @@ var Timer2 = Timer.addInstance();
 var Timer3 = Timer.addInstance();
 var Watchdog = scripting.addModule("/ti/drivers/Watchdog");
 var Watchdog1 = Watchdog.addInstance();
+var SPI = scripting.addModule("/ti/drivers/SPI");
+var SPI1 = SPI.addInstance();
 // Name - The C/C++ identifier used in applications as the index parameter passed to Crypto runtime APIs
 Crypto1.$name = "CONFIG_Crypto_0";
 // IO Retention Shutdown - IO groups to be retained during Shutdown
@@ -127,9 +129,29 @@ Watchdog1.$name = "CONFIG_WATCHDOG_0";
 Watchdog1.watchdog.$name = "MyWATCHDOG1";
 // Use Peripheral
 Watchdog1.watchdog.$assign = "WATCHDOG0";
+// Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
+SPI1.$name = "CONFIG_SPI_0";
+// Mode - In three pin mode the SS signal is not used.
+SPI1.mode = "Four Pin SS Active Low";
+// Name
+SPI1.spi.$name = "MySPI1";
+// Assign pin
+SPI1.spi.ssPin.$assign = "boosterpack.18"; // P08
+// Assign pin
+SPI1.spi.dmaRxChannel.$assign = "UDMA_CH6";
+// Assign pin
+SPI1.spi.dmaTxChannel.$assign = "UDMA_CH7";
 // Suggest solution
 GPIO3.gpioPin.$suggestSolution = "64";
 // Suggest solution
 GPIO4.gpioPin.$suggestSolution = "1";
 // Suggest solution
 GPIO5.gpioPin.$suggestSolution = "2";
+// Suggest solution
+SPI1.spi.$suggestSolution = "SPI0";
+// Suggest solution
+SPI1.spi.sclkPin.$suggestSolution = "5";
+// Suggest solution
+SPI1.spi.misoPin.$suggestSolution = "6";
+// Suggest solution
+SPI1.spi.mosiPin.$suggestSolution = "7";

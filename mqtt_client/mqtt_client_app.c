@@ -57,7 +57,7 @@
 #include <unistd.h>
 
 ///* TI-Driver includes                                                        */
-//#include <ti/drivers/GPIO.h>
+#include <ti/drivers/GPIO.h>
 #include <ti/drivers/SPI.h>
 
 /* Simplelink includes                                                       */
@@ -634,7 +634,7 @@ void mainThread(void * args)
     SlNetSock_init(0);
     SlNetUtil_init(0);
 
-    SPI_init();
+    //SPI_init();
 
     /*Configure the UART                                                     */
     tUartHndl = InitTerm();

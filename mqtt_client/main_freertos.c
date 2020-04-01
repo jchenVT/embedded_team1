@@ -44,6 +44,7 @@
 
 /* TI-RTOS Header files */
 #include <ti/drivers/GPIO.h>
+#include <ti/drivers/SPI.h>
 
 /* TI-DRIVERS Header files */
 #include "ti_drivers_config.h"
@@ -66,6 +67,7 @@ int main(void)
 
     /* Call board init functions */
     Board_init();
+    SPI_init();
 
     /* Set priority and stack size attributes */
     pthread_attr_init(&pAttrs);
