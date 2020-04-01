@@ -61,7 +61,7 @@ bool createQs() {
  *              msg     - msg to be published to the topic
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int sendToPubQ(int topic, char msg []) {
+int sendToPubQ(char * topic, char msg []) {
 
     struct qStringData data;
     data.topic = topic;
