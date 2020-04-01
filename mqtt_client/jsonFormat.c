@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <mqtt_queue.h>
-#include <stdbool.h>
-#include <jsmn.h>
-#include <string.h>
 #include "jsonFormat.h"
 
 #define JSON_LEN 120
@@ -94,12 +88,14 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             strncpy(sensorID, JSON_STRING + tokens[1].start, tokens[1].end - tokens[1].start);
 
             char *sensorValue;
-            strncpy(sensorValue, JSON_STRING + tokens[3].start, tokens[3].end - tokens[3].start);
+            strncpy(sensorValue, JSON_STRING + tokens[3].start, tokens[3].end - tokens[1].start);
 
             struct qArmSensorMsg armSensorMsg = {atoi(sensorID), atoi(sensorValue)};
 
             sendToSubArmSensorQ(armSensorMsg);
             break;
+
+
     }
 
 }
