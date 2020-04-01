@@ -80,7 +80,7 @@ extern "C"
     { \
         if(error_code < 0) \
         { \
-            ERR_PRINT(error_code); \
+            UART_PRINT("ERROR!"); \
             return error_code; \
         } \
     }

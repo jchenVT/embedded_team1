@@ -45,11 +45,6 @@
 #include <ti/drivers/GPIO.h>
 void Mqtt_Stop();
 
-extern int vsnprintf(char * s,
-                     size_t n,
-                     const char * format,
-                     va_list arg);
-
 //*****************************************************************************
 //                          LOCAL DEFINES
 //*****************************************************************************

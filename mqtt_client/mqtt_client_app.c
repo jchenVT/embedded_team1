@@ -58,7 +58,7 @@
 
 ///* TI-Driver includes                                                        */
 //#include <ti/drivers/GPIO.h>
-//#include <ti/drivers/SPI.h>
+#include <ti/drivers/SPI.h>
 
 /* Simplelink includes                                                       */
 #include <ti/drivers/net/wifi/simplelink.h>
@@ -344,7 +344,7 @@ void * MqttClient(void *pvParameters)
         }
     }
 
-    return 0;
+    return (void *) 0;
 }
 
 //*****************************************************************************
@@ -417,7 +417,6 @@ void Mqtt_start()
     pthread_attr_t pAttrs;
     struct sched_param priParam;
     int32_t retc = 0;
-    unsigned mode = 0;
 
     /*Set priority and stack size attributes                                 */
     pthread_attr_init(&pAttrs);
@@ -634,6 +633,8 @@ void mainThread(void * args)
 
     SlNetSock_init(0);
     SlNetUtil_init(0);
+
+    SPI_init();
 
     /*Configure the UART                                                     */
     tUartHndl = InitTerm();

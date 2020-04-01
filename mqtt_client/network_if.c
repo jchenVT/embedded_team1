@@ -184,11 +184,7 @@ void SimpleLinkFatalErrorEventHandler(SlDeviceFatal_t *slFatalErrorEvent)
     switch(slFatalErrorEvent->Id)
     {
     case SL_DEVICE_EVENT_FATAL_DEVICE_ABORT:
-        UART_PRINT(
-            "[ERROR] - FATAL ERROR: Abort NWP event detected: "
-            "AbortType=%d, AbortData=0x%x\n\r",
-            slFatalErrorEvent->Data.DeviceAssert.Code,
-            slFatalErrorEvent->Data.DeviceAssert.Value);
+        UART_PRINT("[ERROR] - FATAL ERROR: Abort NWP event detected \n\r");
         break;
 
     case SL_DEVICE_EVENT_FATAL_DRIVER_ABORT:
@@ -196,10 +192,7 @@ void SimpleLinkFatalErrorEventHandler(SlDeviceFatal_t *slFatalErrorEvent)
         break;
 
     case SL_DEVICE_EVENT_FATAL_NO_CMD_ACK:
-        UART_PRINT(
-            "[ERROR] - FATAL ERROR: No Cmd Ack detected "
-            "[cmd opcode = 0x%x] \n\r",
-            slFatalErrorEvent->Data.NoCmdAck.Code);
+        UART_PRINT("[ERROR] - FATAL ERROR: No Cmd Ack detected \n\r");
         break;
 
     case SL_DEVICE_EVENT_FATAL_SYNC_LOSS:
@@ -207,10 +200,7 @@ void SimpleLinkFatalErrorEventHandler(SlDeviceFatal_t *slFatalErrorEvent)
         break;
 
     case SL_DEVICE_EVENT_FATAL_CMD_TIMEOUT:
-        UART_PRINT(
-            "[ERROR] - FATAL ERROR: Async event timeout detected "
-            "[event opcode =0x%x]  \n\r",
-            slFatalErrorEvent->Data.CmdTimeout.Code);
+        UART_PRINT("[ERROR] - FATAL ERROR: Async event timeout detected \n\r");
         break;
 
     default:
@@ -242,29 +232,14 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
     case SL_NETAPP_EVENT_DHCPV4_LEASED:
         SET_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_LEASED);
         g_ulStaIp = (pNetAppEvent)->Data.IpLeased.IpAddress;
-
-        UART_PRINT("[NETAPP EVENT] IP Leased to Client: IP=%d.%d.%d.%d , ",
-                   SL_IPV4_BYTE(g_ulStaIp,
-                                3),
-                   SL_IPV4_BYTE(g_ulStaIp,
-                                2),
-                   SL_IPV4_BYTE(g_ulStaIp, 1), SL_IPV4_BYTE(g_ulStaIp, 0));
         break;
 
     case SL_NETAPP_EVENT_DHCPV4_RELEASED:
         CLR_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_LEASED);
-
-        UART_PRINT("[NETAPP EVENT] IP Released for Client: "
-                   "IP=%d.%d.%d.%d , ", SL_IPV4_BYTE(g_ulStaIp,
-                                                     3),
-                   SL_IPV4_BYTE(g_ulStaIp,
-                                2),
-                   SL_IPV4_BYTE(g_ulStaIp, 1), SL_IPV4_BYTE(g_ulStaIp, 0));
         break;
 
     default:
-        UART_PRINT("[NETAPP EVENT] Unexpected event [0x%x] \n\r",
-                   pNetAppEvent->Id);
+        UART_PRINT("[NETAPP EVENT] Unexpected event \n\r");
         break;
     }
 }
@@ -315,10 +290,10 @@ void SimpleLinkHttpServerCallback(SlNetAppHttpServerEvent_t *pHttpEvent,
 void SimpleLinkGeneralEventHandler(SlDeviceEvent_t *pDevEvent)
 {
     /* Most of the general errors are not FATAL. are to be handled           */
-    /* appropriately by the application.                                     */
+    /* appropriately by the application.
     UART_PRINT("[GENERAL EVENT] - ID=[%d] Sender=[%d]\n\n",
                pDevEvent->Data.Error.Code,
-               pDevEvent->Data.Error.Source);
+               pDevEvent->Data.Error.Source); */
 }
 
 //*****************************************************************************
@@ -340,37 +315,26 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
         {
         case SL_ERROR_BSD_ECLOSE:
             UART_PRINT(
-                "[SOCK ERROR] - close socket (%d) operation "
-                "failed to transmit all queued packets\n\r",
-                pSock->SocketAsyncEvent.SockTxFailData.Sd);
+                "[SOCK ERROR] - close socket operation failed to transmit all queued packets\n\r");
             break;
         default:
-            UART_PRINT(
-                "[SOCK ERROR] - TX FAILED  :  socket %d , "
-                "reason (%d) \n\n",
-                pSock->SocketAsyncEvent.SockTxFailData.Sd,
-                pSock->SocketAsyncEvent.SockTxFailData.Status);
+            UART_PRINT("[SOCK ERROR] - TX FAILED \n\r");
             break;
         }
         break;
     case SL_SOCKET_ASYNC_EVENT:
     {
-        UART_PRINT("[SOCK ERROR] an event received on socket %d\r\n",
-                   pSock->SocketAsyncEvent.SockAsyncData.Sd);
+        UART_PRINT("[SOCK ERROR] an event received on socket \r\n");
         switch(pSock->SocketAsyncEvent.SockAsyncData.Type)
         {
         case SL_SSL_NOTIFICATION_CONNECTED_SECURED:
             UART_PRINT("[SOCK ERROR] SSL handshake done");
             break;
         case SL_SSL_NOTIFICATION_HANDSHAKE_FAILED:
-            UART_PRINT("[SOCK ERROR] SSL handshake failed with error %d\r\n",
-                       pSock->SocketAsyncEvent.SockAsyncData.Val);
+            UART_PRINT("[SOCK ERROR] SSL handshake failed with error \r\n");
             break;
         case SL_SSL_ACCEPT:
-            UART_PRINT(
-                "[SOCK ERROR] Recoverable error occurred "
-                "during the handshake %d\r\n",
-                pSock->SocketAsyncEvent.SockAsyncData.Val);
+            UART_PRINT("[SOCK ERROR] Recoverable error occurred during the handshake \r\n");
             break;
         case SL_OTHER_SIDE_CLOSE_SSL_DATA_NOT_ENCRYPTED:
             UART_PRINT("[SOCK ERROR] Other peer terminated the SSL layer.\r\n");
@@ -384,7 +348,7 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
         break;
     }
     default:
-        UART_PRINT("[SOCK EVENT] - Unexpected Event [%x0x]\n\n", pSock->Event);
+        UART_PRINT("[SOCK EVENT] - Unexpected Event \n\r");
         break;
     }
 }
@@ -604,7 +568,7 @@ long Network_IF_ConnectAP(char *pcSsid,
 
         CLR_STATUS_BIT(g_ulStatus, STATUS_BIT_CONNECTION);
         CLR_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_ACQUIRED);
-        UART_PRINT("Device could not connect to %s\n\r", pcSsid);
+        UART_PRINT("Device could not connect\n\r");
 
         do
         {
@@ -638,7 +602,7 @@ long Network_IF_ConnectAP(char *pcSsid,
         SecurityParams.KeyLen = 0;
         SecurityParams.Type = SL_WLAN_SEC_TYPE_OPEN;
 
-        UART_PRINT("\n\rTrying to connect to AP: %s ...\n\r", pcSsid);
+        UART_PRINT("\n\rTrying to connect to AP ...\n\r");
 
         /* Get the current timer tick and setup the timeout accordingly.     */
         usConnTimeout = g_usConnectIndex + 15;
@@ -663,17 +627,12 @@ long Network_IF_ConnectAP(char *pcSsid,
     }
 
     /* Put message on UART                                                   */
-    UART_PRINT("\n\rDevice has connected to %s\n\r", pcSsid);
+    UART_PRINT("\n\rDevice has connected \n\r");
 
     /* Get IP address                                                        */
     lRetVal = Network_IF_IpConfigGet(&ulIP, &ulSubMask, &ulDefGateway, &ulDns);
     ASSERT_ON_ERROR(lRetVal);
 
-    /* Send the information                                                  */
-    UART_PRINT("Device IP Address is %d.%d.%d.%d \n\r\n\r",
-               SL_IPV4_BYTE(ulIP, 3), SL_IPV4_BYTE(ulIP, 2), SL_IPV4_BYTE(ulIP,
-                                                                          1),
-               SL_IPV4_BYTE(ulIP, 0));
     return(0);
 }
 
@@ -767,13 +726,6 @@ long Network_IF_GetHostIP(char* pcHostName,
         sl_NetAppDnsGetHostByName((signed char *) pcHostName, strlen(
                                       pcHostName), pDestinationIP, SL_AF_INET);
     ASSERT_ON_ERROR(lStatus);
-
-    UART_PRINT("Get Host IP succeeded.\n\rHost: %s IP: %d.%d.%d.%d \n\r\n\r",
-               pcHostName, SL_IPV4_BYTE(*pDestinationIP,
-                                        3), SL_IPV4_BYTE(*pDestinationIP,
-                                                         2),
-               SL_IPV4_BYTE(*pDestinationIP, 1),
-               SL_IPV4_BYTE(*pDestinationIP, 0));
 
     return(lStatus);
 }
