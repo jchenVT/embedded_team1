@@ -21,15 +21,12 @@ void *starThread(void *arg0) {
     TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(100), pdTRUE, NULL, timerCallback);
     xTimerStart(timerPub, 0);
 
-    /* Data to be recv from the subQ */
-    struct qArmSensorMsg subData;
+    struct qArmSensorMsg *data;
 
     while(1) {
 
         // blocking read on subQ
-        receiveFromSubArmSensorQ(&subData);
-
-        // process data
+        receiveFromSubArmSensorQ(data);
     }
 }
 
