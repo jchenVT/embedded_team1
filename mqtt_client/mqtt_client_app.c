@@ -196,7 +196,7 @@ const char *ClientPassword = "pwd1";
 
 /* Subscription topics and qos values                                        */
 char *topic[SUBSCRIPTION_TOPIC_COUNT] =
-{ SUBSCRIPTION_TOPIC0 };
+{ SUBSCRIPTION_TOPIC2 };
 
 unsigned char qos[SUBSCRIPTION_TOPIC_COUNT] =
 { MQTT_QOS_0 };
@@ -762,8 +762,6 @@ void mainThread(void * args)
         UART_PRINT("mqtt_client - Unable to retrieve device information \n");
         stop_all();
     }
-
-    topic[0] = SUBSCRIPTION_TOPIC0;
 
     gInitState = 0;
 

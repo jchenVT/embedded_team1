@@ -83,7 +83,7 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             retVal = sendToSubRoverQ(roverMsg);
     }
     else if (strcmp(topic, "arm_sensor") == 0) {
-            if (jsoneq(JSON_STRING, &tokens[1], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[3], "sensorValue") != 0 || num != 7) {
+            if (jsoneq(JSON_STRING, &tokens[1], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[3], "sensorValue") != 0 || num != 5) {
                 // ERROR
                 return -5;
             }
