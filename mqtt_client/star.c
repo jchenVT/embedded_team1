@@ -10,9 +10,6 @@
 static int attemptPubCount;
 static int recvSubCount;
 static bool status;
-static char subTopic[];
-static char pubTopic[];
-
 
 /*
  *  @function   mainThread
@@ -36,8 +33,6 @@ void *starThread(void *arg0) {
     attemptPubCount = 0;
     recvSubCount = 0;
     status = true; // working
-    subTopic = "rover";
-    pubTopic = "arm_sensor"
 
     struct qRoverMsg data = {0};
 
@@ -92,7 +87,7 @@ void timerCallback(TimerHandle_t xTimer) {
 void timerCallbackDebug(TimerHandle_t xTimer) {
 
     // publish to message queue
-    if (packageDebugJSON(attemptPubCount, recvSubCount, status, subTopic, pubTopic) == 1) {
+    if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
         UART_PRINT("Published statistics \n\r");
     }
     else {
