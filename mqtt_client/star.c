@@ -34,14 +34,14 @@ void *starThread(void *arg0) {
     recvSubCount = 0;
     status = true; // working
 
-    struct qRoverMsg data = {0};
+    struct qArmSensorMsg data = {0};
 
     while(1) {
 
         // blocking read on subQ
-        receiveFromSubRoverQ(&data);
+        receiveFromSubArmSensorQ(&data);
 
-        if (data.state == 1) {
+        if (data.sensorID >= 0 || data.sensorValue > 5 ) {
             UART_PRINT("Subscription successfully received! \n\r");
             recvSubCount++;
         }
@@ -62,11 +62,8 @@ void *starThread(void *arg0) {
  */
 void timerCallback(TimerHandle_t xTimer) {
 
-    int sensorID = 0;
-    int sensorVal = 1;
-
     // publish to message queue
-    if (packageArmSensorJSON(sensorID, sensorVal) == 1) {
+    if (packageRoverSensorJSON(1,2,3,4) == 1) {
         UART_PRINT("Publish request sent! \n\r");
         attemptPubCount++;
     }
