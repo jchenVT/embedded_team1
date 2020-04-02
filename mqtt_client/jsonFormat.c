@@ -107,30 +107,26 @@ int jsonParser(const char *topic, char *JSON_STRING) {
 }
 
 int packageArmJSON(int state) {
-    static uint32_t messageCount = 0;
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{\"count\": %d, \"state\": %d}", messageCount++, state);
+    snprintf(json, JSON_LEN, "{\"state\": %d}", state);
     return sendToPubQ("arm", json);
 }
 
 int packageArmSensorJSON(int sensorID, int sensorValue) {
-    static uint32_t messageCount = 0;
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{\"count\": %d, \"sensorID\": %d, \"sensorValue\": %d}", messageCount++, sensorID, sensorValue);
+    snprintf(json, JSON_LEN, "{\"sensorID\": %d, \"sensorValue\": %d}", sensorID, sensorValue);
     return sendToPubQ("arm_sensor", json);
 }
 
 int packageRoverJSON(int state) {
-    static uint32_t messageCount = 0;
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{\"count\": %d, \"state\": %d}", messageCount++, state);
+    snprintf(json, JSON_LEN, "{\"state\": %d}", state);
     return sendToPubQ("rover", json);
 }
 
 int packageRoverSensorJSON(bool move_to_point, int point_x, int point_y, int angle_rotate) {
-    static uint32_t messageCount = 0;
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{\"count\": %d, \"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d}", messageCount++, move_to_point ? "true": "false", point_x, point_y, angle_rotate);
+    snprintf(json, JSON_LEN, "{\"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d}", move_to_point ? "true": "false", point_x, point_y, angle_rotate);
     return sendToPubQ("rover_sensor", json);
 }
 
