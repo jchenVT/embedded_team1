@@ -43,6 +43,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <ti/drivers/GPIO.h>
+
 void Mqtt_Stop();
 
 //*****************************************************************************
@@ -86,63 +87,6 @@ UART_Handle InitTerm(void)
 
     return(uartHandle);
 }
-
-////*****************************************************************************
-////
-////! prints the formatted string on to the console
-////!
-////! \param[in]  format  - is a pointer to the character string specifying the
-////!                       format in the following arguments need to be
-////!                       interpreted.
-////! \param[in]  [variable number of] arguments according to the format in the
-////!             first parameters
-////!
-////! \return count of characters printed
-////
-////*****************************************************************************
-//int Report(const char *pcFormat,
-//           ...)
-//{
-//    int iRet = 0;
-//    char        *pcBuff;
-//    char        *pcTemp;
-//    int iSize = 256;
-//    va_list list;
-//
-//    pcBuff = (char*)malloc(iSize);
-//    if(pcBuff == NULL)
-//    {
-//        return(-1);
-//    }
-//    while(1)
-//    {
-//        va_start(list,pcFormat);
-//        iRet = vsnprintf(pcBuff, iSize, pcFormat, list);
-//        va_end(list);
-//        if((iRet > -1) && (iRet < iSize))
-//        {
-//            break;
-//        }
-//        else
-//        {
-//            iSize *= 2;
-//            if((pcTemp = realloc(pcBuff, iSize)) == NULL)
-//            {
-//                Message("Could not reallocate memory\n\r");
-//                iRet = -1;
-//                break;
-//            }
-//            else
-//            {
-//                pcBuff = pcTemp;
-//            }
-//        }
-//    }
-//    Message(pcBuff);
-//    free(pcBuff);
-//
-//    return(iRet);
-//}
 
 //*****************************************************************************
 //
@@ -342,21 +286,12 @@ void stop_all() {
     vTaskSuspendAll();
     taskENTER_CRITICAL();
 
-//    GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
-//    GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
-
-    /*****************************/
-//    dbgOutputLoc(UART_CLOSING);
-    /*****************************/
     UART_close(uartHandle);
-    /*****************************/
-//    dbgOutputLoc(FAILURE_CODE);
-    /*****************************/
+
     Mqtt_Stop();
 
     while(1)
     {
-//        GPIO_toggle(CONFIG_GPIO_LED_0);
         // blink LED forever
         int i = 0;
         for (;i<100000;i++) ;
