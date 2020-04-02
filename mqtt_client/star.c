@@ -76,6 +76,7 @@ void timerCallback(TimerHandle_t xTimer) {
     }
 }
 
+
 /*
  *  @function   timerCallback
  *              Timer callback that will publish to a topic

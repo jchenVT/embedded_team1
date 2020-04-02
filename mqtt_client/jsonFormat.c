@@ -130,3 +130,8 @@ int packageRoverSensorJSON(bool move_to_point, int point_x, int point_y, int ang
     return sendToPubQ("rover_sensor", json);
 }
 
+int packageDebugJSON(int attemptPubCount, int recvSubCount, bool status, char [] subTopic, char [] pubTopic) {
+    char json[JSON_LEN];
+    snprintf(json, JSON_LEN, "{\"attemptPubCount\": %d, \"recvSubCount\": %d, \"status\": %s, \"subTopic\": %s, \"pubTopic\": %s}", attemptPubCount, recvSubCount, status ? "true": "false", subTopic, pubTopic);
+    return sendToPubQ("debug", json);
+}
