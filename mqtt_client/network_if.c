@@ -227,7 +227,7 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
     case SL_NETAPP_EVENT_IPV4_ACQUIRED:
     case SL_NETAPP_EVENT_IPV6_ACQUIRED:
         SET_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_ACQUIRED);
-        UART_PRINT("[NETAPP EVENT] IP acquired by the device\n\r");
+        UART_PRINT("....[NETAPP EVENT] IP acquired by the device\n\r");
         break;
 
     case SL_NETAPP_EVENT_DHCPV4_LEASED:
@@ -240,7 +240,7 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
         break;
 
     default:
-        UART_PRINT("[NETAPP EVENT] Unexpected event \n\r");
+        UART_PRINT("[NETAPP ERROR EVENT] Unexpected event \n\r");
         break;
     }
 }
@@ -403,23 +403,24 @@ long Network_IF_InitDriver(uint32_t uiMode)
 
     if(lRetVal < 0)
     {
-        UART_PRINT("Failed to start the device \n\r");
-        LOOP_FOREVER();
+        UART_PRINT("[ERROR]: Failed to start the device \n\r");
+        stop_all();
     }
 
     switch(lRetVal)
     {
     case ROLE_STA:
-        UART_PRINT("Device came up in Station mode\n\r");
+        UART_PRINT("....Device came up in Station mode\n\r");
         break;
     case ROLE_AP:
-        UART_PRINT("Device came up in Access-Point mode\n\r");
+        UART_PRINT("....Device came up in Access-Point mode\n\r");
         break;
     case ROLE_P2P:
-        UART_PRINT("Device came up in P2P mode\n\r");
+        UART_PRINT("....Device came up in P2P mode\n\r");
         break;
     default:
-        UART_PRINT("Error:unknown mode\n\r");
+        UART_PRINT("[ERROR]: unknown mode\n\r");
+        stop_all();
         break;
     }
 
@@ -440,10 +441,10 @@ long Network_IF_InitDriver(uint32_t uiMode)
             switch(lRetVal)
             {
             case ROLE_STA:
-                UART_PRINT("Device came up in Station mode\n\r");
+                UART_PRINT("....Device came up in Station mode\n\r");
                 break;
             case ROLE_AP:
-                UART_PRINT("Device came up in Access-Point mode\n\r");
+                UART_PRINT("....Device came up in Access-Point mode\n\r");
                 /* If the device is in AP mode, we need to wait for this */
                 /* event before doing anything.                          */
                 while(!IS_IP_ACQUIRED(g_ulStatus))
@@ -452,17 +453,18 @@ long Network_IF_InitDriver(uint32_t uiMode)
                 }
                 break;
             case ROLE_P2P:
-                UART_PRINT("Device came up in P2P mode\n\r");
+                UART_PRINT("....Device came up in P2P mode\n\r");
                 break;
             default:
-                UART_PRINT("Error:unknown mode\n\r");
+                UART_PRINT("[ERROR]: unknown mode\n\r");
+                stop_all();
                 break;
             }
         }
         else
         {
-            UART_PRINT("could not configure correct networking mode\n\r");
-            LOOP_FOREVER();
+            UART_PRINT("[ERROR]: Could not configure correct networking mode\n\r");
+            stop_all();
         }
     }
     else

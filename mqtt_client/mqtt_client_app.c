@@ -306,11 +306,12 @@ void * MqttClient(void *pvParameters)
 
     if(gApConnectionState >= 0)
     {
+        UART_PRINT("\n\rCreating MQTTClient:\n\r");
         lRetVal = MqttClient_start();
         if(lRetVal == -1)
         {
-            UART_PRINT("MQTT Client lib initialization failed\n\r");
-            pthread_exit(0);
+            UART_PRINT("[ERROR]: MQTT Client lib initialization failed\n\r");
+            stop_all();
             return(NULL);
         }
     }
@@ -319,16 +320,11 @@ void * MqttClient(void *pvParameters)
 
     for(;; )
     {
-        UART_PRINT("Main: Waiting for published message \n\r");
-
         // blocking read on pubQ
         int success = receiveFromPubQ(&pubData);
 
         /*send publish message                                       */
         if (success) {
-
-            UART_PRINT("Main: Attempting to publish to MQTT \n\r");
-
             lRetVal = MQTTClient_publish(gMqttClient,
                                          pubData.topic,
                                          strlen((const char*)pubData.topic),
@@ -341,14 +337,14 @@ void * MqttClient(void *pvParameters)
         }
 
         if (lRetVal >= 0) {
-            UART_PRINT("\n\r Publishing the following message \n\r");
-            //UART_PRINT(pubData.topic);
-            //UART_PRINT("\n\r\n\r");
-            //UART_PRINT(pubData.str);
-            //UART_PRINT("\n\r\n\r");
+            UART_PRINT("Publishing the following message to ");
+            UART_PRINT(pubData.topic);
+            UART_PRINT(": ");
+            UART_PRINT(pubData.str);
+            UART_PRINT("\n\r");
         }
         else {
-            UART_PRINT("\n\r Publishing failed \n\r");
+            UART_PRINT("[ERROR]: Publishing failed \n\r");
         }
     }
 
@@ -389,7 +385,7 @@ int32_t Mqtt_IF_Connect()
     lRetVal = Network_IF_InitDriver(ROLE_STA);
     if(lRetVal < 0)
     {
-        UART_PRINT("Failed to start SimpleLink Device\n\r");
+        UART_PRINT("[ERROR]: Failed to start SimpleLink Device\n\r");
         return(-1);
     }
 
@@ -401,11 +397,11 @@ int32_t Mqtt_IF_Connect()
     /*Connect to the Access Point                                            */
     lRetVal = Network_IF_ConnectAP(SSID_Remote_Name, SecurityParams);
 
-    UART_PRINT("Connected to Access Point \n\r");
+    UART_PRINT("....Connected to Access Point \n\r");
 
     if(lRetVal < 0)
     {
-        UART_PRINT("Connection to an AP failed\n\r");
+        UART_PRINT("[ERROR]: Connection to an AP failed\n\r");
         return(-1);
     }
 
@@ -439,7 +435,8 @@ void Mqtt_start()
     if(retc != 0)
     {
         gInitState &= ~MQTT_INIT_STATE;
-        UART_PRINT("MQTT thread create fail\n\r");
+        UART_PRINT("[ERROR]: MQTT thread create fail\n\r");
+        stop_all();
         return;
     }
 
@@ -448,7 +445,8 @@ void Mqtt_start()
     if(retc != 0)
     {
         gInitState &= ~MQTT_INIT_STATE;
-        UART_PRINT("MQTT thread create fail\n\r");
+        UART_PRINT("[ERROR]: MQTT thread create fail\n\r");
+        stop_all();
         return;
     }
 
@@ -505,7 +503,6 @@ int32_t MqttClient_start()
 
     /*Open Client Receive Thread start the receive task. Set priority and    */
     /*stack size attributes                                                  */
-    UART_PRINT("Creating MQTTClientThread \n\r");
     pthread_attr_init(&pAttrs);
     priParam.sched_priority = 1;
     lRetVal = pthread_attr_setschedparam(&pAttrs, &priParam);
@@ -517,7 +514,7 @@ int32_t MqttClient_start()
 
     if(lRetVal != 0)
     {
-        UART_PRINT("Client Thread Create Failed failed\n\r");
+        UART_PRINT("[ERROR]: Client Thread Create Failed\n\r");
         gInitState &= ~CLIENT_INIT_STATE;
         return(-1);
     }
@@ -560,7 +557,7 @@ int32_t MqttClient_start()
         if(0 > lRetVal)
         {
             /*lib initialization failed                                      */
-            UART_PRINT("Connection to broker failed");
+            UART_PRINT("[ERROR]: Connection to broker failed\n\r");
 
             gUiConnFlag = 0;
         }
@@ -586,13 +583,19 @@ int32_t MqttClient_start()
             {
                 // ERROR
                 stop_all();
-                UART_PRINT("\n\r Subscription Error \n\r");
+                UART_PRINT("[ERROR]: Subscription Error \n\r");
                 MQTTClient_disconnect(gMqttClient);
                 gUiConnFlag = 0;
             }
             else
             {
-                UART_PRINT("Client subscribed to all topics \n\r");
+                UART_PRINT("....Client subscribed to: ");
+                for(subIndex = 0; subIndex < SUBSCRIPTION_TOPIC_COUNT; subIndex++)
+                {
+                    UART_PRINT(topic[subIndex]);
+                    UART_PRINT(" ");
+                }
+                UART_PRINT("\n\r");
             }
         }
     }
@@ -726,7 +729,7 @@ void mainThread(void * args)
 
     if(retc != 0)
     {
-        UART_PRINT("could not create simplelink task\n\r");
+        UART_PRINT("[ERROR]: Could not create simplelink task\n\r");
         stop_all();
     }
 
@@ -735,11 +738,7 @@ void mainThread(void * args)
     if(retc < 0)
     {
         /*Handle Error */
-        UART_PRINT("\n sl_Start failed\n");
-
-        char temp[120];
-        snprintf(temp, 120, "%d", retc);
-        UART_PRINT(temp);
+        UART_PRINT("[ERROR]: sl_Start failed\n");
         stop_all();
     }
 
@@ -752,27 +751,28 @@ void mainThread(void * args)
     if(retc < 0)
     {
         /*Handle Error */
-        UART_PRINT("\n sl_Stop failed\n");
+        UART_PRINT("[ERROR]: sl_Stop failed\n");
         stop_all();
     }
 
     if(retc < 0)
     {
         /*Handle Error */
-        UART_PRINT("mqtt_client - Unable to retrieve device information \n");
+        UART_PRINT("[ERROR]: mqtt_client - Unable to retrieve device information \n");
         stop_all();
     }
 
     gInitState = 0;
 
     /*Connect to AP                                                      */
+    UART_PRINT("\n\rConnecting Device:\n\r");
     gApConnectionState = Mqtt_IF_Connect();
 
     gInitState |= MQTT_INIT_STATE;
     /*Run MQTT Main Thread (it will open the Client and Server)          */
     Mqtt_start();
 
-    UART_PRINT("MQTT Has Started \n\r");
+    UART_PRINT("\n\rMQTT has started \n\r");
 
     while(1) {
 

@@ -18,8 +18,8 @@
 void *starThread(void *arg0) {
 
     /* Set up software timer (100ms -> 10 msgs a second)*/
-    TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(3000), pdTRUE, NULL, timerCallback);
-    xTimerStart(timerPub, 10000);
+    TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(5000), pdTRUE, NULL, timerCallback);
+    xTimerStart(timerPub, 0);
 
     struct qRoverMsg data = {0};
 
@@ -29,10 +29,10 @@ void *starThread(void *arg0) {
         receiveFromSubRoverQ(&data);
 
         if (data.state == 1) {
-            UART_PRINT("Star Thread:....Data Successfully Received! \n\r");
+            UART_PRINT("Subscription successfully received! \n\r");
         }
         else {
-            UART_PRINT("Data Un-Successfully Received! \n\r");
+            UART_PRINT("[ERROR]: Subscription unsuccessfully received... \n\r");
         }
     }
 }
@@ -49,10 +49,10 @@ void timerCallback(TimerHandle_t xTimer) {
 
     // publish to message queue
     if (packageRoverJSON(1) == 1) {
-        UART_PRINT("Data Successfully Sent! \n\r");
+        UART_PRINT("Publish request sent! \n\r");
     }
     else {
-        UART_PRINT("Data Un-Successfully Sent! \n\r");
+        UART_PRINT("[ERROR]: Publish request  not sent... \n\r");
     }
 
 }

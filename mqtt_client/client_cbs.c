@@ -111,17 +111,16 @@ void MqttClientCallback(int32_t event,
         case MQTTCLIENT_OPERATION_CONNACK:
         {
             uint16_t *ConnACK = (uint16_t*) data;
-            APP_PRINT("CONNACK:\n\r");
             /* Check if Conn Ack return value is Success (0) or       */
             /* Error - Negative value                                 */
             if(0 == (MQTTClientCbs_ConnackRC(*ConnACK)))
             {
-                APP_PRINT("Connection Success\n\r");
+                APP_PRINT("....Connection Success\n\r");
             }
             else
             {
                 // ERROR
-                APP_PRINT("Connection Error");
+                APP_PRINT("[ERROR]: Connection Error");
                 stop_all();
             }
             break;
@@ -143,19 +142,15 @@ void MqttClientCallback(int32_t event,
 
         int retVal = jsonParser(topic, JSON_STRING);
         if (retVal == 0) {
-            APP_PRINT("Error: Queue was too full \n\r");
+            APP_PRINT("[ERROR]: Queue was too full \n\r");
         }
         else if (retVal < 0) {
             char temp[12];
             snprintf(temp, 12, "%d", retVal);
-            APP_PRINT("Error ");
+            APP_PRINT("[ERROR]: ");
             APP_PRINT(temp);
             APP_PRINT(" : Incorrect number of tokens expected \n\r");
         }
-        else {
-            APP_PRINT("Msg Successfully Parsed and Sent \n\r");
-        }
-
 
         break;
     }

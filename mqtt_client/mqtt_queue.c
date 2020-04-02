@@ -67,9 +67,6 @@ int sendToPubQ(char * topic, char msg []) {
     struct qStringData data;
     data.topic = topic;
     strncpy(data.str, msg, MAXJSONSIZE);
-
-    UART_PRINT("Sending to PubQ \n\r");
-
     return xQueueSendToBackFromISR( pubQ, &data, 0 );
 }
 
