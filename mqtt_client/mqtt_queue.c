@@ -24,7 +24,7 @@ static QueueHandle_t subRoverSensorQ = (void *)0;
  */
 bool createQs() {
 
-    pubQ = xQueueCreate( qLENGTH, sizeof(struct qStringData));
+    pubQ = xQueueCreate( qLENGTH, 512);
     if (pubQ == (void *)0) {
         return false;
     }
