@@ -335,16 +335,17 @@ void * MqttClient(void *pvParameters)
         else {
             lRetVal = -1;
         }
-
-        if (lRetVal >= 0) {
-            UART_PRINT("Publishing the following message to ");
-            UART_PRINT(pubData.topic);
-            UART_PRINT(": ");
-            UART_PRINT(pubData.str);
-            UART_PRINT("\n\r");
-        }
-        else {
-            UART_PRINT("[ERROR]: Publishing failed \n\r");
+        if (strcmp(pubData.topic, "debug") != 0) {
+            if (lRetVal >= 0) {
+                UART_PRINT("Publishing the following message to ");
+                UART_PRINT(pubData.topic);
+                UART_PRINT(": ");
+                UART_PRINT(pubData.str);
+                UART_PRINT("\n\r");
+            }
+            else {
+                UART_PRINT("[ERROR]: Publishing failed \n\r");
+            }
         }
     }
 

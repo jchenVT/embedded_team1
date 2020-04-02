@@ -87,6 +87,7 @@ void timerCallbackDebug(TimerHandle_t xTimer) {
     // publish to message queue
     if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
         UART_PRINT("Published statistics \n\r");
+        status = true;
     }
     else {
         UART_PRINT("[ERROR]: Publish request not sent... \n\r");
