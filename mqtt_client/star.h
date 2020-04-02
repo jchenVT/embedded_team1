@@ -23,5 +23,6 @@
 
 void *starThread(void *arg0);
 void timerCallback(TimerHandle_t xTimer);
+void timerCallbackDebug(TimerHandle_t xTimer);
 
 #endif /* STAR_H_ */
