@@ -11,8 +11,8 @@
 #include <rover_queues.h>
 #include <rover_uart.h>
 
-#define KP  0.2
-#define KI  0.1
+#define KP  0.8
+#define KI  0.3
 
 struct PIDvalues {
     long desiredTicks;
@@ -23,6 +23,9 @@ struct PIDvalues {
     char direction;
 };
 
+enum roverStates {stop, turn_left, turn_right, move_forward, target};
+
 void *mainRoverThread(void *arg0);
+void timerCallbackDebug(TimerHandle_t xTimer);
 
 #endif /* ROVER_MAIN_H_ */

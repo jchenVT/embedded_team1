@@ -30,7 +30,7 @@
 
 #define THREADSTACKSIZE 1024
 #define SPI_MSG_LENGTH  5
-#define TIMER_LENGTH    100
+#define TIMER_LENGTH    50
 
 enum encoders {e128=128, e129, e130};
 

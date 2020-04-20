@@ -1,6 +1,7 @@
 #include "jsonFormat.h"
 #include "mqtt_queue.h"
 #include "jsmn.h"
+#include <rover_queues.h>
 
 static jsmn_parser parser;
 
@@ -55,18 +56,11 @@ int jsonParser(const char *topic, char *JSON_STRING) {
                 return -3;
             }
 
-            struct qRoverSensorMsg roverSensorMsg;
-
             char *ptr;
             char movePoint;
             strncpy(&movePoint, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
 
-            roverSensorMsg.move_to_point = movePoint-'0';
-            roverSensorMsg.point_x = strtod(JSON_STRING + tokens[4].start, &ptr);
-            roverSensorMsg.point_y = strtod(JSON_STRING + tokens[6].start, &ptr);
-            roverSensorMsg.angle_rotate = strtod(JSON_STRING + tokens[8].start, &ptr);
-
-            retVal = sendToSubRoverSensorQ(roverSensorMsg);
+            retVal = sendMsgToReceiveQ(true, movePoint - '0', strtod(JSON_STRING + tokens[8].start, &ptr), strtod(JSON_STRING + tokens[4].start, &ptr), strtod(JSON_STRING + tokens[6].start, &ptr));
     }
     else if (strcmp(topic, "rover") == 0) {
             if (jsoneq(JSON_STRING, &tokens[1], "state") != 0 || num != 3) {

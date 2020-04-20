@@ -58,6 +58,7 @@
 extern void *mainRoverThread(void *arg0);
 extern void *uartThread(void *arg0);
 extern void *spiThread(void *arg0);
+extern void mainMQTTThread(void *args);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -71,20 +72,17 @@ int main(void)
     pthread_t           mainControlsThread;
     pthread_t           motorThread;
     pthread_t           encoderThread;
-    pthread_t           mqttRecvThread;
-    pthread_t           mqttSendThread;
+    pthread_t           mqttThread;
 
     pthread_attr_t      mainControlsAttrs;
     pthread_attr_t      motorAttrs;
     pthread_attr_t      encoderAttrs;
-    pthread_attr_t      mqttRecvAttrs;
-    pthread_attr_t      mqttSendAttrs;
+    pthread_attr_t      mqttAttrs;
 
     int                 retcMainControls;
     int                 retcMotors;
     int                 retcEncoders;
-    int                 retcMQTTRecv;
-    int                 rectMQTTSend;
+    int                 retcMQTT;
 
     /* initialize the system locks */
 #ifdef __ICCARM__
@@ -105,22 +103,17 @@ int main(void)
     if (!createMQTTReceiveQ()) {
         stop_all(FAIL_MQTTRecvQ_INIT);
     }
-    if (!createMQTTSendQ()) {
-        stop_all(FAIL_MQTTSendQ_INIT);
-    }
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&mainControlsAttrs);
     pthread_attr_init(&motorAttrs);
     pthread_attr_init(&encoderAttrs);
-    //pthread_attr_init(&mqttRecvAttrs);
-    //pthread_attr_init(&mqttSendAttrs);
+    //pthread_attr_init(&mqttAttrs);
 
     retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainRoverThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
     retcEncoders = pthread_create(&encoderThread, &encoderAttrs, spiThread, NULL);
-    //retcMQTTRecv = pthread_create(&mqttRecvThread, &mqttRecvAttrs, mqttRecvThread, NULL);
-    //rectMQTTSend = pthread_create(&mqttSendThread, &mqttSendAttrs, mqttSendThread, NULL);
+    //retcMQTTRecv = pthread_create(&mqttThread, &mqttRecvAttrs, mainMQTTThread, NULL);
 
 
     if (retcMainControls != 0) {
@@ -136,9 +129,6 @@ int main(void)
 /*
     else if (rectMQTTRecv != 0) {
         stop_all(FAIL_MQTTRecvThread_INIT);
-    }
-    else if (rectMQTTSend != 0) {
-        stop_all(FAIL_MQTTSendThread_INIT);
     }
      */
 

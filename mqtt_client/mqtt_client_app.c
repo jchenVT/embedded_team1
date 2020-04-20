@@ -196,7 +196,7 @@ const char *ClientPassword = "pwd1";
 
 /* Subscription topics and qos values                                        */
 char *topic[SUBSCRIPTION_TOPIC_COUNT] =
-{ SUBSCRIPTION_TOPIC2 };
+{ SUBSCRIPTION_TOPIC3 };
 
 unsigned char qos[SUBSCRIPTION_TOPIC_COUNT] =
 { MQTT_QOS_0 };
@@ -702,7 +702,7 @@ int32_t SetClientIdNamefromMacAddress()
     return(ret);
 }
 
-void mainThread(void * args)
+void mainMQTTThread(void * args)
 {
     pthread_t spawn_thread = (pthread_t) NULL;
     pthread_attr_t pAttrs_spawn;

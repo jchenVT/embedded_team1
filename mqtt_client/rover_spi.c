@@ -184,11 +184,11 @@ void *spiThread(void *arg0) {
         dbgOutputLoc(SPI_READING_128);
         readEncoder(e128);
 
-        dbgOutputLoc(SPI_READING_129);
-        readEncoder(e129);
-
-        dbgOutputLoc(SPI_READING_130);
-        readEncoder(e130);
+//        dbgOutputLoc(SPI_READING_129);
+//        readEncoder(e129);
+//
+//        dbgOutputLoc(SPI_READING_130);
+//        readEncoder(e130);
 
         clearEncoderCounts();
     }
