@@ -22,13 +22,6 @@
 #define FL_WHEEL_ADDR   0b10000001
 #define BM_WHEEL_ADDR   0b10000010
 
-/* Queue variables */
-#define qLENGTH         32
-#define mqITEMSIZE      3
-#define eqITEMSIZE      1
-#define MRqITEMSIZE     24 // CHANGE/CONFIRM
-#define MSqITEMSIZE     4 // CHANGE/CONFIRM
-
 /* Struct used in RETURNING message from queue */
 struct motorData {
     char address;
@@ -38,8 +31,10 @@ struct motorData {
 
 struct receiveData {
     bool sensorType;
-    long data;
-    long data2;
+    bool point_move;
+    double angle_rotate;
+    double data;
+    double data2;
 };
 
 /* Routine declarations */
@@ -50,7 +45,7 @@ bool createMQTTSendQ();
 
 int sendMsgToMotorsQ(char address, char command, char speed);
 int sendMsgToEncoderQ();
-int sendMsgToReceiveQ(bool sensorType, long data, long data2);
+int sendMsgToReceiveQ(bool sensorType, bool move, double angle_rotate, double data, double data2);
 int sendMsgToMQTTSendQ(int sendLoc, int data);
 
 bool receiveFromMotorsQ(struct motorData *oldData);

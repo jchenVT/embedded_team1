@@ -12,6 +12,13 @@ static QueueHandle_t encoderQ = NULL;
 static QueueHandle_t mqttReceiveQ = NULL;
 static QueueHandle_t mqttSendQ = NULL;
 
+/* Queue variables */
+#define qLENGTH         32
+#define mqITEMSIZE      3
+#define eqITEMSIZE      1
+#define MRqITEMSIZE     sizeof(struct receiveData)
+#define MSqITEMSIZE     4 // CHANGE/CONFIRM
+
 /*
  *  @function   createMotorQ
  *              Wrapper for the RTOS function to create a queue. Uses
@@ -81,14 +88,15 @@ int sendMsgToEncoderQ() {
     return xQueueSendToBack( encoderQ, &newMsg, 0 );
 }
 
-int sendMsgToReceiveQ(bool sensorType, long data, long data2) {
-    struct receiveData newMsg = {sensorType, data, data2};
+int sendMsgToReceiveQ(bool sensorType, bool move, double angle_rotate, double data, double data2) {
+    struct receiveData newMsg = {sensorType, move, angle_rotate, data, data2};
     if (sensorType) {
         dbgOutputLoc(RQ_MQTTReceive_senSEND);
     }
     else {
         dbgOutputLoc(RQ_MQTTReceive_spiSEND);
     }
+
     return xQueueSendToBack( mqttReceiveQ, &newMsg, 0 );
 }
 

@@ -12,14 +12,16 @@
 #include <rover_uart.h>
 #include "sensor_state.h"
 
-#define KP  4
-#define KI  3
+#define KP  0.2
+#define KI  0.1
 
 struct PIDvalues {
-    char desiredSpeed;
-    char currentSpeed;
+    long desiredTicks;
+    long currentTicks;
     long integral;
     long prevError;
+
+    char direction;
 };
 
 void *mainThread(void *arg0);
