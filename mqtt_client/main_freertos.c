@@ -55,7 +55,7 @@
 #include <rover_queues.h>
 #include <rover_debug.h>
 
-extern void *mainThread(void *arg0);
+extern void *mainRoverThread(void *arg0);
 extern void *uartThread(void *arg0);
 extern void *spiThread(void *arg0);
 
@@ -116,7 +116,7 @@ int main(void)
     //pthread_attr_init(&mqttRecvAttrs);
     //pthread_attr_init(&mqttSendAttrs);
 
-    retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainThread, NULL);
+    retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainRoverThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
     retcEncoders = pthread_create(&encoderThread, &encoderAttrs, spiThread, NULL);
     //retcMQTTRecv = pthread_create(&mqttRecvThread, &mqttRecvAttrs, mqttRecvThread, NULL);

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rover_comp</name>
+	<name>mqtt_client_CC3220SF_LAUNCHXL_freertos_ccs</name>
 	<comment></comment>
 	<projects>
 		<project>freertos_builds_CC3220SF_LAUNCHXL_release_ccs</project>

@@ -71,7 +71,7 @@ void PIDalg (struct PIDvalues *motor, long measuredValue) {
  *  @params     arg0
  *  @return     void
  */
-void *mainThread(void *arg0)
+void *mainRoverThread(void *arg0)
 {
     /**********************************/
     dbgOutputLoc(STAR_MAIN_START); 

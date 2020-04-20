@@ -10,7 +10,6 @@
 
 #include <rover_queues.h>
 #include <rover_uart.h>
-#include "sensor_state.h"
 
 #define KP  0.2
 #define KI  0.1
@@ -24,6 +23,6 @@ struct PIDvalues {
     char direction;
 };
 
-void *mainThread(void *arg0);
+void *mainRoverThread(void *arg0);
 
 #endif /* ROVER_MAIN_H_ */
