@@ -171,12 +171,12 @@ bool transferData(int encoder) {
 
 void *spiThread(void *arg0) {
 
-    spi_setup();
+    bool RDY = false;
+    bool temp = false;
+
     initEncoders();
     clearEncoderCounts();
     timer_setup();
-
-    bool temp = false;
 
     while(1) {
         receiveFromEncoderQ(&temp);

@@ -81,6 +81,7 @@
 
 /* Message queue */
 #include "mqtt_queue.h"
+#include <jsonFormat.h>
 
 //*****************************************************************************
 //                          LOCAL DEFINES
@@ -315,6 +316,8 @@ void * MqttClient(void *pvParameters)
             return(NULL);
         }
     }
+
+    packageRoverSensorJSON(true, 0, 0, 1);
 
     struct qStringData pubData = {"", ""};
 

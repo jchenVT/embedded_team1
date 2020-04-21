@@ -10,6 +10,7 @@
 #include <math.h>
 #include <mqtt_queue.h>
 #include <jsonFormat.h>
+#include <rover_spi.h>
 
 /* Timer */
 #include <ti/drivers/Timer.h>
@@ -36,7 +37,7 @@ static bool status;
 
 char convertTicksToMotor_128(long ticks) {
 
-    double ret = ticks/conversionValue_128;
+    double ret = (double)ticks/conversionValue_128;
 
     if (ret < 0) {
         return 0;
@@ -47,10 +48,6 @@ char convertTicksToMotor_128(long ticks) {
 
     return floor(ret);
 
-}
-
-char findNewSpeed(char *curSpeed, char *outputSpeed) {
-    return *curSpeed + *outputSpeed;
 }
 
 char convertTicksToMotor_129(long ticks) {
@@ -179,9 +176,11 @@ void updateState(enum roverStates prevState, enum roverStates curState,
         }
     }
 
-    sendMsgToMotorsQ(128, PID128->direction, convertTicksToMotor_128(PID128->currentTicks));
-    sendMsgToMotorsQ(129, PID129->direction, convertTicksToMotor_128(PID128->currentTicks));
-    sendMsgToMotorsQ(130, PID130->direction, convertTicksToMotor_128(PID128->currentTicks));
+    char newSpeed = convertTicksToMotor_128(PID128->currentTicks);
+
+    sendMsgToMotorsQ(128, PID128->direction, newSpeed);
+    sendMsgToMotorsQ(129, PID129->direction, newSpeed);
+    sendMsgToMotorsQ(130, PID130->direction, newSpeed);
 }
 
 /*
@@ -199,18 +198,18 @@ void *mainRoverThread(void *arg0)
     /**********************************/
 
     struct receiveData curData = {false, false, 0, 0, 0};
-    long sum = 0;
 
     attemptPubCount = 0;
     recvSubCount = 0;
     status = true; // working
+    bool spi_OFF = true;
 //    TimerHandle_t timerDebug = xTimerCreate("PublishTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, timerCallbackDebug);
 //    xTimerStart(timerDebug, 0);
 
     enum roverStates state = stop;
-    struct PIDvalues PID128 = {desiredMovementTicks,desiredMovementTicks,0,0,1};
-    struct PIDvalues PID129 = {desiredMovementTicks,desiredMovementTicks,0,0,1};
-    struct PIDvalues PID130 = {desiredMovementTicks,desiredMovementTicks,0,0,1};
+    struct PIDvalues PID128 = {stopTicks,stopTicks,0,0,1};
+    struct PIDvalues PID129 = {stopTicks,stopTicks,0,0,1};
+    struct PIDvalues PID130 = {stopTicks,stopTicks,0,0,1};
 
     while(1) {
         /**********************************/
@@ -222,16 +221,15 @@ void *mainRoverThread(void *arg0)
             dbgOutputLoc(curData.data2);
 
             long ticks = (long)curData.data;
-            sum += ticks;
 
             if (curData.data2 == 128) {
                 PIDalg(&PID128, ticks);
             }
-
-            int i;
-            for (i=0;i<sizeof(sum);i++) {
-                dbgOutputLoc((sum >> (sizeof(sum)-1-i)*8) & 0xFF);
-            }
+//
+//            int i;
+//            for (i=0;i<sizeof(sum);i++) {
+//                dbgOutputLoc((sum >> (sizeof(sum)-1-i)*8) & 0xFF);
+//            }
 
             updateState(state, state, &PID128, &PID129, &PID130);
         }
@@ -267,6 +265,7 @@ void *mainRoverThread(void *arg0)
             status = false;
         }
 */
+
         /**********************************/
         dbgOutputLoc(STAR_RECEIVE_MESSAGE);
         /**********************************/

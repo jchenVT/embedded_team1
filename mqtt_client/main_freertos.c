@@ -54,11 +54,12 @@
 #include <rover_uart.h>
 #include <rover_queues.h>
 #include <rover_debug.h>
+#include <mqtt_queue.h>
 
 extern void *mainRoverThread(void *arg0);
 extern void *uartThread(void *arg0);
 extern void *spiThread(void *arg0);
-extern void mainMQTTThread(void *args);
+extern void *mainMQTTThread(void *args);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
@@ -84,6 +85,9 @@ int main(void)
     int                 retcEncoders;
     int                 retcMQTT;
 
+    struct sched_param priParam;
+    int detachState;
+
     /* initialize the system locks */
 #ifdef __ICCARM__
     __iar_Initlocks();
@@ -92,7 +96,9 @@ int main(void)
     /* Call driver init functions */
     Board_init();
     debug_setup();
+    spi_setup();
     uart_setup();
+    createQs();
 
     if (!createMotorQ()) {
         stop_all(FAIL_MotorQ_INIT);
@@ -108,13 +114,19 @@ int main(void)
     pthread_attr_init(&mainControlsAttrs);
     pthread_attr_init(&motorAttrs);
     pthread_attr_init(&encoderAttrs);
-    //pthread_attr_init(&mqttAttrs);
+    pthread_attr_init(&mqttAttrs);
+    priParam.sched_priority = 1;
+
+    detachState = PTHREAD_CREATE_DETACHED;
 
     retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainRoverThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
     retcEncoders = pthread_create(&encoderThread, &encoderAttrs, spiThread, NULL);
-    //retcMQTTRecv = pthread_create(&mqttThread, &mqttRecvAttrs, mainMQTTThread, NULL);
 
+    retcMQTT = pthread_attr_setdetachstate(&mqttAttrs, detachState);
+    pthread_attr_setschedparam(&mqttAttrs, &priParam);
+    retcMQTT |= pthread_attr_setstacksize(&mqttAttrs, THREADSTACKSIZE);
+    retcMQTT = pthread_create(&mqttThread, &mqttAttrs, mainMQTTThread, NULL);
 
     if (retcMainControls != 0) {
         stop_all(FAIL_MainThread_INIT);
@@ -126,11 +138,10 @@ int main(void)
     if (retcEncoders != 0) {
         stop_all(FAIL_EncoderThread_INIT);
     }
-/*
-    else if (rectMQTTRecv != 0) {
+    else if (retcMQTT != 0) {
         stop_all(FAIL_MQTTRecvThread_INIT);
     }
-     */
+
 
     /* Start the FreeRTOS scheduler */
     vTaskStartScheduler();
