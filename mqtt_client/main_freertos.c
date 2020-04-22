@@ -96,7 +96,7 @@ int main(void)
     /* Call driver init functions */
     Board_init();
     debug_setup();
-    spi_setup();
+    SPI_init();
     uart_setup();
     createQs();
 

@@ -33,16 +33,17 @@
 
 static int attemptPubCount;
 static int recvSubCount;
+static int counter;
 static bool status;
 
 char convertTicksToMotor_128(long ticks) {
 
     double ret = (double)ticks*conversionValue_128;
 
-    if (ret < 0) {
+    if (ret <= 0) {
         return 0;
     }
-    else if (ret > 127) {
+    else if (ret >= 127) {
         return 127;
     }
 
@@ -158,6 +159,7 @@ void updateState(enum roverStates prevState, enum roverStates curState,
             case move_forward:
                 setToLeftTurn(PID128);
                 setToRightTurn(PID129);
+                PID129->currentTicks += 6;
                 stopWheel(PID130);
                 break;
             case target:
@@ -191,37 +193,37 @@ void *mainRoverThread(void *arg0)
 
     attemptPubCount = 0;
     recvSubCount = 0;
+    counter = 0;
     status = true; // working
     bool spi_OFF = true;
     TimerHandle_t timerDebug = xTimerCreate("PublishTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, timerCallbackDebug);
     xTimerStart(timerDebug, 0);
+
+    TimerHandle_t timerTesting;
 
     enum roverStates state = stop;
     struct PIDvalues PID128 = {stopTicks,stopTicks,0,0,1};
     struct PIDvalues PID129 = {stopTicks,stopTicks,0,0,1};
     struct PIDvalues PID130 = {stopTicks,stopTicks,0,0,1};
 
-//    if (spi_OFF) {
-//        sendMsgToEncoderQ();
-//        spi_OFF = false;
-//    }
-
     while(1) {
         /**********************************/
-        dbgOutputLoc(STAR_WHILE_BEGIN); 
+        dbgOutputLoc(STAR_WHILE_BEGIN);
         /**********************************/
         receiveFromMQTTReceiveQ(&curData);
 
         if (spi_OFF) {
             sendMsgToEncoderQ();
+            timerTesting = xTimerCreate("TestingTimer", pdMS_TO_TICKS(500), pdTRUE, NULL, timerCallbackTesting);
+            xTimerStart(timerTesting, 0);
             spi_OFF = false;
         }
 
         if (curData.sensorType == false) {
-//            dbgOutputLoc(curData.data2);
-//
-//            long ticks = (long)curData.data;
+            dbgOutputLoc(curData.data2);
 
+//            long ticks = (long)curData.data;
+//
 //            if (curData.data2 == 128) {
 //                PIDalg(&PID128, ticks);
 //            }
@@ -232,19 +234,23 @@ void *mainRoverThread(void *arg0)
             recvSubCount++;
             if (curData.point_move) {
                 if (curData.angle_rotate == 0) {
+                    dbgOutputLoc(0xF1);
                     updateState(state, move_forward, &PID128, &PID129, &PID130);
                     state = move_forward;
                 }
                 else if (curData.angle_rotate < 0) {
+                    dbgOutputLoc(0xF2);
                     updateState(state, turn_left, &PID128, &PID129, &PID130);
                     state = turn_left;
                 }
                 else {
+                    dbgOutputLoc(0xF3);
                     updateState(state, turn_right, &PID128, &PID129, &PID130);
                     state = turn_right;
                 }
             }
             else {
+                dbgOutputLoc(0xF4);
                 updateState(state, stop, &PID128, &PID129, &PID130);
                 state = stop;
             }
@@ -252,11 +258,9 @@ void *mainRoverThread(void *arg0)
 
         // publish to message queue
         if (packageRoverJSON(state) == 1) {
-            // UART_PRINT("Publish request sent! \n\r");
             attemptPubCount++;
         }
         else {
-            // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
             status = false;
         }
 
@@ -266,11 +270,45 @@ void *mainRoverThread(void *arg0)
     }
 }
 
+void timerCallbackTesting(TimerHandle_t xTimer) {
+    if (counter < 15) {
+        packageRoverSensorJSON(true, 0, 0, 1);
+    }
+    else if (counter < 31) {
+        packageRoverSensorJSON(true, 0, 0, 0);
+    }
+    else if (counter < 47) {
+        packageRoverSensorJSON(true, 0, 0, 1);
+    }
+    else if (counter < 63) {
+        packageRoverSensorJSON(true, 0, 0, 0);
+    }
+    else if (counter < 79) {
+        packageRoverSensorJSON(true, 0, 0, 1);
+    }
+    else if (counter < 95) {
+        packageRoverSensorJSON(true, 0, 0, 0);
+    }
+    else if (counter < 111) {
+        packageRoverSensorJSON(true, 0, 0, 1);
+    }
+    else if (counter < 127) {
+        packageRoverSensorJSON(true, 0, 0, 0);
+    }
+    else if (counter < 137){
+        packageRoverSensorJSON(false, 0, 0, 0);
+    }
+    else {
+        packageRoverSensorJSON(true, 0, 0, -1);
+    }
+
+    counter++;
+}
+
 void timerCallbackDebug(TimerHandle_t xTimer) {
 
     // publish to message queue
     if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
-        // UART_PRINT("Published statistics \n\r");
         status = true;
     }
     else {

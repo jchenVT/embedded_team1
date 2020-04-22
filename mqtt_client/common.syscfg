@@ -26,6 +26,10 @@ var Watchdog = scripting.addModule("/ti/drivers/Watchdog", {}, false);
 var Watchdog1 = Watchdog.addInstance();
 var Crypto = scripting.addModule("/ti/drivers/Crypto", {}, false);
 var Crypto1 = Crypto.addInstance();
+var Timer = scripting.addModule("/ti/drivers/Timer", {}, false);
+var Timer1 = Timer.addInstance();
+var Timer2 = Timer.addInstance();
+var Timer3 = Timer.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -95,7 +99,7 @@ GPIO8.$name = "CONFIG_GPIO_6";
 GPIO8.gpioPin.$assign = "boosterpack.30"; // P50
 var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
 // Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
-SPI1.$name = "CONFIG_SPI_MASTER";
+SPI1.$name = "CONFIG_SPI_0";
 // Name
 SPI1.spi.$name = "MySPI1";
 // Assign pin
@@ -134,6 +138,24 @@ Watchdog1.$name = "CONFIG_WATCHDOG_0";
 Watchdog1.watchdog.$name = "MyWATCHDOG1";
 // Name - The C/C++ identifier used in applications as the index parameter passed to Crypto runtime APIs
 Crypto1.$name = "CONFIG_Crypto_0";
+// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
+Timer1.$name = "CONFIG_TIMER_0";
+// Timer Type
+Timer1.timerType = "32 Bits";
+// Name
+Timer1.timer.$name = "MyTimer1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
+Timer2.$name = "CONFIG_TIMER_1";
+// Name
+Timer2.timer.$name = "MyTimer1";
+// Use Peripheral
+Timer2.timer.$assign = "Timer1";
+// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
+Timer3.$name = "CONFIG_TIMER_2";
+// Name
+Timer3.timer.$name = "MyTimer1";
+// Use Peripheral
+Timer3.timer.$assign = "Timer1";
 // Suggest solution
 GPIO5.gpioPin.$suggestSolution = "64";
 // Suggest solution
@@ -148,3 +170,5 @@ SPI1.spi.mosiPin.$suggestSolution = "7";
 GPIO13.gpioPin.$suggestSolution = "15";
 // Suggest solution
 Watchdog1.watchdog.$suggestSolution = "WATCHDOG0";
+// Suggest solution
+Timer1.timer.$suggestSolution = "Timer0";

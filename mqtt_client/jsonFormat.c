@@ -60,7 +60,7 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             char movePoint;
             strncpy(&movePoint, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
 
-            retVal = sendMsgToReceiveQ(true, movePoint - '0', strtod(JSON_STRING + tokens[8].start, &ptr), strtod(JSON_STRING + tokens[4].start, &ptr), strtod(JSON_STRING + tokens[6].start, &ptr));
+            retVal = sendMsgToReceiveQ(true, movePoint - '0', atoi(JSON_STRING + tokens[8].start), strtod(JSON_STRING + tokens[4].start, &ptr), strtod(JSON_STRING + tokens[6].start, &ptr));
     }
     else if (strcmp(topic, "rover") == 0) {
             if (jsoneq(JSON_STRING, &tokens[1], "state") != 0 || num != 3) {
@@ -119,7 +119,7 @@ int packageRoverJSON(int state) {
 
 int packageRoverSensorJSON(bool move_to_point, int point_x, int point_y, int angle_rotate) {
     char json[JSON_LEN];
-    snprintf(json, JSON_LEN, "{\"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d}", move_to_point ? "true": "false", point_x, point_y, angle_rotate);
+    snprintf(json, JSON_LEN, "{\"move_to_point\": %s, \"point_x\": %d, \"point_y\": %d, \"angle_rotate\": %d}", move_to_point ? "1": "0", point_x, point_y, angle_rotate);
     return sendToPubQ("rover_sensor", json);
 }
 

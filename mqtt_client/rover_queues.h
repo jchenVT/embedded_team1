@@ -32,7 +32,7 @@ struct motorData {
 struct receiveData {
     bool sensorType;
     bool point_move;
-    double angle_rotate;
+    int angle_rotate;
     double data;
     double data2;
 };
@@ -45,7 +45,7 @@ bool createMQTTSendQ();
 
 int sendMsgToMotorsQ(char address, char command, char speed);
 int sendMsgToEncoderQ();
-int sendMsgToReceiveQ(bool sensorType, bool move, double angle_rotate, double data, double data2);
+int sendMsgToReceiveQ(bool sensorType, bool move, int angle_rotate, double data, double data2);
 int sendMsgToMQTTSendQ(int sendLoc, int data);
 
 bool receiveFromMotorsQ(struct motorData *oldData);

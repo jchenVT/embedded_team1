@@ -19,7 +19,7 @@
 #define SUB_COUNT       1
 #define PUB_COUNT       1
 
-#define qLENGTH         8
+#define qLENGTH         16
 #define qITEMSIZE       8
 #define MAXJSONSIZE     120
 

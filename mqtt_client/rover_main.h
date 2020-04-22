@@ -27,5 +27,6 @@ enum roverStates {stop, turn_left, turn_right, move_forward, target};
 
 void *mainRoverThread(void *arg0);
 void timerCallbackDebug(TimerHandle_t xTimer);
+void timerCallbackTesting(TimerHandle_t x_Timer);
 
 #endif /* ROVER_MAIN_H_ */

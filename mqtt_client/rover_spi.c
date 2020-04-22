@@ -25,7 +25,7 @@ void spi_setup() {
     /*****************************/
 
     /* Call driver init functions. */
-    SPI_init();
+    //SPI_init();
     SPI_Params      spiParams;
 
     /* Set slave controllers as outputs */
@@ -46,7 +46,7 @@ void spi_setup() {
 
     dbgOutputLoc(SPI_OPENING);
 
-    masterSpi = SPI_open(CONFIG_SPI_MASTER, &spiParams);
+    masterSpi = SPI_open(CONFIG_SPI_0, &spiParams);
     if (masterSpi == NULL) {
         stop_all(FAIL_SPI_INIT);
     }
@@ -114,9 +114,9 @@ void readEncoder(int encoder) {
     int i;
     for (i=1;i<sizeof(readRxBuffer); i++) {
         data = (data << 8) + readRxBuffer[i];
-        dbgOutputLoc(readRxBuffer[i]);
+//        dbgOutputLoc(readRxBuffer[i]);
     }
-    dbgOutputLoc(SPI_DATA);
+//    dbgOutputLoc(SPI_DATA);
 
     if (sendMsgToReceiveQ(false, false, 0, (double)data, (double)encoder) != pdPASS) {
         stop_all(FAIL_SPI_SEND_TO_Q);
@@ -197,13 +197,15 @@ void *spiThread(void *arg0) {
         receiveFromEncoderQ(&temp);
 
         if (!RDY) {
+            spi_setup();
             initEncoders();
             clearEncoderCounts();
             timer_setup();
+//            sendMsgToReceiveQ(true, true, 1, 0, 0);
             RDY = true;
         }
 
-        dbgOutputLoc(SPI_READING_128);
+//        dbgOutputLoc(SPI_READING_128);
         readEncoder(e128);
 
 //        dbgOutputLoc(SPI_READING_129);

@@ -88,16 +88,16 @@ int sendMsgToEncoderQ() {
     return xQueueSendToBack( encoderQ, &newMsg, 0 );
 }
 
-int sendMsgToReceiveQ(bool sensorType, bool move, double angle_rotate, double data, double data2) {
+int sendMsgToReceiveQ(bool sensorType, bool move, int angle_rotate, double data, double data2) {
     struct receiveData newMsg = {sensorType, move, angle_rotate, data, data2};
     if (sensorType) {
         dbgOutputLoc(RQ_MQTTReceive_senSEND);
+        return xQueueSendToBackFromISR( mqttReceiveQ, &newMsg, 0 );
     }
     else {
         dbgOutputLoc(RQ_MQTTReceive_spiSEND);
+        return xQueueSendToBack( mqttReceiveQ, &newMsg, 0 );
     }
-
-    return xQueueSendToBack( mqttReceiveQ, &newMsg, 0 );
 }
 
 int sendMsgToMQTTSendQ(int sendLoc, int data) {
