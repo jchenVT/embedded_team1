@@ -122,6 +122,7 @@ int main(void)
     retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainRoverThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
     retcEncoders = pthread_create(&encoderThread, &encoderAttrs, spiThread, NULL);
+    //retcMQTT = pthread_create(&mqttThread, &mqttAttrs, mainMQTTThread, NULL);
 
     retcMQTT = pthread_attr_setdetachstate(&mqttAttrs, detachState);
     pthread_attr_setschedparam(&mqttAttrs, &priParam);
@@ -138,7 +139,7 @@ int main(void)
     if (retcEncoders != 0) {
         stop_all(FAIL_EncoderThread_INIT);
     }
-    else if (retcMQTT != 0) {
+    if (retcMQTT != 0) {
         stop_all(FAIL_MQTTRecvThread_INIT);
     }
 

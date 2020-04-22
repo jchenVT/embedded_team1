@@ -22,10 +22,6 @@ var GPIO10 = GPIO.addInstance();
 var GPIO11 = GPIO.addInstance();
 var GPIO12 = GPIO.addInstance();
 var GPIO13 = GPIO.addInstance();
-var Timer = scripting.addModule("/ti/drivers/Timer", {}, false);
-var Timer1 = Timer.addInstance();
-var Timer2 = Timer.addInstance();
-var Timer3 = Timer.addInstance();
 var Watchdog = scripting.addModule("/ti/drivers/Watchdog", {}, false);
 var Watchdog1 = Watchdog.addInstance();
 var Crypto = scripting.addModule("/ti/drivers/Crypto", {}, false);
@@ -90,7 +86,7 @@ GPIO7.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO7.$name = "CONFIG_GPIO_5";
 // Assign pin
-GPIO7.gpioPin.$assign = "boosterpack.14"; // P06
+GPIO7.gpioPin.$assign = "boosterpack.28"; // P53
 // Mode - Select the GPIO mode
 GPIO8.mode = "Output";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
@@ -102,6 +98,10 @@ var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
 SPI1.$name = "CONFIG_SPI_MASTER";
 // Name
 SPI1.spi.$name = "MySPI1";
+// Assign pin
+SPI1.spi.dmaRxChannel.$assign = "UDMA_CH6";
+// Assign pin
+SPI1.spi.dmaTxChannel.$assign = "UDMA_CH7";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO9.$name = "CONFIG_SPI_MASTER_READY";
 // Mode - Select the GPIO mode
@@ -119,7 +119,7 @@ GPIO11.$name = "CONFIG_SPI_SLAVE129_READY";
 // Mode - Select the GPIO mode
 GPIO11.mode = "Dynamic";
 // Assign pin
-GPIO11.gpioPin.$assign = "boosterpack.18"; // P08
+GPIO11.gpioPin.$assign = "boosterpack.2"; // P58*
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO12.$name = "CONFIG_SPI_SLAVE130_READY";
 // Assign pin
@@ -128,18 +128,6 @@ GPIO12.gpioPin.$assign = "boosterpack.24"; // P60
 GPIO13.$name = "CONFIG_GPIO_7";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
 GPIO13.$hardware = system.deviceData.board.components.SW3;
-// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
-Timer1.$name = "CONFIG_TIMER_0";
-// Name
-Timer1.timer.$name = "MyTimer1";
-// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
-Timer2.$name = "CONFIG_TIMER_1";
-// Name
-Timer2.timer.$name = "MyTimer1";
-// Name - The C/C++ identifier used in applications as the index parameter passed to Timer runtime APIs
-Timer3.$name = "CONFIG_TIMER_2";
-// Name
-Timer3.timer.$name = "MyTimer1";
 // Name - The C/C++ identifier used in applications as the index parameter passed to Watchdog runtime APIs
 Watchdog1.$name = "CONFIG_WATCHDOG_0";
 // Name
@@ -153,20 +141,10 @@ SPI1.spi.$suggestSolution = "SPI0";
 // Suggest solution
 SPI1.spi.sclkPin.$suggestSolution = "5";
 // Suggest solution
-SPI1.spi.misoPin.$suggestSolution = "53";
+SPI1.spi.misoPin.$suggestSolution = "6";
 // Suggest solution
 SPI1.spi.mosiPin.$suggestSolution = "7";
 // Suggest solution
-SPI1.spi.dmaRxChannel.$suggestSolution = "UDMA_CH30";
-// Suggest solution
-SPI1.spi.dmaTxChannel.$suggestSolution = "UDMA_CH31";
-// Suggest solution
 GPIO13.gpioPin.$suggestSolution = "15";
-// Suggest solution
-Timer1.timer.$suggestSolution = "Timer0";
-// Suggest solution
-Timer2.timer.$suggestSolution = "Timer1";
-// Suggest solution
-Timer3.timer.$suggestSolution = "Timer0";
 // Suggest solution
 Watchdog1.watchdog.$suggestSolution = "WATCHDOG0";

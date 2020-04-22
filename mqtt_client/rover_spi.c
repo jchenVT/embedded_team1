@@ -174,12 +174,15 @@ void *spiThread(void *arg0) {
     bool RDY = false;
     bool temp = false;
 
-    initEncoders();
-    clearEncoderCounts();
-    timer_setup();
-
     while(1) {
         receiveFromEncoderQ(&temp);
+
+        if (!RDY) {
+            initEncoders();
+            clearEncoderCounts();
+            timer_setup();
+            RDY = true;
+        }
 
         dbgOutputLoc(SPI_READING_128);
         readEncoder(e128);

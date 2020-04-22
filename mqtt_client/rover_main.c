@@ -176,7 +176,7 @@ void updateState(enum roverStates prevState, enum roverStates curState,
         }
     }
 
-    char newSpeed = convertTicksToMotor_128(PID128->currentTicks);
+    char newSpeed = 31; //convertTicksToMotor_128(PID128->currentTicks);
 
     sendMsgToMotorsQ(128, PID128->direction, newSpeed);
     sendMsgToMotorsQ(129, PID129->direction, newSpeed);
@@ -203,8 +203,8 @@ void *mainRoverThread(void *arg0)
     recvSubCount = 0;
     status = true; // working
     bool spi_OFF = true;
-//    TimerHandle_t timerDebug = xTimerCreate("PublishTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, timerCallbackDebug);
-//    xTimerStart(timerDebug, 0);
+    TimerHandle_t timerDebug = xTimerCreate("PublishTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, timerCallbackDebug);
+    xTimerStart(timerDebug, 0);
 
     enum roverStates state = stop;
     struct PIDvalues PID128 = {stopTicks,stopTicks,0,0,1};
@@ -216,6 +216,11 @@ void *mainRoverThread(void *arg0)
         dbgOutputLoc(STAR_WHILE_BEGIN); 
         /**********************************/
         receiveFromMQTTReceiveQ(&curData);
+
+        if (spi_OFF) {
+            sendMsgToEncoderQ();
+            spi_OFF = false;
+        }
 
         if (curData.sensorType == false) {
             dbgOutputLoc(curData.data2);
@@ -254,7 +259,7 @@ void *mainRoverThread(void *arg0)
                 state = stop;
             }
         }
-/*
+
         // publish to message queue
         if (packageRoverJSON(state) == 1) {
             // UART_PRINT("Publish request sent! \n\r");
@@ -264,7 +269,6 @@ void *mainRoverThread(void *arg0)
             // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
             status = false;
         }
-*/
 
         /**********************************/
         dbgOutputLoc(STAR_RECEIVE_MESSAGE);
@@ -275,11 +279,11 @@ void *mainRoverThread(void *arg0)
 void timerCallbackDebug(TimerHandle_t xTimer) {
 
     // publish to message queue
-    if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
-        // UART_PRINT("Published statistics \n\r");
-        status = true;
-    }
-    else {
-        // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
-    }
+//    if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
+//        // UART_PRINT("Published statistics \n\r");
+//        status = true;
+//    }
+//    else {
+//        // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
+//    }
 }
