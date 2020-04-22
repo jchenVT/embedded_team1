@@ -11,8 +11,8 @@
 #include <rover_queues.h>
 #include <rover_uart.h>
 
-#define KP  0.8
-#define KI  0.3
+#define KP  0.4
+#define KI  0.1
 
 struct PIDvalues {
     long desiredTicks;

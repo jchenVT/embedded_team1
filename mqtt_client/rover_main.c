@@ -24,11 +24,11 @@
  */
 
 
-#define conversionValue_128             1.6429
-#define conversionValue_129             1.6669
+#define conversionValue_128             0.427
+//#define conversionValue_129             1.6669
 #define conversionTicktoRotationValue   1
 #define conversionTicktoForwardValue    1
-#define desiredMovementTicks            0x17
+#define desiredMovementTicks            0x24
 #define stopTicks                       0
 
 static int attemptPubCount;
@@ -37,7 +37,7 @@ static bool status;
 
 char convertTicksToMotor_128(long ticks) {
 
-    double ret = (double)ticks/conversionValue_128;
+    double ret = (double)ticks*conversionValue_128;
 
     if (ret < 0) {
         return 0;
@@ -46,37 +46,37 @@ char convertTicksToMotor_128(long ticks) {
         return 127;
     }
 
-    return floor(ret);
+    return (char)floor(ret);
 
 }
 
-char convertTicksToMotor_129(long ticks) {
+//char convertTicksToMotor_129(long ticks) {
+//
+//    double ret = ticks/conversionValue_129;
+//
+//    if (ret < 0) {
+//        return 0;
+//    }
+//    else if (ret > 127) {
+//        return 127;
+//    }
+//
+//    return (char)floor(ret);
+//
+//}
 
-    double ret = ticks/conversionValue_129;
-
-    if (ret < 0) {
-        return 0;
-    }
-    else if (ret > 127) {
-        return 127;
-    }
-
-    return floor(ret);
-
-}
-
-char convertTicksToRotDist(long ticks) {
-    double ret = ticks/conversionValue_129;
-
-    if (ret < 0) {
-        return 0;
-    }
-    else if (ret > 127) {
-        return 127;
-    }
-
-    return floor(ret);
-}
+//char convertTicksToRotDist(long ticks) {
+//    double ret = ticks/conversionValue_129;
+//
+//    if (ret < 0) {
+//        return 0;
+//    }
+//    else if (ret > 127) {
+//        return 127;
+//    }
+//
+//    return floor(ret);
+//}
 
 //char convertTicksToForwDist(long ticks) {
 //
@@ -96,7 +96,6 @@ char convertTicksToRotDist(long ticks) {
 *  Setting the command to 1 will INCREMENT THE COUNTER from 0x00000000
 */
 void PIDalg (struct PIDvalues *motor, long measuredValue) {
-
     long error = 0;
 
     if (motor->direction == 0) {
@@ -105,8 +104,9 @@ void PIDalg (struct PIDvalues *motor, long measuredValue) {
     else {
         error = motor->desiredTicks - measuredValue;
     }
+
     motor->integral += error;
-    motor->currentTicks += floor(KP*error + KI*motor->integral);
+    motor->currentTicks += (long)floor(KP*error + KI*motor->integral);
 
 }
 
@@ -127,14 +127,6 @@ void setToLeftTurn(struct PIDvalues *wheel) {
 }
 
 void setToRightTurn(struct PIDvalues *wheel) {
-    wheel->currentTicks = desiredMovementTicks;
-    wheel->desiredTicks = desiredMovementTicks;
-    wheel->integral = 0;
-    wheel->prevError = 0;
-    wheel->direction = 1;
-}
-
-void setToMoveForward(struct PIDvalues *wheel) {
     wheel->currentTicks = desiredMovementTicks;
     wheel->desiredTicks = desiredMovementTicks;
     wheel->integral = 0;
@@ -164,9 +156,9 @@ void updateState(enum roverStates prevState, enum roverStates curState,
                 setToRightTurn(PID130);
                 break;
             case move_forward:
-                setToRightTurn(PID128);
+                setToLeftTurn(PID128);
                 setToRightTurn(PID129);
-                setToRightTurn(PID130);
+                stopWheel(PID130);
                 break;
             case target:
                 stopWheel(PID128);
@@ -176,11 +168,9 @@ void updateState(enum roverStates prevState, enum roverStates curState,
         }
     }
 
-    char newSpeed = 31; //convertTicksToMotor_128(PID128->currentTicks);
-
-    sendMsgToMotorsQ(128, PID128->direction, newSpeed);
-    sendMsgToMotorsQ(129, PID129->direction, newSpeed);
-    sendMsgToMotorsQ(130, PID130->direction, newSpeed);
+    sendMsgToMotorsQ(128, PID128->direction, convertTicksToMotor_128(PID128->currentTicks));
+    sendMsgToMotorsQ(129, PID129->direction, convertTicksToMotor_128(PID129->currentTicks));
+    sendMsgToMotorsQ(130, PID130->direction, convertTicksToMotor_128(PID130->currentTicks));
 }
 
 /*
@@ -211,6 +201,11 @@ void *mainRoverThread(void *arg0)
     struct PIDvalues PID129 = {stopTicks,stopTicks,0,0,1};
     struct PIDvalues PID130 = {stopTicks,stopTicks,0,0,1};
 
+//    if (spi_OFF) {
+//        sendMsgToEncoderQ();
+//        spi_OFF = false;
+//    }
+
     while(1) {
         /**********************************/
         dbgOutputLoc(STAR_WHILE_BEGIN); 
@@ -223,17 +218,12 @@ void *mainRoverThread(void *arg0)
         }
 
         if (curData.sensorType == false) {
-            dbgOutputLoc(curData.data2);
-
-            long ticks = (long)curData.data;
-
-            if (curData.data2 == 128) {
-                PIDalg(&PID128, ticks);
-            }
+//            dbgOutputLoc(curData.data2);
 //
-//            int i;
-//            for (i=0;i<sizeof(sum);i++) {
-//                dbgOutputLoc((sum >> (sizeof(sum)-1-i)*8) & 0xFF);
+//            long ticks = (long)curData.data;
+
+//            if (curData.data2 == 128) {
+//                PIDalg(&PID128, ticks);
 //            }
 
             updateState(state, state, &PID128, &PID129, &PID130);
@@ -279,11 +269,11 @@ void *mainRoverThread(void *arg0)
 void timerCallbackDebug(TimerHandle_t xTimer) {
 
     // publish to message queue
-//    if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
-//        // UART_PRINT("Published statistics \n\r");
-//        status = true;
-//    }
-//    else {
-//        // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
-//    }
+    if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
+        // UART_PRINT("Published statistics \n\r");
+        status = true;
+    }
+    else {
+        // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
+    }
 }

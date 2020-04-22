@@ -8,6 +8,8 @@
 #include <rover_spi.h>
 
 static char clearCountBuffer[1] = {0x20};
+static char clearDataBuffer[5] = {0x98, 0x00, 0x00, 0x00, 0x00};
+static char setDataToCounter[1] = {0xE0};
 static char initBuffer[2] = {0x88, 0x03};
 static char readTxBuffer[SPI_MSG_LENGTH] = {0x60, 0x00, 0x00, 0x00, 0x00};
 static char readRxBuffer[SPI_MSG_LENGTH] = {0x00, 0x00, 0x00, 0x00, 0x00};
@@ -114,6 +116,7 @@ void readEncoder(int encoder) {
         data = (data << 8) + readRxBuffer[i];
         dbgOutputLoc(readRxBuffer[i]);
     }
+    dbgOutputLoc(SPI_DATA);
 
     if (sendMsgToReceiveQ(false, false, 0, (double)data, (double)encoder) != pdPASS) {
         stop_all(FAIL_SPI_SEND_TO_Q);
@@ -140,8 +143,24 @@ void initEncoders() {
 }
 
 void clearEncoderCounts() {
+    transaction.count = 5;
+    transaction.txBuf = (void*)clearDataBuffer;
+    transaction.rxBuf = NULL;
+
+    dbgOutputLoc(SPI_ENCODER_CLEARING);
+
+    if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
+        stop_all(FAIL_SPI_READING_128);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
+        stop_all(FAIL_SPI_READING_129);
+    }
+    if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
+        stop_all(FAIL_SPI_READING_130);
+    }
+
     transaction.count = 1;
-    transaction.txBuf = (void*)clearCountBuffer;
+    transaction.txBuf = (void*)setDataToCounter;
     transaction.rxBuf = NULL;
 
     dbgOutputLoc(SPI_ENCODER_CLEARING);
