@@ -44,39 +44,9 @@ void timerCallback(TimerHandle_t xTimer) {
     int reading1 = GPIO_read(CONFIG_GPIO_PROX1);
     int reading2 = GPIO_read(CONFIG_GPIO_PROX2);
 
-    /* Print to UART for Debug */
-    dbgUARTVal('P');
-    dbgUARTVal('1');
-    dbgUARTVal(':');
-    if (reading1 == 0) {
-        dbgUARTVal('0');
-    }
-    else if (reading1 == 1) {
-        dbgUARTVal('1');
-    }
-    else {
-        stop_all(FAILED_PROX1_BADVAL);
-    }
-    dbgUARTVal(' ');
-
     /* Send to the correct sensor queue */
     dbgOutputLoc(SEND_PROX1Q);
     sendProxToSensorQ(PROX1_DATA, reading1);
-
-    /* Print to UART for Debug */
-    dbgUARTVal('P');
-    dbgUARTVal('2');
-    dbgUARTVal(':');
-    if (reading2 == 0) {
-        dbgUARTVal('0');
-    }
-    else if (reading2 == 1) {
-        dbgUARTVal('1');
-    }
-    else {
-        stop_all(FAILED_PROX2_BADVAL);
-    }
-    dbgUARTVal(' ');
 
     /* Send to the correct sensor queue */
     dbgOutputLoc(SEND_PROX2Q);

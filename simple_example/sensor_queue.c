@@ -72,5 +72,5 @@ int sendRGBToSensorQ(int red, int green, int blue) {
  */
 void receiveSensorQ(struct qData *oldData) {
 
-    xQueueReceive( sensorQ, &oldData, portMAX_DELAY );
+    xQueueReceive( sensorQ, oldData, portMAX_DELAY );
 }
