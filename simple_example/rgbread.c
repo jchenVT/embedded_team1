@@ -94,35 +94,9 @@ void timerRGBCallback(TimerHandle_t xTimer) {
         g = (g*256) / c;
         b = (b*256) / c;
 
-        /* Output the RGB values for color channel */
-        /*int i;
-        char sensorOut[16];
-        int size = snprintf(sensorOut, 32, "R=%d", r);
-        for (i=0; i<size; i++) {
-            dbgUARTVal(sensorOut[i]);
-        }
-
-        size = snprintf(sensorOut, 32, " G=%d", g);
-        for (i=0; i<size; i++) {
-            dbgUARTVal(sensorOut[i]);
-        }
-
-        size = snprintf(sensorOut, 32, " B=%d", b);
-        for (i=0; i<size; i++) {
-            dbgUARTVal(sensorOut[i]);
-        }
-        dbgUARTVal(' ');
-
-        size = snprintf(sensorOut, 32, " C=%d", c);
-        for (i=0; i<size; i++) {
-            dbgUARTVal(sensorOut[i]);
-        }
-        dbgUARTVal(' '); */
-
         /* Send to RGB message queue */
         dbgOutputLoc(SEND_RGBQ);
-        sendToRGBQ(r, g, b);
-
+        sendRGBToSensorQ(r, g, b);
     }
     else {
         stop_all(FAILED_I2C_CALLBACK);

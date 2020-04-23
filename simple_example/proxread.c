@@ -21,7 +21,7 @@ void *readProximityThread(void *arg0) {
     dbgOutputLoc(INIT_TIMER);
 
     /* One-time initialization of software timer */
-    TimerHandle_t timerProx = xTimerCreate("Prox", pdMS_TO_TICKS(50), pdTRUE, NULL, timerCallback);
+    TimerHandle_t timerProx = xTimerCreate("PROX", pdMS_TO_TICKS(50), pdTRUE, NULL, timerCallback);
     xTimerStart(timerProx, 0);
 
     /* Initialize pin to read proximity sensors */
@@ -61,7 +61,7 @@ void timerCallback(TimerHandle_t xTimer) {
 
     /* Send to the correct sensor queue */
     dbgOutputLoc(SEND_PROX1Q);
-    sendToProx1Q(reading1);
+    sendProxToSensorQ(PROX1_DATA, reading1);
 
     /* Print to UART for Debug */
     dbgUARTVal('P');
@@ -80,5 +80,5 @@ void timerCallback(TimerHandle_t xTimer) {
 
     /* Send to the correct sensor queue */
     dbgOutputLoc(SEND_PROX2Q);
-    sendToProx2Q(reading2);
+    sendProxToSensorQ(PROX2_DATA, reading2);
 }

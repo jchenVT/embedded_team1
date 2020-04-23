@@ -2,7 +2,7 @@
  * sensor_queue.h
  *
  *  Created on: Feb 4, 2020
- *      Author: trieu
+ *      Author: trieu, giffen
  */
 
 #ifndef SENSOR_QUEUE_H_
@@ -13,31 +13,28 @@
 #include <queue.h>
 #include <stdbool.h>
 
-/* Masks for variable type */
-#define PROX1_DATA      0x1000000000000000
-#define PROX2_DATA      0x2000000000000000
-#define RGB_DATA        0x3000000000000000
-#define TYPE_MASK       0xF000000000000000
-#define VALUE_MASK      0x0FFFFFFFFFFFFFFF
+/* IDs for sensors */
+#define PROX1_DATA      1
+#define PROX2_DATA      2
+#define RGB_DATA        3
 
 /* Queue variables */
 #define qLENGTH         32
-#define qITEMSIZE       8
 
 /* Struct used in RETURNING message from queue */
 struct qData {
-    long long int type;
-    int value;
+    int sensorID;
+    int sensorVal;
+    int r;
+    int g;
+    int b;
 };
 
 /* Routine declarations */
-bool setupQs();
-int sendToProx1Q(int value);
-int sendToProx2Q(int value);
-int sendToRGBQ(int r, int g, int b);
-void receiveFromProx1Q(struct qData *oldData);
-void receiveFromProx2Q(struct qData *oldData);
-void receiveFromRGBQ(struct qData *oldData);
+bool setupQ();
+int sendProxToSensorQ(int proxNum, int val);
+int sendRGBToSensorQ(int r, int g, int b);
+void receiveSensorQ(struct qData *oldData);
 
 #endif /* SENSOR_QUEUE_H_ */
 

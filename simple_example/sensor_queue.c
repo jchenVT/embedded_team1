@@ -7,9 +7,7 @@
 
 #include "sensor_queue.h"
 
-static QueueHandle_t prox1Q = NULL;
-static QueueHandle_t prox2Q = NULL;
-static QueueHandle_t rgbQ = NULL;
+static QueueHandle_t sensorQ = NULL;
 
 /*
  *  @function   createQs
@@ -20,12 +18,10 @@ static QueueHandle_t rgbQ = NULL;
  *  @params     None
  *  @return     bool - indicates whether there was a successful setup
  */
-bool setupQs() {
+bool setupQ() {
 
-    prox1Q = xQueueCreate(qLENGTH, qITEMSIZE);
-    prox2Q = xQueueCreate(qLENGTH, qITEMSIZE);
-    rgbQ = xQueueCreate(qLENGTH, qITEMSIZE);
-    return ( prox1Q == NULL ? false : true ) && ( prox2Q == NULL ? false : true ) && ( rgbQ == NULL ? false : true );
+    sensorQ = xQueueCreate(qLENGTH, sizeof(struct qData));
+    return ( sensorQ == NULL ? false : true );
 }
 
 /*
@@ -35,23 +31,16 @@ bool setupQs() {
  *  @params     timeVal - value from sensor
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int sendToProx1Q(int value) {
+int sendProxToSensorQ(int proxNum, int val) {
 
-    long long int newMsg = PROX1_DATA | value;
-    return xQueueSendToBackFromISR( prox1Q, &newMsg, 0 );
-}
+    struct qData newMsg;
+    newMsg.sensorID = proxNum;
+    newMsg.sensorVal = val;
+    newMsg.r = 0;
+    newMsg.g = 0;
+    newMsg.b = 0;
 
-/*
- *  @function   sendToProx2Q
- *              Wrapper to add to the proximity 2 sensor queue.
- *
- *  @params     value - value from sensor
- *  @return     pdPASS or errQUEUE_FULL - successfully added or not
- */
-int sendToProx2Q(int value) {
-
-    long long int newMsg = PROX2_DATA | value;
-    return xQueueSendToBackFromISR( prox2Q, &newMsg, 0 );
+    return xQueueSendToBackFromISR( sensorQ, &newMsg, 0 );
 }
 
 /*
@@ -61,14 +50,16 @@ int sendToProx2Q(int value) {
  *  @params     value - value from RGB callback
  *  @return     pdPASS or errQUEUE_FULL - successfully added or not
  */
-int sendToRGBQ(int r, int g, int b) {
+int sendRGBToSensorQ(int red, int green, int blue) {
 
-    long long int msg = r; // assume r, g, b are 8 bits (0-256)
-    msg = (msg << 8) + g;
-    msg = (msg << 8) + b;
+    struct qData newMsg;
+    newMsg.sensorID = RGB_DATA;
+    newMsg.sensorVal = 0;
+    newMsg.r = red;
+    newMsg.g = green;
+    newMsg.b = blue;
 
-    long long int newMsg = RGB_DATA | msg;
-    return xQueueSendToBackFromISR( rgbQ, &newMsg, 0 );
+    return xQueueSendToBackFromISR( sensorQ, &newMsg, 0 );
 }
 
 /*
@@ -79,45 +70,7 @@ int sendToRGBQ(int r, int g, int b) {
  *  @params     oldData - reference to the struct holding the old data
  *  @return     None
  */
-void receiveFromProx1Q(struct qData *oldData) {
+void receiveSensorQ(struct qData *oldData) {
 
-    long long int msg = 0;
-    xQueueReceive( prox1Q, &msg, portMAX_DELAY );
-
-    oldData->type = msg & TYPE_MASK;
-    oldData->value = msg & VALUE_MASK;
-}
-
-/*
- *  @function   receiveFromProx1Q
- *              Wrapper for the RTOS function to data from the queue.
- *              This function will block. Refer to page 113 of RTOS doc.
- *
- *  @params     oldData - reference to the struct holding the old data
- *  @return     None
- */
-void receiveFromProx2Q(struct qData *oldData) {
-
-    long long int msg = 0;
-    xQueueReceive( prox2Q, &msg, portMAX_DELAY );
-
-    oldData->type = msg & TYPE_MASK;
-    oldData->value = msg & VALUE_MASK;
-}
-
-/*
- *  @function   receiveFromProx1Q
- *              Wrapper for the RTOS function to data from the queue.
- *              This function will block. Refer to page 113 of RTOS doc.
- *
- *  @params     oldData - reference to the struct holding the old data
- *  @return     Nones
- */
-void receiveFromRGBQ(struct qData *oldData) {
-
-    long long int msg = 0;
-    xQueueReceive( rgbQ, &msg, portMAX_DELAY );
-
-    oldData->type = msg & TYPE_MASK;
-    oldData->value = msg & VALUE_MASK;
+    xQueueReceive( sensorQ, &oldData, portMAX_DELAY );
 }
