@@ -35,6 +35,7 @@ static int attemptPubCount;
 static int recvSubCount;
 static int counter;
 static bool status;
+static enum roverStates state;
 
 char convertTicksToMotor_128(long ticks) {
 
@@ -201,7 +202,7 @@ void *mainRoverThread(void *arg0)
 
     TimerHandle_t timerTesting;
 
-    enum roverStates state = stop;
+    state = stop;
     struct PIDvalues PID128 = {stopTicks,stopTicks,0,0,1};
     struct PIDvalues PID129 = {stopTicks,stopTicks,0,0,1};
     struct PIDvalues PID130 = {stopTicks,stopTicks,0,0,1};
@@ -256,14 +257,6 @@ void *mainRoverThread(void *arg0)
             }
         }
 
-        // publish to message queue
-        if (packageRoverJSON(state) == 1) {
-            attemptPubCount++;
-        }
-        else {
-            status = false;
-        }
-
         /**********************************/
         dbgOutputLoc(STAR_RECEIVE_MESSAGE);
         /**********************************/
@@ -303,6 +296,15 @@ void timerCallbackTesting(TimerHandle_t xTimer) {
     }
 
     counter++;
+
+    // publish to message queue
+    if (packageRoverJSON(state) == 1) {
+        attemptPubCount++;
+    }
+    else {
+        status = false;
+    }
+
 }
 
 void timerCallbackDebug(TimerHandle_t xTimer) {
