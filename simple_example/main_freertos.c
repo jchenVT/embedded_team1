@@ -17,6 +17,7 @@
 #include "rgbread.h"
 #include "sensor_queue_read.h"
 #include "sensor_queue.h"
+#include "mqtt_queue.h"
 
 /* Debug files */
 #include "debug.h"
@@ -47,6 +48,10 @@ int main(void) {
     debug_setup();
 
     if (!setupQ()) {
+        stop_all(FAILED_INIT_QUEUES);
+    }
+
+    if (!createMQTTQs()) {
         stop_all(FAILED_INIT_QUEUES);
     }
 

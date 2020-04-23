@@ -54,8 +54,7 @@ void *sensorQReadThread(void *arg0) {
             }
         }
 
-        /* TODO: Send to MQTT */
-        //packageArmSensorJSON(data.sensorID, data.sensorVal, data.r, data.g, data,b);
-
+        /* Send to MQTT */
+        packageArmSensorJSON(data.sensorID, data.sensorVal, data.r, data.g, data.b);
     }
 }

@@ -10,6 +10,7 @@
 #define SENSOR_QUEUE_READ_H_
 
 #include "sensor_queue.h"
+#include "json_format.h"
 #include "debug.h"
 
 void *sensorQReadThread(void *arg0);
