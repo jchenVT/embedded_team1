@@ -25,7 +25,7 @@
 extern void *uartThread(void *arg0);
 extern void *readProximityThread(void *arg0);
 extern void *readRGBThread(void *arg0);
-extern void *sensorQReadThread(void *arg0)
+extern void *sensorQReadThread(void *arg0);
 
 /* Stack size in bytes */
 #define THREADSTACKSIZE   1024
