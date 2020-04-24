@@ -19,8 +19,8 @@
 #define SUB_COUNT       1
 #define PUB_COUNT       1
 
-#define qLENGTH         8
-#define qITEMSIZE       8
+#define mqttLENGTH      8
+#define mqttITEMSIZE    8
 #define MAXJSONSIZE     120
 
 /* Struct used in RETURNING message from queue */

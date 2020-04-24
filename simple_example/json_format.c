@@ -2,6 +2,7 @@
 #include "mqtt_queue.h"
 #include "jsmn.h"
 
+/*
 static jsmn_parser parser;
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
@@ -103,7 +104,7 @@ int jsonParser(const char *topic, char *JSON_STRING) {
     }
 
     return retVal;*/
-}
+//}
 
 int packageArmJSON(int state) {
     char json[JSON_LEN];

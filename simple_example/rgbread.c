@@ -6,6 +6,7 @@
  */
 
 #include "rgbread.h"
+#include <stdlib.h>
 
 I2C_Handle i2cHandle;
 
@@ -28,7 +29,7 @@ void *readRGBThread(void *arg0) {
     /* Open I2C bus for usage */
     I2C_init();
     i2cHandle = I2C_open(CONFIG_I2C_0, &params);
-    if (i2cHandle == NULL) {
+    if (i2cHandle == (void *)0) {
         stop_all();
     }
 
@@ -38,15 +39,19 @@ void *readRGBThread(void *arg0) {
     uint8_t txBufferEnable[3] = {0x00, 0x01, 0x03};
     transactionEnable.writeBuf = txBufferEnable;
     transactionEnable.writeCount = 3;
-    transactionEnable.readBuf = NULL;
+    transactionEnable.readBuf = (void *)0;
     transactionEnable.readCount = 0;
     if (I2C_transfer(i2cHandle, &transactionEnable)) {
 
     }
 
     /* One-time initialization of software timer */
-    TimerHandle_t timerRGB = xTimerCreate("RGB", pdMS_TO_TICKS(100), pdTRUE, NULL, timerRGBCallback);
+    TimerHandle_t timerRGB = xTimerCreate("RGB", pdMS_TO_TICKS(100), pdTRUE, (void *)0, timerRGBCallback);
     xTimerStart(timerRGB, 0);
+
+    while (1) {
+
+    }
 }
 
 /*
@@ -86,8 +91,6 @@ void timerRGBCallback(TimerHandle_t xTimer) {
         r = (r*256) / c;
         g = (g*256) / c;
         b = (b*256) / c;
-
-        UART_PRINT("TIMER 2");
 
         /* Send to RGB message queue */
         sendRGBToSensorQ(r, g, b);

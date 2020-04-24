@@ -48,8 +48,6 @@ void *sensorQReadThread(void *arg0) {
             }
         }
 
-        UART_PRINT("MSG RECV");
-
         /* Send to MQTT */
         packageArmSensorJSON(data.sensorID, data.sensorVal, data.r, data.g, data.b);
     }

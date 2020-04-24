@@ -23,27 +23,27 @@ static QueueHandle_t subRoverSensorQ = (void *)0;
  */
 bool createMQTTQs() {
 
-    pubQ = xQueueCreate( qLENGTH, sizeof(struct qStringData));
+    pubQ = xQueueCreate( mqttLENGTH, sizeof(struct qStringData));
     if (pubQ == (void *)0) {
         return false;
     }
 
-    subArmQ = xQueueCreate( qLENGTH, sizeof(struct qArmMsg));
+    subArmQ = xQueueCreate( mqttLENGTH, sizeof(struct qArmMsg));
     if (subArmQ == (void *)0) {
         return false;
     }
 
-    subArmSensorQ = xQueueCreate( qLENGTH, sizeof(struct qArmSensorMsg));
+    subArmSensorQ = xQueueCreate( mqttLENGTH, sizeof(struct qArmSensorMsg));
     if (subArmSensorQ == (void *)0) {
         return false;
     }
 
-    subRoverQ = xQueueCreate( qLENGTH, sizeof(struct qRoverMsg));
+    subRoverQ = xQueueCreate( mqttLENGTH, sizeof(struct qRoverMsg));
     if (subRoverQ == (void *)0) {
         return false;
     }
 
-    subRoverSensorQ = xQueueCreate( qLENGTH, sizeof(struct qRoverSensorMsg));
+    subRoverSensorQ = xQueueCreate( mqttLENGTH, sizeof(struct qRoverSensorMsg));
     if (subRoverSensorQ == (void *)0) {
         return false;
     }
