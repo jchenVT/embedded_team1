@@ -18,8 +18,7 @@
 #include <ti/drivers/SPI.h>
 
 /* Thread files */
-#include "proxread.h"
-#include "rgbread.h"
+#include "sensor_read.h"
 
 /* Queue files */
 #include "sensor_queue_read.h"
@@ -31,8 +30,7 @@
 
 /* Get thread locations */
 extern void *mainThread(void *arg0);
-extern void *readProximityThread(void *arg0);
-extern void *readRGBThread(void *arg0);
+extern void *readSensorsThread(void *arg0);
 extern void *sensorQReadThread(void *arg0);
 
 /* Stack size in bytes */
@@ -63,15 +61,10 @@ int main(void) {
         stop_all();
     }
 
-    /* Proximity Sensor Read */
-    pthread_t           threadProx;
-    pthread_attr_t      attrsProx;
-    int                 retcProx;
-
-    /* RGB Sensor Read */
-    pthread_t           threadRGB;
-    pthread_attr_t      attrsRGB;
-    int                 retcRGB;
+    /* Sensor Read */
+    pthread_t           threadSensor;
+    pthread_attr_t      attrsSensor;
+    int                 retcSensor;
 
     /* Sensor Queue Read */
     pthread_t           threadSensorQ;
@@ -83,17 +76,15 @@ int main(void) {
     pthread_attr_t      attrsMQTT;
     int                 retcMQTT;
 
-    pthread_attr_init(&attrsProx);
-    pthread_attr_init(&attrsRGB);
+    pthread_attr_init(&attrsSensor);
     pthread_attr_init(&attrsSensorQ);
     pthread_attr_init(&attrsMQTT);
 
     retcMQTT = pthread_create(&threadMQTT, &attrsMQTT, mainThread, NULL);
-    retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
-    retcRGB = pthread_create(&threadRGB, &attrsRGB, readRGBThread, NULL);
+    retcSensor = pthread_create(&threadSensor, &attrsSensor, readSensorsThread, NULL);
     retcSensorQ = pthread_create(&threadSensorQ, &attrsSensorQ, sensorQReadThread, NULL);
 
-    if (retcRGB != 0 && retcSensorQ != 0 && retcProx != 0 && retcMQTT != 0) {
+    if (retcSensor != 0 && retcSensorQ != 0 && retcMQTT != 0) {
         stop_all();
         while (1) {
         }

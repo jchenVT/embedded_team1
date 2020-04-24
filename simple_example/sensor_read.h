@@ -1,14 +1,13 @@
 /*
- *  rgbread.h
+ *  sensor_read.h
  *
  *  Created on: Feb 23, 2020
  *      Author: giffen
  */
 
-#ifndef RGBREAD_H_
-#define RGBREAD_H_
+#ifndef SENSOR_READ_H_
+#define SENSOR_READ_H_
 
-/* STD Libraries */
 #include <math.h>
 
 /* POSIX Header files */
@@ -24,6 +23,7 @@
 
 /* Queue files */
 #include "sensor_queue.h"
+#include "mqtt_queue.h"
 
 /* Debug files */
 #include "uart_term.h"
@@ -32,9 +32,13 @@
 #define SENSORS 0
 #define OPT_ADDR 0x29 // see TCS34725 documentation pg. 3
 
+/* States for the timer */
+enum State {OFF, ON, PAUSE};
+
 /* Main Thread */
-void *readRGBThread(void *arg0);
-//void i2cCallback(I2C_Handle handle, I2C_Transaction *msg, bool status);
+void *readSensorsThread(void *arg0);
+void timerStartCallback(TimerHandle_t xTimer);
+void timerProxCallback(TimerHandle_t xTimer);
 void timerRGBCallback(TimerHandle_t xTimer);
 
-#endif /* RGBREAD_H_ */
+#endif /* SENSOR_READ_H_ */
