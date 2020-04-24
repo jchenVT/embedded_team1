@@ -127,7 +127,7 @@
 /* Defining Subscription Topic Values                                        */
 #define SUBSCRIPTION_TOPIC0      "arm"
 #define SUBSCRIPTION_TOPIC1      "arm_sensor"
-#define SUBSCRIPTION_TOPIC2      "rover"
+#define SUBSCRIPTION_TOPIC2      "command"
 #define SUBSCRIPTION_TOPIC3      "rover_sensor"
 
 /* Spawn task priority and Task and Thread Stack Size                        */
@@ -337,11 +337,11 @@ void * MqttClient(void *pvParameters)
         }
         if (strcmp(pubData.topic, "debug") != 0) {
             if (lRetVal >= 0) {
-                UART_PRINT("Publishing the following message to ");
+                /*UART_PRINT("Publishing the following message to ");
                 UART_PRINT(pubData.topic);
                 UART_PRINT(": ");
                 UART_PRINT(pubData.str);
-                UART_PRINT("\n\r");
+                UART_PRINT("\n\r");*/
             }
             else {
                 UART_PRINT("[ERROR]: Publishing failed \n\r");

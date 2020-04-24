@@ -2,7 +2,7 @@
 #include "mqtt_queue.h"
 #include "jsmn.h"
 
-/*
+
 static jsmn_parser parser;
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
@@ -15,7 +15,7 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
 
 int jsonParser(const char *topic, char *JSON_STRING) {
 
-    /*static bool initParser = false;
+    static bool initParser = false;
 
     if (!initParser) {
         jsmn_init(&parser);
@@ -83,7 +83,26 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             retVal = sendToSubRoverQ(roverMsg);
     }
     else if (strcmp(topic, "arm_sensor") == 0) {
-            if (jsoneq(JSON_STRING, &tokens[1], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[3], "sensorValue") != 0 || num != 5) {
+            if (jsoneq(JSON_STRING, &tokens[1], "source") != 0 || jsoneq(JSON_STRING, &tokens[3], "message") != 0 || jsoneq(JSON_STRING, &tokens[5], "error") != 0 || num != 5) {
+                // ERROR
+                return -5;
+            }
+
+            char sourceString[1];
+            strncpy(sourceString, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
+
+            char messageString[10];
+            strncpy(messageString, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
+
+            char errorString[10];
+            strncpy(errorString, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
+
+            struct qCommandMsg commandMsg = {atoi(sourceString), messageString, errorString};
+
+            retVal = sendToSubCommandQ(commandMsg);
+    }
+    else if (strcmp(topic, "command") == 0) {
+            if (jsoneq(JSON_STRING, &tokens[1], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[3], "sensorValue") != 0 || num != 7) {
                 // ERROR
                 return -5;
             }
@@ -103,8 +122,8 @@ int jsonParser(const char *topic, char *JSON_STRING) {
         return -6;
     }
 
-    return retVal;*/
-//}
+    return retVal;
+}
 
 int packageArmJSON(int state) {
     char json[JSON_LEN];

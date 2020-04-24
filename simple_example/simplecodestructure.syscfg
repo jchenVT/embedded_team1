@@ -11,18 +11,9 @@ var GPIO1 = GPIO.addInstance();
 var GPIO2 = GPIO.addInstance();
 var I2C = scripting.addModule("/ti/drivers/I2C", {}, false);
 var I2C1 = I2C.addInstance();
-var GPIO3 = GPIO.addInstance();
-var GPIO4 = GPIO.addInstance();
-var GPIO5 = GPIO.addInstance();
-var GPIO6 = GPIO.addInstance();
-var GPIO7 = GPIO.addInstance();
-var GPIO8 = GPIO.addInstance();
-var GPIO9 = GPIO.addInstance();
-var GPIO10 = GPIO.addInstance();
 var SPI = scripting.addModule("/ti/drivers/SPI");
 var SimpleLinkWifi = scripting.addModule("/ti/drivers/net/wifi/SimpleLinkWifi");
-var SlNet = scripting.addModule("/ti/net/SlNet", {}, false);
-var SlNet1 = SlNet.addInstance();
+var SPI1 = SPI.addInstance();
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -49,7 +40,7 @@ GPIO1.gpioPin.$assign = "boosterpack.18"; // P08
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO2.$name = "CONFIG_GPIO_PROX2";
 // Assign pin
-GPIO2.gpioPin.$assign = "boosterpack.15"; // P07
+GPIO2.gpioPin.$assign = "boosterpack.7"; // P05
 // Name - The C/C++ identifier used in applications as the index parameter passed to I2C runtime APIs
 I2C1.$name = "CONFIG_I2C_0";
 // Maximum Bit Rate - Maximum bit rate (Kbps) supported by this bus
@@ -60,42 +51,28 @@ I2C1.i2c.$name = "MyI2C1";
 I2C1.i2c.sdaPin.$assign = "boosterpack.14"; // P06
 // Assign pin
 I2C1.i2c.sclPin.$assign = "boosterpack.4"; // P03
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO3.$name = "CONFIG_GPIO_0";
-// Assign pin
-GPIO3.gpioPin.$assign = "boosterpack.30"; // P50
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO4.$name = "CONFIG_GPIO_1";
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO5.$name = "CONFIG_GPIO_2";
-// Assign pin
-GPIO5.gpioPin.$assign = "boosterpack.5"; // P61
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO6.$name = "CONFIG_GPIO_3";
-// Assign pin
-GPIO6.gpioPin.$assign = "boosterpack.26"; // P59
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO7.$name = "CONFIG_GPIO_4";
-// Assign pin
-GPIO7.gpioPin.$assign = "boosterpack.7"; // P05
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO8.$name = "CONFIG_GPIO_5";
-// Assign pin
-GPIO8.gpioPin.$assign = "boosterpack.27"; // P63
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO9.$name = "CONFIG_GPIO_6";
-// Assign pin
-GPIO9.gpioPin.$assign = "boosterpack.8"; // P62
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO10.$name = "CONFIG_GPIO_7";
-// Assign pin (ignoring conflicts)
-GPIO10.gpioPin.$assignAllowConflicts = "boosterpack.28"; // P53
 var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
+// Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
+SPI1.$name = "CONFIG_SPI_0";
+// Mode - In three pin mode the SS signal is not used.
+SPI1.mode = "Four Pin SS Active Low";
 // Name
-SlNet1.$name = "CONFIG_SLNET_0";
+SPI1.spi.$name = "MySPI1";
+// Assign pin
+SPI1.spi.mosiPin.$assign = "boosterpack.15"; // P07
 // Suggest solution
 UART1.uart.txPin.$suggestSolution = "55";
 // Suggest solution
 I2C1.i2c.$suggestSolution = "I2C0";
 // Suggest solution
-GPIO4.gpioPin.$suggestSolution = "18";
+SPI1.spi.$suggestSolution = "SPI0";
+// Suggest solution
+SPI1.spi.sclkPin.$suggestSolution = "45";
+// Suggest solution
+SPI1.spi.misoPin.$suggestSolution = "53";
+// Suggest solution
+SPI1.spi.ssPin.$suggestSolution = "50";
+// Suggest solution
+SPI1.spi.dmaRxChannel.$suggestSolution = "UDMA_CH30";
+// Suggest solution
+SPI1.spi.dmaTxChannel.$suggestSolution = "UDMA_CH31";

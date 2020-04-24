@@ -12,6 +12,7 @@ static QueueHandle_t subArmQ = (void *)0;
 static QueueHandle_t subArmSensorQ = (void *)0;
 static QueueHandle_t subRoverQ = (void *)0;
 static QueueHandle_t subRoverSensorQ = (void *)0;
+static QueueHandle_t subCommandQ = (void *)0;
 
 /*
  *  @function   createMQTTQs
@@ -45,6 +46,11 @@ bool createMQTTQs() {
 
     subRoverSensorQ = xQueueCreate( mqttLENGTH, sizeof(struct qRoverSensorMsg));
     if (subRoverSensorQ == (void *)0) {
+        return false;
+    }
+
+    subCommandQ = xQueueCreate( mqttLENGTH, sizeof(struct qCommandMsg));
+    if (subCommandQ == (void *)0) {
         return false;
     }
 
@@ -95,6 +101,10 @@ int sendToSubRoverSensorQ(struct qRoverSensorMsg msg) {
     return xQueueSendToBackFromISR( subRoverSensorQ, &msg, 0 );
 }
 
+int sendToSubCommandQ(struct qCommandMsg msg) {
+    return xQueueSendToBackFromISR( subCommandQ, &msg, 0 );
+}
+
 /*
  *  @function   sendToSubQ
  *              Wrapper for the RTOS function to send data through
@@ -131,4 +141,8 @@ int receiveFromSubRoverQ(struct qRoverMsg *oldData) {
 
 int receiveFromSubRoverSensorQ(struct qRoverSensorMsg *oldData) {
     return xQueueReceive( subRoverSensorQ, oldData, portMAX_DELAY );
+}
+
+int receiveFromSubCommandQ(struct qCommandMsg *oldData) {
+    return xQueueReceive( subCommandQ, oldData, portMAX_DELAY );
 }

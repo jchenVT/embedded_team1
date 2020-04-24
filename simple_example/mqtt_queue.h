@@ -57,6 +57,12 @@ struct qRoverSensorMsg {
     int angle_rotate;
 };
 
+struct qCommandMsg {
+    int source;
+    char msg[120];
+    char err[120];
+};
+
 /* Routine declarations */
 bool createMQTTQs();
 int sendToPubQ(char * topic, char msg []);
@@ -66,10 +72,12 @@ int sendToSubArmQ(struct qArmMsg msg);
 int sendToSubArmSensorQ(struct qArmSensorMsg msg);
 int sendToSubRoverQ(struct qRoverMsg msg);
 int sendToSubRoverSensorQ(struct qRoverSensorMsg msg);
+int sendToSubCommandQ(struct qCommandMsg msg);
 
 int receiveFromSubArmQ(struct qArmMsg *oldData);
 int receiveFromSubArmSensorQ(struct qArmSensorMsg *oldData);
 int receiveFromSubRoverQ(struct qRoverMsg *oldData);
 int receiveFromSubRoverSensorQ(struct qRoverSensorMsg *oldData);
+int receiveFromSubCommandQ(struct qCommandMsg *oldData);
 
 #endif /* MQTT_QUEUE_H_ */
