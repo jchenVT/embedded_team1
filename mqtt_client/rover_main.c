@@ -223,11 +223,11 @@ void *mainRoverThread(void *arg0)
         if (curData.sensorType == false) {
             dbgOutputLoc(curData.data2);
 
-//            long ticks = (long)curData.data;
-//
-//            if (curData.data2 == 128) {
-//                PIDalg(&PID128, ticks);
-//            }
+            long ticks = (long)curData.data;
+
+            if (curData.data2 == 128) {
+                PIDalg(&PID128, ticks);
+            }
 
             updateState(state, state, &PID128, &PID129, &PID130);
         }

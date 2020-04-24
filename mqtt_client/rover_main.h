@@ -14,6 +14,14 @@
 #define KP  0.4
 #define KI  0.1
 
+/*
+ * - Plot!
+ * - Move motor commands
+ * - Slightly larger timeframe to read encoders
+ * - Don't test from board, try a python script instead
+ *      It shouldn't be on the board anyways
+ */
+
 struct PIDvalues {
     long desiredTicks;
     long currentTicks;

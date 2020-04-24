@@ -98,8 +98,16 @@ GPIO8.$name = "CONFIG_GPIO_6";
 // Assign pin
 GPIO8.gpioPin.$assign = "boosterpack.30"; // P50
 var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
+// Interrupt Priority - DMA interrupt priority.
+DMA.interruptPriority = "1";
 // Name - The C/C++ identifier used in applications as the index parameter passed to SPI runtime APIs
 SPI1.$name = "CONFIG_SPI_0";
+// Turbo Mode - Enable to maximize the throughput for multiple word SPI transfers
+SPI1.turboMode = true;
+// DMA Interrupt Priority - Hardware interrupt priority
+SPI1.dmaInterruptPriority = "1";
+// Mode - In three pin mode the SS signal is not used.
+SPI1.mode = "Four Pin SS Active Low";
 // Name
 SPI1.spi.$name = "MySPI1";
 // Assign pin
@@ -166,6 +174,8 @@ SPI1.spi.sclkPin.$suggestSolution = "5";
 SPI1.spi.misoPin.$suggestSolution = "6";
 // Suggest solution
 SPI1.spi.mosiPin.$suggestSolution = "7";
+// Suggest solution
+SPI1.spi.ssPin.$suggestSolution = "8";
 // Suggest solution
 GPIO13.gpioPin.$suggestSolution = "15";
 // Suggest solution

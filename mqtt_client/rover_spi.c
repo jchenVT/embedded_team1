@@ -114,9 +114,9 @@ void readEncoder(int encoder) {
     int i;
     for (i=1;i<sizeof(readRxBuffer); i++) {
         data = (data << 8) + readRxBuffer[i];
-//        dbgOutputLoc(readRxBuffer[i]);
+        dbgOutputLoc(readRxBuffer[i]);
     }
-//    dbgOutputLoc(SPI_DATA);
+    dbgOutputLoc(SPI_DATA);
 
     if (sendMsgToReceiveQ(false, false, 0, (double)data, (double)encoder) != pdPASS) {
         stop_all(FAIL_SPI_SEND_TO_Q);
