@@ -314,6 +314,9 @@ void * MqttClient(void *pvParameters)
             stop_all();
             return(NULL);
         }
+        else {
+            UART_PRINT("....Done!\n\r\n\r");
+        }
     }
 
     struct qStringData pubData = {"", ""};

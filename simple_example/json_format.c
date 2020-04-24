@@ -2,6 +2,8 @@
 #include "mqtt_queue.h"
 #include "jsmn.h"
 
+#include "uart_term.h"
+
 
 static jsmn_parser parser;
 
@@ -97,7 +99,7 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             char errorString[120];
             strncpy(errorString, JSON_STRING + tokens[6].start, tokens[6].end - tokens[6].start);
 
-            struct qCommandMsg commandMsg = {atoi(sourceString), messageString, errorString};
+            struct qCommandMsg commandMsg = {atoi(sourceString), atoi(messageString), atoi(errorString)};
 
             retVal = sendToSubCommandQ(commandMsg);
     }

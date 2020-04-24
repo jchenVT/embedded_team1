@@ -140,8 +140,6 @@ void MqttClientCallback(int32_t event,
         char JSON_STRING[dataLen];
         strncpy(JSON_STRING, (char *) data, dataLen);
 
-        APP_PRINT(JSON_STRING);
-
         int retVal = jsonParser(topic, JSON_STRING);
         if (retVal == 0) {
             APP_PRINT("[ERROR]: Queue was too full \n\r");

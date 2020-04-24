@@ -59,8 +59,8 @@ struct qRoverSensorMsg {
 
 struct qCommandMsg {
     int source;
-    char msg[120];
-    char err[120];
+    int message;
+    int error;
 };
 
 /* Routine declarations */

@@ -27,9 +27,12 @@ void *readProximityThread(void *arg0) {
     xTimerStart(timerProx, 0);
 
     /* Command queue data to be changed */
+    struct qCommandMsg data = {0, 0, 0};
 
     while (1) {
 
+        receiveFromSubCommandQ(&data);
+        UART_PRINT("MSG_RECV");
     }
 }
 
