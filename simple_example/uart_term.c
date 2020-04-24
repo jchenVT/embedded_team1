@@ -39,12 +39,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "json_format.h"
 #include "uart_term.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include <ti/drivers/GPIO.h>
 
-//void Mqtt_Stop();
+void Mqtt_Stop();
 
 //*****************************************************************************
 //                          LOCAL DEFINES
@@ -288,7 +289,7 @@ void stop_all() {
 
     UART_close(uartHandle);
 
-    //Mqtt_Stop();
+    Mqtt_Stop();
 
     while(1)
     {

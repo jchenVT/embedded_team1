@@ -65,9 +65,17 @@ void *readSensorsThread(void *arg0) {
 
         receiveFromSubCommandQ(&data);
 
+        /* Check if recv own error report*/
+        if (data.source == 1) {
+            stop_all();
+        }
+
         /* Check if there is an error */
         if (data.error == 9) {
-            UART_PRINT("HELLO");
+            xTimerStart(timerStart, 0);
+            xTimerStop(timerProx, 0);
+            xTimerStop(timerRGB, 0);
+            packageErrorJSON(3);
         }
         else if (data.error > 0) {
             stop_all();

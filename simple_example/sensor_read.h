@@ -24,6 +24,7 @@
 /* Queue files */
 #include "sensor_queue.h"
 #include "mqtt_queue.h"
+#include "json_format.h"
 
 /* Debug files */
 #include "uart_term.h"
