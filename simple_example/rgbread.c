@@ -29,10 +29,7 @@ void *readRGBThread(void *arg0) {
     I2C_init();
     i2cHandle = I2C_open(CONFIG_I2C_0, &params);
     if (i2cHandle == NULL) {
-        stop_all(FAILED_I2C_INIT);
-    }
-    else {
-        dbgOutputLoc(INIT_I2C);
+        stop_all();
     }
 
     /* Initialize RGB sensor enable register */
@@ -44,7 +41,7 @@ void *readRGBThread(void *arg0) {
     transactionEnable.readBuf = NULL;
     transactionEnable.readCount = 0;
     if (I2C_transfer(i2cHandle, &transactionEnable)) {
-        dbgOutputLoc(RECV_RGBQREAD);
+
     }
 
     /* One-time initialization of software timer */
@@ -61,8 +58,6 @@ void *readRGBThread(void *arg0) {
  */
 void timerRGBCallback(TimerHandle_t xTimer) {
 
-    dbgOutputLoc(TIMER_CALLBACK);
-
     I2C_Transaction transaction = {0};
     uint8_t txBuffer[8] = {0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B}; // r, g, b, c
     uint8_t rxBuffer[8] = {0};
@@ -75,9 +70,7 @@ void timerRGBCallback(TimerHandle_t xTimer) {
     transaction.readCount = 8;
 
     /* Read from I2C slave device */
-    dbgOutputLoc(WAIT_RGBQREAD);
     if (I2C_transfer(i2cHandle, &transaction)) {
-        dbgOutputLoc(RECV_RGBQREAD);
 
         /* Combine higher and lower bit readings */
         uint16_t c = rxBuffer[1];
@@ -94,11 +87,12 @@ void timerRGBCallback(TimerHandle_t xTimer) {
         g = (g*256) / c;
         b = (b*256) / c;
 
+        UART_PRINT("TIMER 2");
+
         /* Send to RGB message queue */
-        dbgOutputLoc(SEND_RGBQ);
         sendRGBToSensorQ(r, g, b);
     }
     else {
-        stop_all(FAILED_I2C_CALLBACK);
+        stop_all();
     }
 }

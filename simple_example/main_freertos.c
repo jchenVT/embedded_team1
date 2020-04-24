@@ -13,17 +13,21 @@
 
 /* Driver configuration */
 #include <ti/drivers/Board.h>
+#include <ti/drivers/SPI.h>
+
+/* Thread files */
 #include "proxread.h"
 #include "rgbread.h"
+
+/* Queue files */
 #include "sensor_queue_read.h"
 #include "sensor_queue.h"
 #include "mqtt_queue.h"
 
 /* Debug files */
-#include "debug.h"
+#include "uart_term.h"
 
 /* Get thread locations */
-extern void *uartThread(void *arg0);
 extern void *readProximityThread(void *arg0);
 extern void *readRGBThread(void *arg0);
 extern void *sensorQReadThread(void *arg0);
@@ -45,22 +49,15 @@ int main(void) {
     /* Call driver setup functions */
     Board_init();
     GPIO_init();
-    debug_setup();
+    InitTerm();
 
     if (!setupQ()) {
-        stop_all(FAILED_INIT_QUEUES);
+        stop_all();
     }
 
     if (!createMQTTQs()) {
-        stop_all(FAILED_INIT_QUEUES);
+        stop_all();
     }
-
-    dbgOutputLoc(INIT_THREADS);
-
-    /* Debug UART Output */
-    pthread_t           threadDebug;
-    pthread_attr_t      attrsDebug;
-    int                 retcDebug;
 
     /* Proximity Sensor Read */
     pthread_t           threadProx;
@@ -77,18 +74,16 @@ int main(void) {
     pthread_attr_t      attrsSensorQ;
     int                 retcSensorQ;
 
-    pthread_attr_init(&attrsDebug);
     pthread_attr_init(&attrsRGB);
     pthread_attr_init(&attrsSensorQ);
     pthread_attr_init(&attrsProx);
 
-    retcDebug = pthread_create(&threadDebug, &attrsDebug, uartThread, NULL);
     retcProx = pthread_create(&threadProx, &attrsProx, readProximityThread, NULL);
     retcRGB = pthread_create(&threadRGB, &attrsRGB, readRGBThread, NULL);
     retcSensorQ = pthread_create(&threadSensorQ, &attrsSensorQ, sensorQReadThread, NULL);
 
-    if (retcDebug != 0 && retcRGB != 0 && retcSensorQ != 0 && retcProx != 0) {
-        stop_all(FAILED_INIT_THREADS);
+    if (retcRGB != 0 && retcSensorQ != 0 && retcProx != 0) {
+        stop_all();
         while (1) {
         }
     }

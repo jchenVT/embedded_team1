@@ -26,7 +26,7 @@
 #include "sensor_queue.h"
 
 /* Debug files */
-#include "debug.h"
+#include "uart_term.h"
 
 /* Slave attributes */
 #define SENSORS 0

@@ -11,7 +11,7 @@
 
 #include "sensor_queue.h"
 #include "json_format.h"
-#include "debug.h"
+#include "uart_term.h"
 
 void *sensorQReadThread(void *arg0);
 

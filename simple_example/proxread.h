@@ -23,7 +23,7 @@
 #include "sensor_queue.h"
 
 /* Debug files */
-#include "debug.h"
+#include "uart_term.h"
 
 
 /* Main Thread */

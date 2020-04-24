@@ -18,41 +18,37 @@
  */
 void *sensorQReadThread(void *arg0) {
 
-    dbgOutputLoc(INIT_PQ1READ); // start proximity 1 read
-
     struct qData data = {0, 0, 0, 0, 0}; // create default data to be changed
 
     while (1) {
 
-        dbgOutputLoc(WAIT_PQ1READ);
-
         /* Perform blocking read */
         receiveSensorQ(&data);
-
-        dbgOutputLoc(RECV_PQ1READ);
 
         /* Verify data is valid */
         if (data.sensorID == PROX1_DATA) {
             if (data.sensorVal != 0 && data.sensorVal != 1) {
-                stop_all(FAILED_PQ1_BADVAL);
+                stop_all();
             }
             if (data.r != 0 || data.g != 0 || data.b != 0) {
-                stop_all(FAILED_PQ1_BADVAL);
+                stop_all();
             }
         }
         if (data.sensorID == PROX2_DATA) {
             if (data.sensorVal != 0 && data.sensorVal != 1) {
-                stop_all(FAILED_PQ2_BADVAL);
+                stop_all();
             }
             if (data.r != 0 || data.g != 0 || data.b != 0) {
-                stop_all(FAILED_PQ2_BADVAL);
+                stop_all();
             }
         }
         if (data.sensorID == RGB_DATA) {
             if (data.sensorVal != 0) {
-                stop_all(FAILED_RGBQ_BADVAL);
+                stop_all();
             }
         }
+
+        UART_PRINT("MSG RECV");
 
         /* Send to MQTT */
         packageArmSensorJSON(data.sensorID, data.sensorVal, data.r, data.g, data.b);
