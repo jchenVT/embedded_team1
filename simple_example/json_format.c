@@ -91,10 +91,10 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             char sourceString[1];
             strncpy(sourceString, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
 
-            char messageString[10];
+            char messageString[120];
             strncpy(messageString, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
 
-            char errorString[10];
+            char errorString[120];
             strncpy(errorString, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
 
             struct qCommandMsg commandMsg = {atoi(sourceString), messageString, errorString};
