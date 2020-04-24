@@ -82,8 +82,8 @@ int jsonParser(const char *topic, char *JSON_STRING) {
 
             retVal = sendToSubRoverQ(roverMsg);
     }
-    else if (strcmp(topic, "arm_sensor") == 0) {
-            if (jsoneq(JSON_STRING, &tokens[1], "source") != 0 || jsoneq(JSON_STRING, &tokens[3], "message") != 0 || jsoneq(JSON_STRING, &tokens[5], "error") != 0 || num != 5) {
+    else if (strcmp(topic, "command") == 0) {
+            if (jsoneq(JSON_STRING, &tokens[1], "source") != 0 || jsoneq(JSON_STRING, &tokens[3], "message") != 0 || jsoneq(JSON_STRING, &tokens[5], "error") != 0 || num != 7) {
                 // ERROR
                 return -5;
             }
@@ -95,16 +95,16 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             strncpy(messageString, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
 
             char errorString[120];
-            strncpy(errorString, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
+            strncpy(errorString, JSON_STRING + tokens[6].start, tokens[6].end - tokens[6].start);
 
             struct qCommandMsg commandMsg = {atoi(sourceString), messageString, errorString};
 
             retVal = sendToSubCommandQ(commandMsg);
     }
-    else if (strcmp(topic, "command") == 0) {
-            if (jsoneq(JSON_STRING, &tokens[1], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[3], "sensorValue") != 0 || num != 7) {
+    else if (strcmp(topic, "arm_sensor") == 0) {
+            if (jsoneq(JSON_STRING, &tokens[1], "sensorID") != 0 || jsoneq(JSON_STRING, &tokens[3], "sensorValue") != 0 || num != 5) {
                 // ERROR
-                return -5;
+                return -6;
             }
 
             char sensorID[4];
@@ -119,7 +119,7 @@ int jsonParser(const char *topic, char *JSON_STRING) {
     }
     else {
         // ERROR TOPIC
-        return -6;
+        return -7;
     }
 
     return retVal;

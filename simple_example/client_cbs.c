@@ -142,7 +142,7 @@ void MqttClientCallback(int32_t event,
 
         APP_PRINT(JSON_STRING);
 
-        /*int retVal = jsonParser(topic, JSON_STRING);
+        int retVal = jsonParser(topic, JSON_STRING);
         if (retVal == 0) {
             APP_PRINT("[ERROR]: Queue was too full \n\r");
         }
@@ -152,7 +152,7 @@ void MqttClientCallback(int32_t event,
             APP_PRINT("[ERROR]: ");
             APP_PRINT(temp);
             APP_PRINT(" : Incorrect number of tokens expected \n\r");
-        }*/
+        }
 
         break;
     }

@@ -26,6 +26,8 @@ void *readProximityThread(void *arg0) {
     TimerHandle_t timerProx = xTimerCreate("PROX", pdMS_TO_TICKS(50), pdTRUE, (void *)0, timerCallback);
     xTimerStart(timerProx, 0);
 
+    /* Command queue data to be changed */
+
     while (1) {
 
     }
