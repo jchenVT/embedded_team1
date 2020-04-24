@@ -7,8 +7,7 @@
 #include <stdlib.h> 
 #include <stdbool.h>
 
-#include <ti/drivers/SPI.h>
-
+#include <ti/drivers/I2C.h>
 #include <ti/drivers/Timer.h>
 #include "ti_drivers_config.h"
 
@@ -34,11 +33,11 @@ typedef struct block {
 
 
 //void spi_pixy_init();
-SPI_Handle spi_pixy_init();
+I2C_Handle spi_pixy_init();
 
 void * spiThread(void *arg0);
 
-void spi_pixy_callback( SPI_Handle handle, SPI_Transaction *transaction, bool status);
+// void spi_pixy_callback( I2C_Handle handle, I2C_Transaction *transaction, bool status);
 
 void send_pixy_ccc_spi();
 

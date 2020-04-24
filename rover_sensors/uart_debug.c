@@ -9,7 +9,7 @@ void uart_debug_init()
     uart_debug_params.writeDataMode = UART_DATA_TEXT;
     uart_debug_params.writeMode = UART_MODE_BLOCKING;
     uart_debug_params.readEcho = UART_ECHO_OFF;
-    uart_debug_params.baudRate = 9600;
+    uart_debug_params.baudRate = 115200;
     /*****************************/
     dbgOutputLoc(UART_DEBUG_OPEN);
     /*****************************/

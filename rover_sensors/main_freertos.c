@@ -74,7 +74,6 @@ int main(void)
     GPIO_init();
     Timer_init();
     UART_init();
-    SPI_init();
     debug_init();
     queues_init();
     uart_debug_init();
@@ -85,18 +84,18 @@ int main(void)
 
     pthread_t           thread1, thread2, thread3;
     pthread_attr_t      attrs1, attrs2, attrs3;
-    int                 retcUARTDebug, retcUARTLidar, retcSPI;
+    int                 retc;
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs1);
     pthread_attr_init(&attrs2);
     pthread_attr_init(&attrs3);
 
-    retcUARTDebug = pthread_create(&thread1, &attrs1, uartDebugThread, NULL);
-    retcUARTLidar = pthread_create(&thread2, &attrs2, uartLidarThread, NULL);
-    retcSPI = pthread_create(&thread3, &attrs3, spiThread, NULL);
+    retc  = pthread_create(&thread1, &attrs1, uartDebugThread, NULL);
+    retc |= pthread_create(&thread2, &attrs2, uartLidarThread, NULL);
+    retc |= pthread_create(&thread3, &attrs3, spiThread, NULL);
 
-    if (retcUARTDebug != 0 || retcUARTLidar != 0 || retcSPI != 0) {
+    if (retc != 0) {
         /* pthread_create() failed */
         while (1) {}
     }
