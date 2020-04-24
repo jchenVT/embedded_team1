@@ -33,7 +33,7 @@ extern void *readRGBThread(void *arg0);
 extern void *sensorQReadThread(void *arg0);
 
 /* Stack size in bytes */
-#define THREADSTACKSIZE   1024
+#define THREADSTACKSIZE   8192
 
 /*
  *  @function   main
@@ -49,6 +49,7 @@ int main(void) {
     /* Call driver setup functions */
     Board_init();
     GPIO_init();
+    SPI_init();
     InitTerm();
 
     if (!setupQ()) {

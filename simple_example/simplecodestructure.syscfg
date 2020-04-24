@@ -19,6 +19,7 @@ var GPIO7 = GPIO.addInstance();
 var GPIO8 = GPIO.addInstance();
 var GPIO9 = GPIO.addInstance();
 var GPIO10 = GPIO.addInstance();
+var SPI = scripting.addModule("/ti/drivers/SPI");
 // name - Select the RTOS being used
 RTOS.name = "FreeRTOS";
 var Power = scripting.addModule("/ti/drivers/Power", {}, false);
@@ -84,8 +85,9 @@ GPIO9.$name = "CONFIG_GPIO_6";
 GPIO9.gpioPin.$assign = "boosterpack.8"; // P62
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
 GPIO10.$name = "CONFIG_GPIO_7";
-// Assign pin
-GPIO10.gpioPin.$assign = "boosterpack.28"; // P53
+// Assign pin (ignoring conflicts)
+GPIO10.gpioPin.$assignAllowConflicts = "boosterpack.28"; // P53
+var DMA = scripting.addModule("/ti/drivers/DMA", {}, false);
 // Suggest solution
 UART1.uart.txPin.$suggestSolution = "55";
 // Suggest solution
