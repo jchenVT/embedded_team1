@@ -24,11 +24,11 @@
  */
 
 
-#define conversionValue_128             0.427
+#define conversionValue_128             0.3229
 //#define conversionValue_129             1.6669
 #define conversionTicktoRotationValue   1
 #define conversionTicktoForwardValue    1
-#define desiredMovementTicks            0x24
+#define desiredMovementTicks            0x30
 #define stopTicks                       0
 
 static int attemptPubCount;
@@ -102,9 +102,11 @@ void PIDalg (struct PIDvalues *motor, long measuredValue) {
 
     if (motor->direction == 0) {
         error = motor->desiredTicks - (0xFFFFFFFF - measuredValue);
+        packageEncoderJSON(0, (0xFFFFFFFF - measuredValue));
     }
     else {
         error = motor->desiredTicks - measuredValue;
+        packageEncoderJSON(1, measuredValue);
     }
 
     motor->integral += error;
@@ -174,6 +176,10 @@ void updateState(enum roverStates prevState, enum roverStates curState,
     sendMsgToMotorsQ(128, PID128->direction, convertTicksToMotor_128(PID128->currentTicks));
     sendMsgToMotorsQ(129, PID129->direction, convertTicksToMotor_128(PID129->currentTicks));
     sendMsgToMotorsQ(130, PID130->direction, convertTicksToMotor_128(PID130->currentTicks));
+
+//    sendMsgToMotorsQ(128, PID128->direction, 31);
+//    sendMsgToMotorsQ(129, PID129->direction, 0);
+//    sendMsgToMotorsQ(130, PID130->direction, 0);
 }
 
 /*
@@ -264,36 +270,36 @@ void *mainRoverThread(void *arg0)
 }
 
 void timerCallbackTesting(TimerHandle_t xTimer) {
-    if (counter < 15) {
-        packageRoverSensorJSON(true, 0, 0, 1);
-    }
-    else if (counter < 31) {
-        packageRoverSensorJSON(true, 0, 0, 0);
-    }
-    else if (counter < 47) {
-        packageRoverSensorJSON(true, 0, 0, 1);
-    }
-    else if (counter < 63) {
-        packageRoverSensorJSON(true, 0, 0, 0);
-    }
-    else if (counter < 79) {
-        packageRoverSensorJSON(true, 0, 0, 1);
-    }
-    else if (counter < 95) {
-        packageRoverSensorJSON(true, 0, 0, 0);
-    }
-    else if (counter < 111) {
-        packageRoverSensorJSON(true, 0, 0, 1);
-    }
-    else if (counter < 127) {
-        packageRoverSensorJSON(true, 0, 0, 0);
-    }
-    else if (counter < 137){
-        packageRoverSensorJSON(false, 0, 0, 0);
-    }
-    else {
-        packageRoverSensorJSON(true, 0, 0, -1);
-    }
+//    if (counter < 15) {
+    packageRoverSensorJSON(true, 0, 0, 1);
+//    }
+//    else if (counter < 31) {
+//        packageRoverSensorJSON(true, 0, 0, 0);
+//    }
+//    else if (counter < 47) {
+//        packageRoverSensorJSON(true, 0, 0, 1);
+//    }
+//    else if (counter < 63) {
+//        packageRoverSensorJSON(true, 0, 0, 0);
+//    }
+//    else if (counter < 79) {
+//        packageRoverSensorJSON(true, 0, 0, 1);
+//    }
+//    else if (counter < 95) {
+//        packageRoverSensorJSON(true, 0, 0, 0);
+//    }
+//    else if (counter < 111) {
+//        packageRoverSensorJSON(true, 0, 0, 1);
+//    }
+//    else if (counter < 127) {
+//        packageRoverSensorJSON(true, 0, 0, 0);
+//    }
+//    else if (counter < 137){
+//        packageRoverSensorJSON(false, 0, 0, 0);
+//    }
+//    else {
+//        packageRoverSensorJSON(true, 0, 0, -1);
+//    }
 
     counter++;
 

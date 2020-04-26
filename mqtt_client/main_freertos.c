@@ -86,6 +86,7 @@ int main(void)
     int                 retcMQTT;
 
     struct sched_param priParam;
+    struct sched_param encParam;
     int detachState;
 
     /* initialize the system locks */
@@ -96,7 +97,7 @@ int main(void)
     /* Call driver init functions */
     Board_init();
     debug_setup();
-    SPI_init();
+    spi_setup();
     uart_setup();
     createQs();
 
@@ -116,11 +117,13 @@ int main(void)
     pthread_attr_init(&encoderAttrs);
     pthread_attr_init(&mqttAttrs);
     priParam.sched_priority = 1;
+    encParam.sched_priority = 2;
 
     detachState = PTHREAD_CREATE_DETACHED;
 
     retcMainControls = pthread_create(&mainControlsThread, &mainControlsAttrs, mainRoverThread, NULL);
     retcMotors = pthread_create(&motorThread, &motorAttrs, uartThread, NULL);
+    pthread_attr_setschedparam(&encoderAttrs, &encParam);
     retcEncoders = pthread_create(&encoderThread, &encoderAttrs, spiThread, NULL);
     //retcMQTT = pthread_create(&mqttThread, &mqttAttrs, mainMQTTThread, NULL);
 

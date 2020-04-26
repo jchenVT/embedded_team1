@@ -25,7 +25,7 @@ void spi_setup() {
     /*****************************/
 
     /* Call driver init functions. */
-    //SPI_init();
+    SPI_init();
     SPI_Params      spiParams;
 
     /* Set slave controllers as outputs */
@@ -109,13 +109,20 @@ void readEncoder(int encoder) {
     }
 
     dbgOutputLoc(SPI_DATA);
-
     long data = 0;
     int i;
     for (i=1;i<sizeof(readRxBuffer); i++) {
         data = (data << 8) + readRxBuffer[i];
         dbgOutputLoc(readRxBuffer[i]);
     }
+
+    if (data < 5) {
+        dbgOutputLoc(0xF0);
+    }
+    else {
+        dbgOutputLoc(0xF1);
+    }
+
     dbgOutputLoc(SPI_DATA);
 
     if (sendMsgToReceiveQ(false, false, 0, (double)data, (double)encoder) != pdPASS) {
@@ -143,24 +150,8 @@ void initEncoders() {
 }
 
 void clearEncoderCounts() {
-    transaction.count = 5;
-    transaction.txBuf = (void*)clearDataBuffer;
-    transaction.rxBuf = NULL;
-
-    dbgOutputLoc(SPI_ENCODER_CLEARING);
-
-    if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
-        stop_all(FAIL_SPI_READING_128);
-    }
-    if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
-        stop_all(FAIL_SPI_READING_129);
-    }
-    if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
-        stop_all(FAIL_SPI_READING_130);
-    }
-
     transaction.count = 1;
-    transaction.txBuf = (void*)setDataToCounter;
+    transaction.txBuf = (void*)clearCountBuffer;
     transaction.rxBuf = NULL;
 
     dbgOutputLoc(SPI_ENCODER_CLEARING);
@@ -174,6 +165,22 @@ void clearEncoderCounts() {
     if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
         stop_all(FAIL_SPI_READING_130);
     }
+
+//    transaction.count = 1;
+//    transaction.txBuf = (void*)setDataToCounter;
+//    transaction.rxBuf = NULL;
+//
+//    dbgOutputLoc(SPI_ENCODER_CLEARING);
+//
+//    if (!transferData(CONFIG_SPI_SLAVE128_READY)) {
+//        stop_all(FAIL_SPI_READING_128);
+//    }
+//    if (!transferData(CONFIG_SPI_SLAVE129_READY)) {
+//        stop_all(FAIL_SPI_READING_129);
+//    }
+//    if (!transferData(CONFIG_SPI_SLAVE130_READY)) {
+//        stop_all(FAIL_SPI_READING_130);
+//    }
 }
 
 bool transferData(int encoder) {
@@ -197,12 +204,12 @@ void *spiThread(void *arg0) {
         receiveFromEncoderQ(&temp);
 
         if (!RDY) {
-            spi_setup();
             initEncoders();
             clearEncoderCounts();
             timer_setup();
 //            sendMsgToReceiveQ(true, true, 1, 0, 0);
             RDY = true;
+            continue;
         }
 
 //        dbgOutputLoc(SPI_READING_128);

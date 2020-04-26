@@ -11,7 +11,7 @@
 #include <rover_queues.h>
 #include <rover_uart.h>
 
-#define KP  0.4
+#define KP  0.2
 #define KI  0.1
 
 /*

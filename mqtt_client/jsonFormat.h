@@ -25,5 +25,6 @@ int packageArmSensorJSON(int sensorID, int sensorValue);
 int packageRoverJSON(int state);
 int packageRoverSensorJSON(bool move_to_point, int point_x, int point_y, int angle_rotate);
 int packageDebugJSON(int attemptPubCount, int recvSubCount, bool status, char *subTopic, char *pubTopic);
+int packageEncoderJSON(int dir, int encoderValue);
 
 #endif /* JSONFORMAT_H_ */

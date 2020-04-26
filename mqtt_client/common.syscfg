@@ -21,7 +21,6 @@ var GPIO9 = GPIO.addInstance();
 var GPIO10 = GPIO.addInstance();
 var GPIO11 = GPIO.addInstance();
 var GPIO12 = GPIO.addInstance();
-var GPIO13 = GPIO.addInstance();
 var Watchdog = scripting.addModule("/ti/drivers/Watchdog", {}, false);
 var Watchdog1 = Watchdog.addInstance();
 var Crypto = scripting.addModule("/ti/drivers/Crypto", {}, false);
@@ -115,31 +114,23 @@ SPI1.spi.dmaRxChannel.$assign = "UDMA_CH6";
 // Assign pin
 SPI1.spi.dmaTxChannel.$assign = "UDMA_CH7";
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO9.$name = "CONFIG_SPI_MASTER_READY";
+GPIO9.$name = "CONFIG_SPI_SLAVE128_READY";
 // Mode - Select the GPIO mode
 GPIO9.mode = "Dynamic";
 // Assign pin
-GPIO9.gpioPin.$assign = "boosterpack.13"; // P21
+GPIO9.gpioPin.$assign = "boosterpack.19"; // P18
 // Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO10.$name = "CONFIG_SPI_SLAVE128_READY";
-// Mode - Select the GPIO mode
-GPIO10.mode = "Dynamic";
-// Assign pin
-GPIO10.gpioPin.$assign = "boosterpack.19"; // P18
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO11.$name = "CONFIG_SPI_SLAVE129_READY";
-// Mode - Select the GPIO mode
-GPIO11.mode = "Dynamic";
-// Assign pin
-GPIO11.gpioPin.$assign = "boosterpack.2"; // P58*
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO12.$name = "CONFIG_SPI_SLAVE130_READY";
-// Assign pin
-GPIO12.gpioPin.$assign = "boosterpack.24"; // P60
-// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
-GPIO13.$name = "CONFIG_GPIO_7";
+GPIO10.$name = "CONFIG_SPI_SLAVE129_READY";
 // Use Hardware - Select the hardware to use, or 'None' to use available header pins
-GPIO13.$hardware = system.deviceData.board.components.SW3;
+GPIO10.$hardware = system.deviceData.board.components.SW3;
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO11.$name = "CONFIG_SPI_SLAVE130_READY";
+// Assign pin
+GPIO11.gpioPin.$assign = "boosterpack.13"; // P21
+// Name - The C/C++ identifier used in applications as the index parameter passed to GPIO runtime APIs
+GPIO12.$name = "CONFIG_GPIO_7";
+// Assign pin
+GPIO12.gpioPin.$assign = "boosterpack.2"; // P58*
 // Name - The C/C++ identifier used in applications as the index parameter passed to Watchdog runtime APIs
 Watchdog1.$name = "CONFIG_WATCHDOG_0";
 // Name
@@ -177,7 +168,7 @@ SPI1.spi.mosiPin.$suggestSolution = "7";
 // Suggest solution
 SPI1.spi.ssPin.$suggestSolution = "8";
 // Suggest solution
-GPIO13.gpioPin.$suggestSolution = "15";
+GPIO10.gpioPin.$suggestSolution = "15";
 // Suggest solution
 Watchdog1.watchdog.$suggestSolution = "WATCHDOG0";
 // Suggest solution
