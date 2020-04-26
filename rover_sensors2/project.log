@@ -1,0 +1,27 @@
+
+!CONFIGURATION: 'com.ti.ccstudio.buildDefinitions.TMS470.Debug.949728993' [Fri Apr 24 14:38:31 EDT 2020]
+
+	!TOOL: 'com.ti.ccstudio.buildDefinitions.TMS470_18.12.exe.compilerDebug.1013672090'
+
+		!NOTE: Deprecated build flag '--float_support=vfplib' was migrated to '--float_support=none'.
+
+
+!CONFIGURATION: 'com.ti.ccstudio.buildDefinitions.TMS470.Release.885578598' [Fri Apr 24 14:39:29 EDT 2020]
+
+	!TOOL: 'com.ti.ccstudio.buildDefinitions.TMS470_18.12.exe.compilerRelease.2121880276'
+
+		!ERROR: java.lang.NullPointerException
+			at com.ti.ccstudio.project.core.internal.initializer.CCSConfigurationInitializer.doConvertOptionValue(CCSConfigurationInitializer.java:848)
+			at com.ti.common.project.core.internal.initializer.AConfigurationInitializer.convertOptionValue(AConfigurationInitializer.java:554)
+			at com.ti.common.project.core.internal.initializer.AConfigurationInitializer.doCopyBuildOptions(AConfigurationInitializer.java:494)
+			at com.ti.ccstudio.project.core.internal.initializer.CCSConfigurationInitializer.doCopyBuildOptions(CCSConfigurationInitializer.java:705)
+			at com.ti.common.project.core.internal.initializer.AConfigurationInitializer.copyBuildOptions(AConfigurationInitializer.java:184)
+			at com.ti.common.project.core.internal.initializer.AConfigurationInitializer.internalCopyBuildOptions(AConfigurationInitializer.java:421)
+			at com.ti.common.project.core.internal.initializer.AConfigurationInitializer.internalInitializeBuildOptions(AConfigurationInitializer.java:380)
+			at com.ti.common.project.core.internal.initializer.AConfigurationInitializer.initializeFromExisting(AConfigurationInitializer.java:122)
+			at com.ti.ccstudio.project.ui.internal.actions.UpgradeCodegenToolVersionDialog.migrateConfiguration(UpgradeCodegenToolVersionDialog.java:347)
+			at com.ti.ccstudio.project.ui.internal.actions.UpgradeCodegenToolVersionDialog.access$3(UpgradeCodegenToolVersionDialog.java:326)
+			at com.ti.ccstudio.project.ui.internal.actions.UpgradeCodegenToolVersionDialog$3.run(UpgradeCodegenToolVersionDialog.java:296)
+			at org.eclipse.jface.operation.ModalContext$ModalContextThread.run(ModalContext.java:119)
+		
+
