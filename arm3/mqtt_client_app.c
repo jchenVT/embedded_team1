@@ -70,8 +70,6 @@
 /* Simplelink includes                                                       */
 #include <ti/drivers/net/wifi/simplelink.h>
 
-
-
 /* Common interface includes                                                 */
 #include "network_if.h"
 #include "uart_term.h"
@@ -132,6 +130,7 @@
 #define SUBSCRIPTION_TOPIC1      "arm_sensor"
 #define SUBSCRIPTION_TOPIC2      "rover"
 #define SUBSCRIPTION_TOPIC3      "rover_sensor"
+#define SUBSCRIPTION_TOPIC4      "arm_pos"
 
 /* Spawn task priority and Task and Thread Stack Size                        */
 #define TASKSTACKSIZE            2048
@@ -199,7 +198,7 @@ const char *ClientPassword = "pwd1";
 
 /* Subscription topics and qos values                                        */
 char *topic[SUBSCRIPTION_TOPIC_COUNT] =
-{ SUBSCRIPTION_TOPIC2 };
+{ SUBSCRIPTION_TOPIC4 };
 
 unsigned char qos[SUBSCRIPTION_TOPIC_COUNT] =
 { MQTT_QOS_0 };
@@ -303,6 +302,7 @@ void * MqttClientThread(void * pvParameters)
 //*****************************************************************************
 void * MqttClient(void *pvParameters)
 {
+    UART_PRINT("in mqtt client\n\r");
     long lRetVal = -1;
 
     /*Initializing Client and Subscribing to the Broker.                     */
@@ -729,7 +729,6 @@ void mainThread(void * args)
                                     (&pAttrs_spawn, PTHREAD_CREATE_DETACHED);
 
     retc = pthread_create(&spawn_thread, &pAttrs_spawn, sl_Task, NULL);
-
 
     if(retc != 0)
     {

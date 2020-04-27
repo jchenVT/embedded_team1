@@ -65,7 +65,7 @@ extern void *readMQTTThread(void *arg0);
 extern void *mainThread(void *arg0);
 
 /* Stack size in bytes */
-#define THREADSTACKSIZE   8192
+#define THREADSTACKSIZE 2048
 
 /*
  *  ======== main ========
@@ -73,7 +73,6 @@ extern void *mainThread(void *arg0);
 int main(void)
 {
     pthread_t           arm_thread;
-    pthread_t           debug_thread;
     pthread_t           mqtt_thread;
     pthread_t           main_thread;
 
@@ -97,8 +96,15 @@ int main(void)
     arm_init();
     createMovQ();
     createAckQ();
+    createQs();
 
     SPI_init();
+    UART_Handle tUartHndl;
+
+    /*Configure the UART                                                     */
+    tUartHndl = InitTerm();
+    /*remove uart receive from LPDS dependency                               */
+    UART_control(tUartHndl, UART_CMD_RXDISABLE, (void*)0);
 
     /* Initialize the attributes structure with default values */
     pthread_attr_init(&attrs);
@@ -123,17 +129,19 @@ int main(void)
 
     if (retc != 0) {
         /* failed to set attributes */
+        UART_PRINT("failed to set attributes\n\r");
         while (1) {}
     }
 
-    retc = pthread_create(&arm_thread, &attrs, mainArmThread, NULL);
-    retc |= pthread_create(&debug_thread, &attrs, armDebugThread, NULL);
-    retc |= pthread_create(&mqtt_thread, &mqtt_attrs, readMQTTThread, NULL);
     retc |= pthread_create(&main_thread, &main_attrs, mainThread, NULL);
+    retc = pthread_create(&arm_thread, &attrs, mainArmThread, NULL);
+    retc |= pthread_create(&mqtt_thread, &mqtt_attrs, readMQTTThread, NULL);
+
 
 
     if (retc != 0) {
         /* pthread_create() failed */
+        UART_PRINT("failed to create threads\n\r");
         while (1) {}
     }
 

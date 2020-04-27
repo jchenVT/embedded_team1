@@ -13,6 +13,7 @@ static QueueHandle_t subArmQ = (void *)0;
 static QueueHandle_t subArmSensorQ = (void *)0;
 static QueueHandle_t subRoverQ = (void *)0;
 static QueueHandle_t subRoverSensorQ = (void *)0;
+static QueueHandle_t subArmPosQ = (void *)0;
 
 /*
  *  @function   createQs
@@ -33,21 +34,25 @@ bool createQs() {
     if (subArmQ == (void *)0) {
         return false;
     }
-
-    subArmSensorQ = xQueueCreate( qLENGTH, sizeof(struct qArmSensorMsg));
-    if (subArmSensorQ == (void *)0) {
+    subArmPosQ = xQueueCreate( qLENGTH, sizeof(struct qArmPosMsg));
+    if (subArmPosQ == (void *) 0) {
         return false;
     }
-
-    subRoverQ = xQueueCreate( qLENGTH, sizeof(struct qRoverMsg));
-    if (subRoverQ == (void *)0) {
-        return false;
-    }
-
-    subRoverSensorQ = xQueueCreate( qLENGTH, sizeof(struct qRoverSensorMsg));
-    if (subRoverSensorQ == (void *)0) {
-        return false;
-    }
+//
+//    subArmSensorQ = xQueueCreate( qLENGTH, sizeof(struct qArmSensorMsg));
+//    if (subArmSensorQ == (void *)0) {
+//        return false;
+//    }
+//
+//    subRoverQ = xQueueCreate( qLENGTH, sizeof(struct qRoverMsg));
+//    if (subRoverQ == (void *)0) {
+//        return false;
+//    }
+//
+//    subRoverSensorQ = xQueueCreate( qLENGTH, sizeof(struct qRoverSensorMsg));
+//    if (subRoverSensorQ == (void *)0) {
+//        return false;
+//    }
 
     return true;
 }
@@ -96,6 +101,9 @@ int sendToSubRoverSensorQ(struct qRoverSensorMsg msg) {
     return xQueueSendToBackFromISR( subRoverSensorQ, &msg, 0 );
 }
 
+int sendToSubArmPosQ(struct qArmPosMsg msg) {
+    return xQueueSendToBackFromISR( subArmPosQ, &msg, 0 );
+}
 /*
  *  @function   sendToSubQ
  *              Wrapper for the RTOS function to send data through
@@ -130,4 +138,8 @@ int receiveFromSubRoverQ(struct qRoverMsg *oldData) {
 
 int receiveFromSubRoverSensorQ(struct qRoverSensorMsg *oldData) {
     return xQueueReceive( subRoverSensorQ, oldData, portMAX_DELAY );
+}
+
+int receiveFromSubArmPosQ(struct qArmPosMsg *oldData) {
+    return xQueueReceive(subArmPosQ, oldData, portMAX_DELAY);
 }

@@ -20,7 +20,7 @@
 
 #include <ti/drivers/GPIO.h>
 #include <ti/drivers/PWM.h>
-#include <ti/drivers/timer.h>
+#include <ti/drivers/Timer.h>
 #include <ti/drivers/UART.h>
 
 #include "arm_queues.h"
@@ -33,22 +33,25 @@
 
 /* JSON formatting used to push to msg queues */
 #include "jsonFormat.h"
-
 #include "uart_term.h"
 
 #define STEPSIZE    10
 
 #define CLAW_LOW    800
 #define CLAW_HIGH   1800
+#define CLAW_MIDDLE 1300
 
 #define X_LOW       380
 #define X_HIGH      2430
+#define X_MIDDLE    1600
 
 #define Y_LOW       700
 #define Y_HIGH      2300
+#define Y_MIDDLE    1500
 
 #define Z_LOW       1000
 #define Z_HIGH      2200
+#define Z_MIDDLE    1800
 
 typedef enum debugState {WaitingForAngles, WaitingForAck} dState;
 typedef enum armState {Moving, NotMoving} aState;
@@ -56,6 +59,7 @@ typedef enum armState {Moving, NotMoving} aState;
 void *armDebugThread(void *arg0);
 void *mainArmThread(void *arg0);
 void *readMQTTThread(void *arg0);
+
 void arm_init();
 void movementCallback();
 void timerCallback(TimerHandle_t xTimer);

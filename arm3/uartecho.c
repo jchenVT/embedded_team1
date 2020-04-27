@@ -56,88 +56,65 @@ static movqData_t current_pos, goal_pos;
 
 uint16_t angleXToPWM(uint16_t x) {
     uint16_t degreePWM = (X_HIGH - X_LOW) / 180;
+    switch(x) {
+    case 0:
+        return X_LOW;
+    case 90:
+        return X_MIDDLE;
+    case 180:
+        return X_HIGH;
+    }
     return x * degreePWM + X_LOW;
 }
 
 uint16_t angleYToPWM(uint16_t y) {
     uint16_t degreePWM = (Y_HIGH - Y_LOW) / 180;
+    switch(y) {
+    case 0:
+        return Y_LOW;
+    case 90:
+        return Y_MIDDLE;
+    case 180:
+        return Y_HIGH;
+    }
     return y * degreePWM + Y_LOW;
 }
 
 uint16_t angleZToPWM(uint16_t z) {
     uint16_t degreePWM = (Z_HIGH - Z_LOW) / 180;
+    switch(z) {
+    case 0:
+        return Z_LOW;
+    case 90:
+        return Z_MIDDLE;
+    case 180:
+        return Z_HIGH;
+    }
     return z * degreePWM + Z_LOW;
 }
 
 uint16_t angleClawToPWM(uint16_t c) {
     uint16_t degreePWM = (CLAW_HIGH - CLAW_LOW) / 180;
+    switch(c) {
+    case 0:
+        return CLAW_LOW;
+    case 90:
+        return CLAW_MIDDLE;
+    case 180:
+        return CLAW_HIGH;
+    }
     return c * degreePWM + CLAW_LOW;
 }
 
-uint16_t pwmXToAngle(uint16_t x) {
-    uint16_t pwmDegree = 180 / (X_HIGH - X_LOW);
-    return (x - X_LOW) * pwmDegree;
+void convertStructToPWM(movqData_t *deg) {
+    deg->yee_value = angleXToPWM(deg->yee_value) / 10 * 10;
+    deg->haw_value = angleYToPWM(deg->haw_value) / 10 * 10;
+    deg->cow_value = angleZToPWM(deg->cow_value) / 10 * 10;
+    deg->boy_value = angleClawToPWM(deg->boy_value) / 10 * 10;
 }
 
-uint16_t pwmYToAngle(uint16_t y) {
-    uint16_t pwmDegree = 180 / (Y_HIGH - Y_LOW);
-    return (y - Y_LOW) * pwmDegree;
-}
-
-uint16_t pwmZToAngle(uint16_t z) {
-    uint16_t pwmDegree = 180 / (Z_HIGH - Z_LOW);
-    return (z - Z_LOW) * pwmDegree;
-}
-
-uint16_t pwmClawToAngle(uint16_t c) {
-    uint16_t pwmDegree = 180 / (CLAW_HIGH - CLAW_LOW);
-    return (c - CLAW_LOW) * pwmDegree;
-}
-
-void convertCurrentStructToPWM() {
-    current_pos.yee_value = angleXToPWM(current_pos.yee_value) / 10 * 10;
-    current_pos.haw_value = angleYToPWM(current_pos.haw_value) / 10 * 10;
-    current_pos.cow_value = angleZToPWM(current_pos.cow_value) / 10 * 10;
-    current_pos.boy_value = angleClawToPWM(current_pos.boy_value) / 10 * 10;
-}
-
-void convertGoalStructToPWM() {
-    goal_pos.yee_value = angleXToPWM(goal_pos.yee_value) / 10 * 10;
-    goal_pos.haw_value = angleYToPWM(goal_pos.haw_value) / 10 * 10;
-    goal_pos.cow_value = angleZToPWM(goal_pos.cow_value) / 10 * 10;
-    goal_pos.boy_value = angleClawToPWM(goal_pos.boy_value) / 10 * 10;
-}
-
-void convertToDegree() {
-    goal_pos.yee_value = pwmXToAngle(goal_pos.yee_value) / 10 * 10;
-    goal_pos.haw_value = pwmYToAngle(goal_pos.haw_value) / 10 * 10;
-    goal_pos.cow_value = pwmZToAngle(goal_pos.cow_value) / 10 * 10;
-    goal_pos.boy_value = pwmClawToAngle(goal_pos.boy_value) / 10 * 10;
-
-}
 // instantiates the uart for the arm messaging queue
 void arm_init() {
-    UART_Params uartParams;
-
-    /* Call driver init functions */
-    UART_init();
-
-    /* Create a UART with data processing off. */
-    UART_Params_init(&uartParams);
-    uartParams.writeDataMode = UART_DATA_BINARY;
-    uartParams.readDataMode = UART_DATA_BINARY;
-    uartParams.readReturnMode = UART_RETURN_FULL;
-    uartParams.readEcho = UART_ECHO_OFF;
-    uartParams.readMode = UART_MODE_BLOCKING;
-    uartParams.baudRate = 115200;
-
-    uart = UART_open(CONFIG_UART_0, &uartParams);
-
-    if (uart == NULL) {
-        /* UART_open() failed */
-        while (1);
-    }
-
     PWM_Params pwmParams;
 
     PWM_init();
@@ -171,94 +148,17 @@ void arm_init() {
     PWM_start(pwm_claw);
 
     // initialize software timer for smooth arm movement
-    timer10ms = xTimerCreate("10ms", pdMS_TO_TICKS(20), pdTRUE, NULL, movementCallback);
-}
-
-// checks for valid char and sends the corresponding message to the queue
-bool validChar(char in) {
-    movqData_t tosend;
-    tosend = current_pos;
-    switch (in) {
-    case 'o':
-        tosend = off_pos;
-        break;
-    case 's':
-        tosend = start_pos;
-        break;
-    case 'c':
-        if (current_pos.boy_value == CLAW_LOW) {
-            tosend.boy_value = CLAW_HIGH;
-        }
-        else {
-            tosend.boy_value = CLAW_LOW;
-        }
-        break;
-    case 'l':
-        tosend.yee_value = X_LOW;
-        break;
-    case 'r':
-        tosend.yee_value = X_HIGH;
-        break;
-    case 'd':
-        if (current_pos.cow_value == Z_HIGH) {
-            tosend.cow_value = Z_LOW;
-        }
-        else {
-            tosend.cow_value = Z_HIGH;
-        }
-        break;
-    case 'f':
-        if (current_pos.haw_value == Y_HIGH) {
-            tosend.haw_value = Y_LOW;
-        }
-        else {
-            tosend.haw_value = Y_HIGH;
-        }
-        break;
-    case 'm':
-        tosend.haw_value = 1500;
-        break;
-    default:
-        return false;
-    }
-    return sendMsgToMovQ(tosend);
-
+    timer10ms = xTimerCreate("20ms", pdMS_TO_TICKS(20), pdTRUE, NULL, movementCallback);
 }
 /*
  *  ========mainThread ========
  */
-void *armDebugThread(void *arg0)
-{
-    char input;
-
-    // set the current position of the arm to its off position
-    current_pos = off_pos;
-    // set the current goal position of the arm to the start position
-    goal_pos = off_pos;
-
-    /* Loop forever */
-    while (1) {
-        UART_read(uart, &input, 1);
-        UART_write(uart, &input, 1);
-        if (!validChar(input)) {
-            continue;
-        }
-
-        uint8_t a;
-        receiveFromAckQ(&a);
-
-//        char buf[2];
-//        snprintf(buf, 2, "%d\n", a);
-//        UART_write(uart, buf, 2);
-    }
-}
 
 int armDone() {
     return memcmp(&current_pos, &goal_pos, sizeof(current_pos)) == 0;
-}
+}an
 
 void movementHelper() {
-    //UART_write(uart, "callback\r\n", 10);
     if (current_pos.yee_value < goal_pos.yee_value) {
         current_pos.yee_value += STEPSIZE;
         PWM_setDuty(pwm_x, current_pos.yee_value);
@@ -312,13 +212,11 @@ void *mainArmThread(void *arg0) {
     while (1) {
         movqData_t m;
         receiveFromMovQ(&m);
-//        UART_write(uart, "recv\n", 5);
-//        char buf[2];
-//        snprintf(buf, 2, "%d\n", m.type);
-//        UART_write(uart, buf, 2);
+        char buf[25];
+        snprintf(buf, 25, "%d %d %d %d %d\n\r", m.type, m.yee_value, m.haw_value, m.cow_value, m.boy_value);
+//        UART_PRINT(buf);
 
         if (m.type) {
-            //UART_write(uart, "move\n", 5);
             movementHelper();
         }
         else {
@@ -329,9 +227,9 @@ void *mainArmThread(void *arg0) {
         }
 
         if (armDone()) {
+            UART_PRINT("arm done\n\r");
             sendMsgToAckQ(1);
             if (xTimerIsTimerActive(timer10ms) == pdTRUE) {
-                //UART_write(uart, "stopped\r\n", 9);
                 xTimerStop(timer10ms, 0);
             }
         }
@@ -342,4 +240,32 @@ void movementCallback(TimerHandle_t xTimer) {
     movqData_t m = {1, 0, 0, 0, 0};
     m.type = 1;
     sendMsgToMovQ(m);
+}
+
+void *readMQTTThread(void *arg0) {
+    TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(5000), pdTRUE, NULL, timerCallback);
+    xTimerStart(timerPub, 0);
+
+    struct qArmPosMsg data = {};
+    current_pos = off_pos;
+    goal_pos = start_pos;
+
+    while (1) {
+        UART_PRINT("waiting for message\n\r");
+        receiveFromSubArmPosQ(&data);
+        UART_PRINT("received message\n\r");
+
+        movqData_t recvQ = {0, data.xPos, data.yPos, data.zPos, data.clawPos};
+        convertStructToPWM(&recvQ);
+        sendMsgToMovQ(recvQ);
+
+        uint8_t a;
+        receiveFromAckQ(&a);
+        UART_PRINT("received ack\n");
+
+    }
+}
+
+void timerCallback(TimerHandle_t xTimer) {
+
 }

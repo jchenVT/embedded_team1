@@ -98,6 +98,24 @@ int jsonParser(const char *topic, char *JSON_STRING) {
 
             retVal = sendToSubArmSensorQ(armSensorMsg);
     }
+    else if (strcmp(topic, "arm_pos") == 0) {
+            if (jsoneq(JSON_STRING, &tokens[1], "xPos") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[3], "yPos") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[5], "zPos") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[7], "clawPos") != 0 /*|| num != 9*/) {
+                return -7;
+            }
+
+            char xPos[3], yPos[3], zPos[3], clawPos[3];
+
+            strncpy(xPos, JSON_STRING + tokens[2].start, tokens[2].end - tokens[2].start);
+            strncpy(yPos, JSON_STRING + tokens[4].start, tokens[4].end - tokens[4].start);
+            strncpy(zPos, JSON_STRING + tokens[6].start, tokens[6].end - tokens[6].start);
+            strncpy(clawPos, JSON_STRING + tokens[8].start, tokens[8].end - tokens[8].start);
+
+            struct qArmPosMsg armPosMsg = {atoi(xPos), atoi(yPos), atoi(zPos), atoi(clawPos)};
+            retVal = sendToSubArmPosQ(armPosMsg);
+    }
     else {
         // ERROR TOPIC
         return -6;

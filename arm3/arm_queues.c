@@ -19,7 +19,7 @@ bool createMovQ() {
 
 int sendMsgToMovQ(movqData_t newMsg) {
     movqData_t inMsg;
-
+    inMsg.type = newMsg.type;
     inMsg.yee_value = newMsg.yee_value;
     inMsg.haw_value = newMsg.haw_value;
     inMsg.cow_value = newMsg.cow_value;
