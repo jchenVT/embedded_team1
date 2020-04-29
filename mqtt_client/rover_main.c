@@ -31,6 +31,9 @@
 #define desiredMovementTicks            0x30
 #define stopTicks                       0
 
+static double KP = 0;
+static double KI = 0;
+
 static int attemptPubCount;
 static int recvSubCount;
 static int counter;
@@ -109,6 +112,8 @@ void PIDalg (struct PIDvalues *motor, long measuredValue) {
         packageEncoderJSON(1, convertTicksToMotor_128(measuredValue));
     }
 
+    packageEncoderJSON(KP*10, KI*10);
+
     motor->integral += error;
     motor->currentTicks += (long)floor(KP*error + KI*motor->integral);
 
@@ -176,10 +181,6 @@ void updateState(enum roverStates prevState, enum roverStates curState,
     sendMsgToMotorsQ(128, PID128->direction, convertTicksToMotor_128(PID128->currentTicks));
     sendMsgToMotorsQ(129, PID129->direction, convertTicksToMotor_128(PID129->currentTicks));
     sendMsgToMotorsQ(130, PID130->direction, convertTicksToMotor_128(PID130->currentTicks));
-
-//    sendMsgToMotorsQ(128, PID128->direction, 31);
-//    sendMsgToMotorsQ(129, PID129->direction, 0);
-//    sendMsgToMotorsQ(130, PID130->direction, 0);
 }
 
 /*
@@ -203,10 +204,8 @@ void *mainRoverThread(void *arg0)
     counter = 0;
     status = true; // working
     bool spi_OFF = true;
-    TimerHandle_t timerDebug = xTimerCreate("PublishTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, timerCallbackDebug);
+    TimerHandle_t timerDebug = xTimerCreate("DebugTimer", pdMS_TO_TICKS(1000), pdTRUE, NULL, timerCallbackDebug);
     xTimerStart(timerDebug, 0);
-
-    TimerHandle_t timerTesting;
 
     state = stop;
     struct PIDvalues PID128 = {stopTicks,stopTicks,0,0,1};
@@ -220,9 +219,13 @@ void *mainRoverThread(void *arg0)
         receiveFromMQTTReceiveQ(&curData);
 
         if (spi_OFF) {
+
+            KP = curData.data;
+            KI = curData.data2;
+
+            packageStartingJSON();
+
             sendMsgToEncoderQ();
-            timerTesting = xTimerCreate("TestingTimer", pdMS_TO_TICKS(500), pdTRUE, NULL, timerCallbackTesting);
-            xTimerStart(timerTesting, 0);
             spi_OFF = false;
         }
 
@@ -261,56 +264,19 @@ void *mainRoverThread(void *arg0)
                 updateState(state, stop, &PID128, &PID129, &PID130);
                 state = stop;
             }
+
+            if (packageRoverJSON(state) == 1) {
+                attemptPubCount++;
+            }
+            else {
+                status = false;
+            }
         }
 
         /**********************************/
         dbgOutputLoc(STAR_RECEIVE_MESSAGE);
         /**********************************/
     }
-}
-
-void timerCallbackTesting(TimerHandle_t xTimer) {
-//    if (counter < 15) {
-    packageRoverSensorJSON(true, 0, 0, 1);
-//    }
-//    else if (counter < 31) {
-//        packageRoverSensorJSON(true, 0, 0, 0);
-//    }
-//    else if (counter < 47) {
-//        packageRoverSensorJSON(true, 0, 0, 1);
-//    }
-//    else if (counter < 63) {
-//        packageRoverSensorJSON(true, 0, 0, 0);
-//    }
-//    else if (counter < 79) {
-//        packageRoverSensorJSON(true, 0, 0, 1);
-//    }
-//    else if (counter < 95) {
-//        packageRoverSensorJSON(true, 0, 0, 0);
-//    }
-//    else if (counter < 111) {
-//        packageRoverSensorJSON(true, 0, 0, 1);
-//    }
-//    else if (counter < 127) {
-//        packageRoverSensorJSON(true, 0, 0, 0);
-//    }
-//    else if (counter < 137){
-//        packageRoverSensorJSON(false, 0, 0, 0);
-//    }
-//    else {
-//        packageRoverSensorJSON(true, 0, 0, -1);
-//    }
-
-    counter++;
-
-    // publish to message queue
-    if (packageRoverJSON(state) == 1) {
-        attemptPubCount++;
-    }
-    else {
-        status = false;
-    }
-
 }
 
 void timerCallbackDebug(TimerHandle_t xTimer) {

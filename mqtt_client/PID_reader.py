@@ -7,6 +7,8 @@ import sys
 xdata = []
 ydata = []
 
+first_msg = True
+
 def EXIT_NOW():
     plt.axis([0,xdata[-1], 0, 127])
     plt.plot(xdata, ydata)
@@ -14,15 +16,18 @@ def EXIT_NOW():
     plt.xlabel('Time in seconds (s)')
     plt.title('PI Algorithm for Encoder 128')
     plt.savefig('PID_values.png')
+    
+    exit();
 
 def on_connect(client, userdata, flags, rc):
     print("Connecting...")
     client.subscribe('encoder')
-
+    
 def on_message(client, userdata, msg):
     # try reading json
     try:
         msg_dict = json.loads(msg.payload)
+        print("....PID value received")
     except:
         print('Improper json format!')
 

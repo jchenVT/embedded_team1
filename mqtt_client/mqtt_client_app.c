@@ -317,8 +317,6 @@ void * MqttClient(void *pvParameters)
         }
     }
 
-    packageRoverSensorJSON(true, 0, 0, 1);
-
     struct qStringData pubData = {"", ""};
 
     for(;; )

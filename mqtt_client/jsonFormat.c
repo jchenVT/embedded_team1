@@ -134,3 +134,9 @@ int packageEncoderJSON(int dir, int encoderValue) {
     snprintf(json, JSON_LEN, "{\"direction\": %d, \"value\": %d}", dir, encoderValue);
     return sendToPubQ("encoder", json);
 }
+
+int packageStartingJSON() {
+    char json[JSON_LEN] = {0};
+    return sendToPubQ("start_rover", json);
+
+}
