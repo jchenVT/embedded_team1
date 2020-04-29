@@ -13,11 +13,10 @@ static QueueHandle_t mqttReceiveQ = NULL;
 static QueueHandle_t mqttSendQ = NULL;
 
 /* Queue variables */
-#define qLENGTH         32
+#define qLENGTH         48
 #define mqITEMSIZE      3
 #define eqITEMSIZE      1
 #define MRqITEMSIZE     sizeof(struct receiveData)
-#define MSqITEMSIZE     4 // CHANGE/CONFIRM
 
 /*
  *  @function   createMotorQ
@@ -54,15 +53,6 @@ bool createMQTTReceiveQ() {
     return mqttReceiveQ == NULL ? false : true;
 }
 
-bool createMQTTSendQ() {
-
-    mqttSendQ = xQueueCreate( qLENGTH, MSqITEMSIZE);
-    /**************************/
-    dbgOutputLoc(RQ_MQTTSend_CREATE);
-    /**************************/
-    return mqttSendQ == NULL ? false : true;
-}
-
 /*
  *  @function   sendMsgToMotors
  *              Wrapper for the RTOS function to send time data through
@@ -88,8 +78,7 @@ int sendMsgToEncoderQ() {
     return xQueueSendToBack( encoderQ, &newMsg, 0 );
 }
 
-int sendMsgToReceiveQ(bool sensorType, bool move, int angle_rotate, double data, double data2) {
-    struct receiveData newMsg = {sensorType, move, angle_rotate, data, data2};
+int sendMsgToReceiveQ(bool sensorType, bool move, int angle_rotate, double data, double data2) {    struct receiveData newMsg = {sensorType, move, angle_rotate, data, data2};
     if (sensorType) {
         dbgOutputLoc(RQ_MQTTReceive_senSEND);
         return xQueueSendToBackFromISR( mqttReceiveQ, &newMsg, 0 );
@@ -99,12 +88,6 @@ int sendMsgToReceiveQ(bool sensorType, bool move, int angle_rotate, double data,
         return xQueueSendToBack( mqttReceiveQ, &newMsg, 0 );
     }
 }
-
-int sendMsgToMQTTSendQ(int sendLoc, int data) {
-
-    return 0;
-}
-
 
 bool receiveFromMotorsQ(struct motorData *oldData) {
     xQueueReceive( motorsQ, oldData, portMAX_DELAY );
@@ -129,12 +112,3 @@ bool receiveFromMQTTReceiveQ(struct receiveData *oldData) {
     /**************************/
     return oldData == NULL ? false : true;
 }
-
-bool receiveFromMQTTSendQ() {
-
-    /**************************/
-    dbgOutputLoc(RQ_MQTTSend_RECEIVE);
-    /**************************/
-    return false;
-}
-

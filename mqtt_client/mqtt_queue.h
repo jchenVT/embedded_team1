@@ -19,8 +19,7 @@
 #define SUB_COUNT       1
 #define PUB_COUNT       1
 
-#define qLENGTH         16
-#define qITEMSIZE       8
+#define qLENGTH         32
 #define MAXJSONSIZE     120
 
 /* Struct used in RETURNING message from queue */
@@ -31,7 +30,7 @@ struct qData {
 
 struct qStringData {
     char * topic;
-    char str[120];
+    char str[MAXJSONSIZE];
 };
 
 struct qArmMsg {

@@ -112,8 +112,6 @@ void PIDalg (struct PIDvalues *motor, long measuredValue) {
         packageEncoderJSON(1, convertTicksToMotor_128(measuredValue));
     }
 
-    packageEncoderJSON(KP*10, KI*10);
-
     motor->integral += error;
     motor->currentTicks += (long)floor(KP*error + KI*motor->integral);
 

@@ -2,6 +2,7 @@
 #include "mqtt_queue.h"
 #include "jsmn.h"
 #include <rover_queues.h>
+#include <math.h>
 
 static jsmn_parser parser;
 
@@ -52,7 +53,6 @@ int jsonParser(const char *topic, char *JSON_STRING) {
                     jsoneq(JSON_STRING, &tokens[5], "point_y") != 0 ||
                     jsoneq(JSON_STRING, &tokens[7], "angle_rotate") != 0 ||
                     num != 9) {
-                // ERROR
                 return -3;
             }
 
@@ -90,6 +90,22 @@ int jsonParser(const char *topic, char *JSON_STRING) {
             struct qArmSensorMsg armSensorMsg = {atoi(sensorID), atoi(sensorValue)};
 
             retVal = sendToSubArmSensorQ(armSensorMsg);
+    }
+    else if (strcmp(topic, "PID_param") == 0) {
+            if (jsoneq(JSON_STRING, &tokens[1], "KP") != 0 ||
+                    jsoneq(JSON_STRING, &tokens[3], "KI") != 0 ||
+                    num != 5) {
+                return -3;
+            }
+
+            char *ptr;
+
+            double kp = ceil(strtod(JSON_STRING + tokens[2].start, &ptr)*100.0)/100.0;
+            double ki = ceil(strtod(JSON_STRING + tokens[4].start, &ptr)*100.0)/100.0;
+
+
+
+            retVal = sendMsgToReceiveQ(true, false, 0, kp, ki);
     }
     else {
         // ERROR TOPIC

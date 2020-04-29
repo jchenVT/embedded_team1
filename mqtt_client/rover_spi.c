@@ -209,7 +209,6 @@ void *spiThread(void *arg0) {
             timer_setup();
 //            sendMsgToReceiveQ(true, true, 1, 0, 0);
             RDY = true;
-            continue;
         }
 
 //        dbgOutputLoc(SPI_READING_128);

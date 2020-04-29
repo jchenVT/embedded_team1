@@ -123,13 +123,14 @@
 #define RETAIN_ENABLE            0
 
 /* Defining Number of subscription topics                                    */
-#define SUBSCRIPTION_TOPIC_COUNT 1
+#define SUBSCRIPTION_TOPIC_COUNT 2
 
 /* Defining Subscription Topic Values                                        */
 #define SUBSCRIPTION_TOPIC0      "arm"
 #define SUBSCRIPTION_TOPIC1      "arm_sensor"
 #define SUBSCRIPTION_TOPIC2      "rover"
 #define SUBSCRIPTION_TOPIC3      "rover_sensor"
+#define SUBSCRIPTION_TOPIC4      "PID_param"
 
 /* Spawn task priority and Task and Thread Stack Size                        */
 #define TASKSTACKSIZE            2048
@@ -197,7 +198,7 @@ const char *ClientPassword = "pwd1";
 
 /* Subscription topics and qos values                                        */
 char *topic[SUBSCRIPTION_TOPIC_COUNT] =
-{ SUBSCRIPTION_TOPIC3 };
+{ SUBSCRIPTION_TOPIC4, SUBSCRIPTION_TOPIC3 };
 
 unsigned char qos[SUBSCRIPTION_TOPIC_COUNT] =
 { MQTT_QOS_0 };

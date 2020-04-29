@@ -7,7 +7,7 @@ start = False
 def on_connect(client, userdata, flags, rc):
     print("Connecting...")
     client.subscribe('start_rover')
-    client.publish("rover_sensor", payload="{\"move_to_point\": 0, \"point_x\": 0.2, \"point_y\": 0.1, \"angle_rotate\": 0}")
+    client.publish("PID_param", payload="{\"KP\": 0.2, \"KI\": 0.1}", retain=True)
 
 def on_message(client, userdata, msg):
     print("Starting...")
@@ -32,27 +32,17 @@ while True:
         exit()
                 
     if start:
-        if (count < 15):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
-        elif (count < 30):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
-        elif (count < 45):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
-        elif (count < 60):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
-        elif (count < 75):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
-        elif (count < 90):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
-        elif (count < 105):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
-        elif (count < 120):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
-        elif (count < 145):
-            client.publish("rover_sensor", payload="{\"move_to_point\": 0, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
+        if (count < 12):
+            client.publish("rover_sensor", payload="{\"move_to_point\": \"1\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
+        elif (count < 24):
+            client.publish("rover_sensor", payload="{\"move_to_point\": \"0\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
+        elif (count < 36):
+            client.publish("rover_sensor", payload="{\"move_to_point\": \"1\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
+        elif (count < 48):
+            client.publish("rover_sensor", payload="{\"move_to_point\": \"0\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}")
         else:
-            client.publish("rover_sensor", payload="{\"move_to_point\": 1, \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": -1}")
+            client.publish("rover_sensor", payload="{\"move_to_point\": \"1\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": -1}")
         
         count += 1
     
-    time.sleep(0.2)
+    time.sleep(0.5)

@@ -41,17 +41,14 @@ struct receiveData {
 bool createMotorQ();
 bool createEncoderQ();
 bool createMQTTReceiveQ();
-bool createMQTTSendQ();
 
 int sendMsgToMotorsQ(char address, char command, char speed);
 int sendMsgToEncoderQ();
 int sendMsgToReceiveQ(bool sensorType, bool move, int angle_rotate, double data, double data2);
-int sendMsgToMQTTSendQ(int sendLoc, int data);
 
 bool receiveFromMotorsQ(struct motorData *oldData);
 bool receiveFromEncoderQ(bool *oldData);
 bool receiveFromMQTTReceiveQ(struct receiveData *oldData);
-bool receiveFromMQTTSendQ();
 
 #endif /* ROVER_QUEUES_H_ */
 
