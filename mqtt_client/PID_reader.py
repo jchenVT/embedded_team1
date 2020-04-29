@@ -1,8 +1,22 @@
 import paho.mqtt.client as mqtt
+import matplotlib.pyplot as plt
+import keyboard
 import json
+import sys
+
+xdata = []
+ydata = []
+
+def EXIT_NOW():
+    plt.axis([0,xdata[-1], 0, 127])
+    plt.plot(xdata, ydata)
+    plt.ylabel('Encoder Ticks converted to Motor Speed Values (0-127)')
+    plt.xlabel('Time in seconds (s)')
+    plt.title('PI Algorithm for Encoder 128')
+    plt.savefig('PID_values.png')
 
 def on_connect(client, userdata, flags, rc):
-    print("connected")
+    print("Connecting...")
     client.subscribe('encoder')
 
 def on_message(client, userdata, msg):
@@ -12,10 +26,17 @@ def on_message(client, userdata, msg):
     except:
         print('Improper json format!')
 
-    # if debug, update 
-    value = msg_dict['value']
-    print(value)
-    print("==========================================")
+    # update 
+    ydata.append(msg_dict['value'])
+    xdata.append(len(xdata)*0.2);
+    
+    if keyboard.is_pressed('q'):
+        print('Disconnecting...')
+        client.loop_stop()
+        client.disconnect()
+        EXIT_NOW()
+    
+    
 
 client = mqtt.Client()
 client.on_connect = on_connect

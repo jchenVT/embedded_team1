@@ -102,11 +102,11 @@ void PIDalg (struct PIDvalues *motor, long measuredValue) {
 
     if (motor->direction == 0) {
         error = motor->desiredTicks - (0xFFFFFFFF - measuredValue);
-        packageEncoderJSON(0, (0xFFFFFFFF - measuredValue));
+        packageEncoderJSON(0, convertTicksToMotor_128(0xFFFFFFFF - measuredValue));
     }
     else {
         error = motor->desiredTicks - measuredValue;
-        packageEncoderJSON(1, measuredValue);
+        packageEncoderJSON(1, convertTicksToMotor_128(measuredValue));
     }
 
     motor->integral += error;
