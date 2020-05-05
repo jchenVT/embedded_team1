@@ -7,6 +7,9 @@ import sys
 xdata = []
 ydata = []
 
+KP = input("Enter KP value: ")
+KI = input("Enter KI value: ")
+
 first_msg = True
 
 def EXIT_NOW():
@@ -21,8 +24,11 @@ def EXIT_NOW():
 
 def on_connect(client, userdata, flags, rc):
     print("Connecting...")
+    print("Sending current PID constants: ")
+    print("....KP: "+KP)
+    print("....KI: "+KI)
     client.subscribe('encoder')
-    client.publish("PID_param", payload="{\"KP\": 0.2, \"KI\": 0.1}", retain=True)
+    client.publish("PID_param", payload="{\"KP\": "+KP+", \"KI\": "+KI+"}", retain=True)
     client.publish("rover_sensor", payload="{\"move_to_point\": \"0\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}", retain=True)
     
 def on_message(client, userdata, msg):
