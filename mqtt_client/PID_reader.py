@@ -1,25 +1,33 @@
 import paho.mqtt.client as mqtt
 import matplotlib.pyplot as plt
 import keyboard
+import time
 import json
 import sys
-
-xdata = []
-ydata = []
 
 KP = input("Enter KP value: ")
 KI = input("Enter KI value: ")
 
 first_msg = True
 
+maxSize = 100
+start = time.time()
+end = start
+
+plt.figure()
+ln, = plt.plot([])
+plt.ylim(0, 127)
+plt.ion()
+plt.ylabel('Encoder Ticks converted to Motor Speed Values (0-127)')
+plt.xlabel('Time in seconds (s)')
+plt.title('PI Algorithm for Encoder 128')
+plt.show()
+
+xdata = []
+ydata = []
+
 def EXIT_NOW():
-    plt.axis([0,xdata[-1], 0, 127])
-    plt.plot(xdata, ydata)
-    plt.ylabel('Encoder Ticks converted to Motor Speed Values (0-127)')
-    plt.xlabel('Time in seconds (s)')
-    plt.title('PI Algorithm for Encoder 128')
-    plt.savefig('PID_values.png')
-    
+    plt.savefig('PID_values.png')    
     exit();
 
 def on_connect(client, userdata, flags, rc):
@@ -39,9 +47,24 @@ def on_message(client, userdata, msg):
     except:
         print('Improper json format!')
 
-    # update 
+    # update    
+    end = time.time()
+    
+    if len(xdata) == maxSize:
+        xdata.pop(0)
+        ydata.pop(0)
+    
+    xdata.append(end - start)
     ydata.append(msg_dict['value'])
-    xdata.append(len(xdata)*0.2);
+    
+    ln.set_xdata(xdata)
+    ln.set_ydata(ydata)
+    
+    plt.xlim(xdata[0], xdata[-1])
+
+    if len(xdata) > 1:
+        plt.draw()
+        plt.pause(0.001)
     
     if len(xdata) == 5:
         client.publish("rover_sensor", payload="{\"move_to_point\": \"1\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
