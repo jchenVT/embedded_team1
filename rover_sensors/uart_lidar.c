@@ -1,7 +1,9 @@
 #include "uart_lidar.h"
 
+#define len 50
 UART_Handle uart_lidar = NULL;
-static uint8_t uart_buf[UART_BUF_SIZE];
+unsigned char uart_buf[UART_BUF_SIZE];
+char str[len];
 
 static Timer_Handle timer_lidar = NULL;
 
@@ -20,6 +22,13 @@ void uart_lidar_init()
     uart_lidar_params.readDataMode = UART_DATA_BINARY;
     uart_lidar_params.readReturnMode = UART_RETURN_FULL;
     uart_lidar_params.baudRate = 115200;
+
+    //8n1
+    uart_lidar_params.dataLength = UART_LEN_8;
+    uart_lidar_params.parityType = UART_PAR_NONE;
+    uart_lidar_params.stopBits = UART_STOP_ONE;
+
+
     /*****************************/
     dbgOutputLoc(UART_LIDAR_OPEN);
     /*****************************/
@@ -51,56 +60,59 @@ void uart_timer_init()
 
 void send_point_uart_debug(point_t point)
 {
-    uart_message_t msg;
-    msg.array_len = snprintf(msg.msg, 100, "lidar point=d:%fd,a:%fd", point.distance, point.angle);
-    xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
+    snprintf(str, len, "\nlidar point=d:%fd,a:%fd", point.distance, point.angle);
+    UART_PRINT(str);
 }
 
 void *uartLidarThread(void *arg0)
 {
 
-    uart_message_t msg;
-
-
-    const TickType_t xDelay = 10 / portTICK_PERIOD_MS;
+    const TickType_t xDelay = 200 / portTICK_PERIOD_MS;
     // Open Timer
     // uart_timer_init();
     
-    // Check lidar health
-    
-    /*
-    const unsigned char get_health_msg[2] = {0xA5, 0x52};
-    UART_write(uart_lidar, get_health_msg, 2);
-    UART_read(uart_lidar, uart_buf, 5);
-
-    msg.array_len = snprintf(msg.msg, 100, "\nuart health read");
-    xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
-
-    uint8_t health_status = uart_buf[3];
-    if (health_status != 0)
-        stop_all(UART_LIDAR_HEALTH_FAIL); 
-
-    
-    msg.array_len = snprintf(msg.msg, 100, "\nuart health good");
-    xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
-
-    */ 
-    
-    /*****************************/
-    dbgOutputLoc(UART_LIDAR_HEALTH);
-    /*****************************/
-
-
-    // send scan mode to start the lidar
-    unsigned char start_msg[2] = {0xA5, 0x20};
-    // unsigned char start_msg[6] = {0xA5, 0xA8, 0x02, 0x00, 0x00, 0xC};
-    UART_write(uart_lidar, start_msg, 2);
-    // UART_read(uart_lidar, uart_buf, 5);
-
-    msg.array_len = snprintf(msg.msg, 100, "\nsent start ");
-    xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
+    const unsigned char reset_msg[4] = {0xA5, 0x40, 0x00, 0x00 ^ 0xA5 ^ 0x40 ^ 0x00};
+    UART_write(uart_lidar, reset_msg, 4);
 
     vTaskDelay ( xDelay);
+
+    // Check lidar health
+    
+    const unsigned char health_msg[4] = {0xA5, 0x52, 0x00, 0x00 ^ 0xA5 ^ 0x52 ^ 0x00};
+    UART_write(uart_lidar, health_msg, 4);
+
+    snprintf(str, len, "\nuart health request");
+    UART_PRINT(str);
+
+    vTaskDelay ( xDelay);
+
+    UART_readPolling(uart_lidar, uart_buf, 7);
+    snprintf(str, len, "\nuart health read");
+
+    uint8_t health_status = uart_buf[3];
+
+    if (health_status == 0 && uart_buf[0] == 0xA5 && uart_buf[1] == 0x5A && uart_buf[6] == 0x06)
+        snprintf(str, len, "\nuart health good");
+    else 
+    {
+        snprintf(str, 50, "\nuart health:  %ux, %ux, %ux, %ux, %ux, %ux, %ux", uart_buf[0], uart_buf[1], uart_buf[2], uart_buf[3], uart_buf[4],  uart_buf[5], uart_buf[6]);
+    }
+
+    UART_PRINT(str);
+
+    vTaskDelay ( xDelay);
+
+    // send scan mode to start the lidar
+    unsigned char start_msg[4] = {0xA5, 20, 0x00, 0x00 ^ 0xA5 ^ 0x52 ^ 0x00};
+    UART_write(uart_lidar, start_msg, 4);
+
+    UART_read(uart_lidar, uart_buf, 7);
+    
+    if(1) //  uart_buf[0] == 0xA5 && uart_buf[1] == 0x5A && uart_buf[2] == 0x05 && uart_buf[6] == 0x81)
+    {
+        // msg.array_len = snprintf(msg.msg, 100, "\nresponse:     %X, %X, %x, %x, %x, %x, %x", uart_buf[0], uart_buf[1], uart_buf[2], uart_buf[3], uart_buf[4],  uart_buf[5], uart_buf[6]);
+        // xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
+    }
 
     /*****************************/
     dbgOutputLoc(UART_LIDAR_STARTED);
@@ -108,36 +120,31 @@ void *uartLidarThread(void *arg0)
 
     while(1)
     {
-        UART_read(uart_lidar, uart_buf, 15);
+        //msg.array_len = snprintf(msg.msg, 100, "\nreading");
+        // xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
+
+        UART_read(uart_lidar, uart_buf, 5);
         
-        msg.array_len = snprintf(msg.msg, 100, "\nread message");
-        xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
-
-        size_t i = 0;
-        while(i<UART_BUF_SIZE-1)
-        {
-            if(uart_buf[i] == 0xA5 && uart_buf[i+1] == 0x5A)
-            {
-                msg.array_len = snprintf(msg.msg, 100, "\n found message start");
-                xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
-                i += 2;
-                break;
-            }
-            i++;
-        }
-
-        uint8_t quality;
+        uint8_t quality, s, not_s, complement ;
         quality = ((uint8_t) uart_buf[0]) >> 2; 
-        if (quality == 0)  
+        s = uart_buf[0] & 1;
+        not_s = uart_buf[0] & 2;
+        complement = uart_buf[1] & 1;
+            
+        if (quality == 0 && s != not_s && complement == 1)  
+        {
+            // msg.array_len = snprintf(msg.msg, 100, "\nbad quality or wrong message");
+            // xQueueSend(uart_debug_q, &msg, portMAX_DELAY);
             continue; 
+        }
         point_t point;
         point.angle_raw =  (uint8_t) uart_buf[2];
-        point.angle_raw <<= 8;
+        point.angle_raw <<= 7;
         point.angle_raw |= ((uint8_t) uart_buf[1] >> 1);
 
         point.distance_raw = (uint8_t) uart_buf[4];
         point.distance_raw <<= 8;
-        point.angle_raw |= (uint8_t) uart_buf[3];
+        point.distance_raw |= (uint8_t) uart_buf[3];
         
         point.distance = point.distance_raw / 4.0;
         point.angle = point.angle_raw / 64.0;

@@ -1,13 +1,12 @@
 /*
- * star.c
- *
- *  Created on: Mar 31, 2020
+ * star.c Created on: Mar 31, 2020
  *      Author: giffen
  */
 
 #include "star.h"
- 
-#include "uart_debug.h"
+
+#define LIDAR "rover_sensors/lidar"
+#define C_INTERVAL 0x168
 
 static int attemptPubCount;
 static int recvSubCount;
@@ -23,8 +22,13 @@ static bool status;
  */
 void *starThread(void *arg0) {
 
+    int_fast16_t stuh;
+    stuh = starrr();
+    if (stuh != Random_STATUS_SUCCESS) {while(1);}
+    
+
     /* Set up software timer (100ms -> 10 msgs a second)*/
-    TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(5000), pdTRUE, NULL, timerCallback);
+    TimerHandle_t timerPub = xTimerCreate("PublishTimer", pdMS_TO_TICKS(10), pdTRUE, NULL, timerCallback);
     xTimerStart(timerPub, 0);
 
     /* Set up software timer to send statistics ever 10 seconds*/
@@ -38,50 +42,52 @@ void *starThread(void *arg0) {
 
     struct qArmSensorMsg data = {0};
 
-    uart_message_t uart_msg;
+    UART_PRINT("in thread\n\r");
+    /*
     while(1) {
 
         // blocking read on subQ
         receiveFromSubArmSensorQ(&data);
+        UART_PRINT("findind stuff\n\r");
 
         if (data.sensorID >= 0 || data.sensorValue > 5 ) {
-            // UART_PRINT("Subscription successfully received! \n\r");
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nsubscription received");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-            recvSubCount++; }
+            UART_PRINT("Subscription successfully received! \n\r");
+            recvSubCount++;
+        }
         else {
-            // UART_PRINT("[ERROR]: Subscription unsuccessfully received... \n\r");
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nsubscription not received :c");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+            UART_PRINT("[ERROR]: Subscription unsuccessfully received... \n\r");
             status = false;
         }
     }
+    */
 }
-
 /*
  *  @function   timerCallback
  *              Timer callback that will publish to a topic
  *              periodically.
  *
- *  @params
- *  @return     void
- */
+ *  @params @return     void */
 void timerCallback(TimerHandle_t xTimer) {
-
-    uart_message_t uart_msg;
+    
+    uint32_t d;
+    static int counter = 0; 
     // publish to message queue
-    if (packageRoverSensorJSON(1,2,3,4) == 1) {
-        // UART_PRINT("Publish request sent! \n\r");
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\npublish request sent");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+    
+    counter = counter > C_INTERVAL ? 0 : counter;
+    d = receiveLidarSensor();
+    d &= 0xFFF;
+
+    char str[74];
+    snprintf(str,74,"{\"angle\":\%d, \"distance\":%d}", counter, d);
+    
+    if( 1 == sendToPubQ("lidar", str) )
+    {
         attemptPubCount++;
+        //UART_PRINT("success");
     }
-    else {
-        // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\npublish request not sent :c");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-        status = false;
-    }
+     
+    // UART_PRINT(str);
+    counter-=- 1;
 }
 
 
@@ -97,11 +103,11 @@ void timerCallbackDebug(TimerHandle_t xTimer) {
 
     // publish to message queue
     if (packageDebugJSON(attemptPubCount, recvSubCount, status, "rover", "arm_sensor") == 1) {
-        // UART_PRINT("Published statistics \n\r");
+        UART_PRINT("Published statistics \n\r");
         status = true;
     }
     else {
-        // UART_PRINT("[ERROR]: Publish request not sent... \n\r");
+        UART_PRINT("[ERROR]: Publish request not sent... \n\r");
     }
+    return;
 }
-

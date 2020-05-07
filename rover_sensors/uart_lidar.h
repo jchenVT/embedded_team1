@@ -13,6 +13,7 @@
 #include <ti/drivers/Timer.h>
 #include "ti_drivers_config.h"
 
+#include "uart_term.h"
 #include "debug.h"
 #include "queues.h"
 

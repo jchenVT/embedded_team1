@@ -6,7 +6,8 @@
  * modification, are permitted provided that the following conditions
  * are met:
  *
- * *  Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
  *
  * *  Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
@@ -52,13 +53,14 @@ extern "C"
 
 /* Simplelink includes                                                        */
 #include <ti/drivers/net/wifi/simplelink.h>
+#include <uart_term.h>
 
 /* Values for below macros shall be modified as per access-point(AP)          */
 /* properties SimpleLink device will connect to following AP when application */
 /* is executed.                                                               */
 
 /* AP SSID                                                                    */
-#define SSID_NAME               "ayyyy"
+#define SSID_NAME               "ayyyyy"
 /* Security type (OPEN or WEP or WPA)                                         */
 #define SECURITY_TYPE           SL_WLAN_SEC_TYPE_WPA_WPA2
 /* Password of the secured AP                                                 */
@@ -79,11 +81,10 @@ extern "C"
     { \
         if(error_code < 0) \
         { \
+            UART_PRINT("ERROR!"); \
             return error_code; \
         } \
     }
-
-// UART_PRINT("ERROR!"); \
 
 #define SL_STOP_TIMEOUT         200
 

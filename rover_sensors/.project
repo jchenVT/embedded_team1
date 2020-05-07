@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>rover_sensors</name>
-	<comment>embedded spring 2020 rover sensors project with RPLidar and Pixy Cam 2 input</comment>
+	<name>rover_sensors2</name>
+	<comment></comment>
 	<projects>
 		<project>freertos_builds_CC3220SF_LAUNCHXL_release_ccs</project>
 	</projects>

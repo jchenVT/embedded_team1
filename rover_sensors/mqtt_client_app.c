@@ -71,7 +71,7 @@
 
 /* Common interface includes                                                 */
 #include "network_if.h"
-// #include "uart_term.h"
+#include "uart_term.h"
 
 /* TI-DRIVERS Header files */
 #include "ti_drivers_config.h"
@@ -81,10 +81,6 @@
 
 /* Message queue */
 #include "mqtt_queue.h"
-
-// other helper
-#include "uart_debug.h"
-#include "queues.h"
 
 //*****************************************************************************
 //                          LOCAL DEFINES
@@ -304,22 +300,20 @@ void * MqttClientThread(void * pvParameters)
 //*****************************************************************************
 void * MqttClient(void *pvParameters)
 {
-    uart_message_t uart_msg;
+    
+    UART_PRINT("\n\rstarting mqtt thread\n\r");
     long lRetVal = -1;
 
     /*Initializing Client and Subscribing to the Broker.                     */
 
     if(gApConnectionState >= 0)
     {
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nCreating MQTTClient");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-        // UART_PRINT("\n\rCreating MQTTClient:\n\r");
+        UART_PRINT("\n\rCreating MQTTClient:\n\r");
         lRetVal = MqttClient_start();
         if(lRetVal == -1)
         {
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\n[ERROR]: MQTT Client lib initialization failed");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-            // UART_PRINT("[ERROR]: MQTT Client lib initialization failed\n\r");
+            UART_PRINT("[ERROR]: MQTT Client lib initialization failed\n\r");
+            stop_all();
             return(NULL);
         }
     }
@@ -330,6 +324,7 @@ void * MqttClient(void *pvParameters)
     {
         // blocking read on pubQ
         int success = receiveFromPubQ(&pubData);
+        // UART_PRINT("\nReceived publish data");
 
         /*send publish message                                       */
         if (success) {
@@ -345,16 +340,14 @@ void * MqttClient(void *pvParameters)
         }
         if (strcmp(pubData.topic, "debug") != 0) {
             if (lRetVal >= 0) {
-                /*
                 UART_PRINT("Publishing the following message to ");
                 UART_PRINT(pubData.topic);
                 UART_PRINT(": ");
                 UART_PRINT(pubData.str);
                 UART_PRINT("\n\r");
-                */
             }
             else {
-                // UART_PRINT("[ERROR]: Publishing failed \n\r");
+                UART_PRINT("[ERROR]: Publishing failed \n\r");
             }
         }
     }
@@ -396,7 +389,7 @@ int32_t Mqtt_IF_Connect()
     lRetVal = Network_IF_InitDriver(ROLE_STA);
     if(lRetVal < 0)
     {
-        // UART_PRINT("[ERROR]: Failed to start SimpleLink Device\n\r");
+        UART_PRINT("[ERROR]: Failed to start SimpleLink Device\n\r");
         return(-1);
     }
 
@@ -408,16 +401,11 @@ int32_t Mqtt_IF_Connect()
     /*Connect to the Access Point                                            */
     lRetVal = Network_IF_ConnectAP(SSID_Remote_Name, SecurityParams);
 
-    // UART_PRINT("....Connected to Access Point \n\r");
-    uart_message_t uart_msg;
-    uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nconnect to access point");
-    xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+    UART_PRINT("....Connected to Access Point \n\r");
 
     if(lRetVal < 0)
     {
-        // UART_PRINT("[ERROR]: Connection to an AP failed\n\r");
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nconnect to AP FAIL");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+        UART_PRINT("[ERROR]: Connection to an AP failed\n\r");
         return(-1);
     }
 
@@ -451,8 +439,8 @@ void Mqtt_start()
     if(retc != 0)
     {
         gInitState &= ~MQTT_INIT_STATE;
-        // UART_PRINT("[ERROR]: MQTT thread create fail\n\r");
-        // stop_all();
+        UART_PRINT("[ERROR]: MQTT thread create fail\n\r");
+        stop_all();
         return;
     }
 
@@ -461,8 +449,8 @@ void Mqtt_start()
     if(retc != 0)
     {
         gInitState &= ~MQTT_INIT_STATE;
-        // UART_PRINT("[ERROR]: MQTT thread create fail\n\r");
-        // stop_all();
+        UART_PRINT("[ERROR]: MQTT thread create fail\n\r");
+        stop_all();
         return;
     }
 
@@ -488,7 +476,7 @@ void Mqtt_Stop()
     }
 
     sl_Stop(SL_STOP_TIMEOUT);
-    // UART_PRINT("\n\r Client Stop completed\r\n");
+    UART_PRINT("\n\r Client Stop completed\r\n");
 }
 
 int32_t MqttClient_start()
@@ -530,7 +518,7 @@ int32_t MqttClient_start()
 
     if(lRetVal != 0)
     {
-        // UART_PRINT("[ERROR]: Client Thread Create Failed\n\r");
+        UART_PRINT("[ERROR]: Client Thread Create Failed\n\r");
         gInitState &= ~CLIENT_INIT_STATE;
         return(-1);
     }
@@ -573,7 +561,7 @@ int32_t MqttClient_start()
         if(0 > lRetVal)
         {
             /*lib initialization failed                                      */
-            // UART_PRINT("[ERROR]: Connection to broker failed\n\r");
+            UART_PRINT("[ERROR]: Connection to broker failed\n\r");
 
             gUiConnFlag = 0;
         }
@@ -598,17 +586,13 @@ int32_t MqttClient_start()
                                     SUBSCRIPTION_TOPIC_COUNT) < 0)
             {
                 // ERROR
-                // stop_all();
-                // UART_PRINT("[ERROR]: Subscription Error \n\r");
+                stop_all();
+                UART_PRINT("[ERROR]: Subscription Error \n\r");
                 MQTTClient_disconnect(gMqttClient);
                 gUiConnFlag = 0;
             }
             else
             {
-                uart_message_t uart_msg;
-                uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nclient subscribed");
-                xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-                /*
                 UART_PRINT("....Client subscribed to: ");
                 for(subIndex = 0; subIndex < SUBSCRIPTION_TOPIC_COUNT; subIndex++)
                 {
@@ -616,7 +600,6 @@ int32_t MqttClient_start()
                     UART_PRINT(" ");
                 }
                 UART_PRINT("\n\r");
-                */
             }
         }
     }
@@ -650,7 +633,7 @@ void Mqtt_ClientStop(uint8_t disconnect)
 
     MQTTClient_unsubscribe(gMqttClient, subscriptionInfo,
                            SUBSCRIPTION_TOPIC_COUNT);
-    // UART_PRINT("Unsubscribed from topics");
+    UART_PRINT("Unsubscribed from topics");
     gUiConnFlag = 0;
 
     /*exiting the Client library                                             */
@@ -748,13 +731,10 @@ void mainThread(void * args)
     retc = pthread_create(&spawn_thread, &pAttrs_spawn, sl_Task, NULL);
 
 
-    uart_message_t uart_msg;
     if(retc != 0)
     {
-        // UART_PRINT("[ERROR]: Could not create simplelink task\n\r");
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\n[ERROR]: Could not create simplelink task");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-        // stop_all();
+        UART_PRINT("[ERROR]: Could not create simplelink task\n\r");
+        stop_all();
     }
 
     sl_Stop(0);
@@ -762,10 +742,8 @@ void mainThread(void * args)
     if(retc < 0)
     {
         /*Handle Error */
-       //  UART_PRINT("[ERROR]: sl_Start failed\n");
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\n[ERROR]: sl start failed");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-        while(1){}
+        UART_PRINT("[ERROR]: sl_Start failed\n");
+        stop_all();
     }
 
     /*Set the ClientId with its own mac address */
@@ -777,39 +755,31 @@ void mainThread(void * args)
     if(retc < 0)
     {
         /*Handle Error */
-        // UART_PRINT("[ERROR]: sl_Stop failed\n");
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\n[ERROR]: sl stop failed");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-        while(1){}
+        UART_PRINT("[ERROR]: sl_Stop failed\n");
+        stop_all();
     }
 
     if(retc < 0)
     {
         /*Handle Error */
-        // UART_PRINT("[ERROR]: mqtt_client - Unable to retrieve device information \n");
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\n[ERROR]: mqtt client unable to retrieve device info");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-        // while(1){}
+        UART_PRINT("[ERROR]: mqtt_client - Unable to retrieve device information \n");
+        stop_all();
     }
 
     gInitState = 0;
 
     /*Connect to AP                                                      */
-    // UART_PRINT("\n\rConnecting Device:\n\r");
-    uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nconnecting device");
-    xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+    UART_PRINT("\n\rConnecting Device:\n\r");
     gApConnectionState = Mqtt_IF_Connect();
 
     gInitState |= MQTT_INIT_STATE;
     /*Run MQTT Main Thread (it will open the Client and Server)          */
     Mqtt_start();
 
-    uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nmqtt has started");
-    xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+    UART_PRINT("\n\rMQTT has started \n\r");
 
-    while(1) {
+    while(1) {}
 
-    }
 }
 
 //*****************************************************************************

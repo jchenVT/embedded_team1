@@ -56,9 +56,7 @@
 
 /* Common interface includes                                                 */
 #include "network_if.h"
-
-#include "uart_debug.h"
-#include "queues.h"
+#include "uart_term.h"
 
 //*****************************************************************************
 //                          LOCAL DEFINES
@@ -148,12 +146,12 @@ void SimpleLinkWlanEventHandler(SlWlanEvent_t *pSlWlanEvent)
         /* is SL_WLAN_DISCONNECT_USER_INITIATED                          */
         if(SL_WLAN_DISCONNECT_USER_INITIATED == pEventData->ReasonCode)
         {
-            // UART_PRINT("Device disconnected from the AP on application's "
-              //         "request \n\r");
+            UART_PRINT("Device disconnected from the AP on application's "
+                       "request \n\r");
         }
         else
         {
-            // UART_PRINT("Device disconnected from the AP on an ERROR..!! \n\r");
+            UART_PRINT("Device disconnected from the AP on an ERROR..!! \n\r");
         }
         break;
 
@@ -187,27 +185,27 @@ void SimpleLinkFatalErrorEventHandler(SlDeviceFatal_t *slFatalErrorEvent)
     switch(slFatalErrorEvent->Id)
     {
     case SL_DEVICE_EVENT_FATAL_DEVICE_ABORT:
-        // UART_PRINT("[ERROR] - FATAL ERROR: Abort NWP event detected \n\r");
+        UART_PRINT("[ERROR] - FATAL ERROR: Abort NWP event detected \n\r");
         break;
 
     case SL_DEVICE_EVENT_FATAL_DRIVER_ABORT:
-        // UART_PRINT("[ERROR] - FATAL ERROR: Driver Abort detected. \n\r");
+        UART_PRINT("[ERROR] - FATAL ERROR: Driver Abort detected. \n\r");
         break;
 
     case SL_DEVICE_EVENT_FATAL_NO_CMD_ACK:
-        // UART_PRINT("[ERROR] - FATAL ERROR: No Cmd Ack detected \n\r");
+        UART_PRINT("[ERROR] - FATAL ERROR: No Cmd Ack detected \n\r");
         break;
 
     case SL_DEVICE_EVENT_FATAL_SYNC_LOSS:
-        // UART_PRINT("[ERROR] - FATAL ERROR: Sync loss detected n\r");
+        UART_PRINT("[ERROR] - FATAL ERROR: Sync loss detected n\r");
         break;
 
     case SL_DEVICE_EVENT_FATAL_CMD_TIMEOUT:
-        // UART_PRINT("[ERROR] - FATAL ERROR: Async event timeout detected \n\r");
+        UART_PRINT("[ERROR] - FATAL ERROR: Async event timeout detected \n\r");
         break;
 
     default:
-        // UART_PRINT("[ERROR] - FATAL ERROR: Unspecified error detected \n\r");
+        UART_PRINT("[ERROR] - FATAL ERROR: Unspecified error detected \n\r");
         break;
     }
 }
@@ -229,7 +227,7 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
     case SL_NETAPP_EVENT_IPV4_ACQUIRED:
     case SL_NETAPP_EVENT_IPV6_ACQUIRED:
         SET_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_ACQUIRED);
-        // UART_PRINT("....[NETAPP EVENT] IP acquired by the device\n\r");
+        UART_PRINT("....[NETAPP EVENT] IP acquired by the device\n\r");
         break;
 
     case SL_NETAPP_EVENT_DHCPV4_LEASED:
@@ -242,7 +240,7 @@ void SimpleLinkNetAppEventHandler(SlNetAppEvent_t *pNetAppEvent)
         break;
 
     default:
-        // UART_PRINT("[NETAPP ERROR EVENT] Unexpected event \n\r");
+        UART_PRINT("[NETAPP ERROR EVENT] Unexpected event \n\r");
         break;
     }
 }
@@ -317,33 +315,33 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
         switch(pSock->SocketAsyncEvent.SockTxFailData.Status)
         {
         case SL_ERROR_BSD_ECLOSE:
-            //UART_PRINT(
-            //    "[SOCK ERROR] - close socket operation failed to transmit all queued packets\n\r");
+            UART_PRINT(
+                "[SOCK ERROR] - close socket operation failed to transmit all queued packets\n\r");
             break;
         default:
-            // UART_PRINT("[SOCK ERROR] - TX FAILED \n\r");
+            UART_PRINT("[SOCK ERROR] - TX FAILED \n\r");
             break;
         }
         break;
     case SL_SOCKET_ASYNC_EVENT:
     {
-        // UART_PRINT("[SOCK ERROR] an event received on socket \r\n");
+        UART_PRINT("[SOCK ERROR] an event received on socket \r\n");
         switch(pSock->SocketAsyncEvent.SockAsyncData.Type)
         {
         case SL_SSL_NOTIFICATION_CONNECTED_SECURED:
-            // UART_PRINT("[SOCK ERROR] SSL handshake done");
+            UART_PRINT("[SOCK ERROR] SSL handshake done");
             break;
         case SL_SSL_NOTIFICATION_HANDSHAKE_FAILED:
-            // UART_PRINT("[SOCK ERROR] SSL handshake failed with error \r\n");
+            UART_PRINT("[SOCK ERROR] SSL handshake failed with error \r\n");
             break;
         case SL_SSL_ACCEPT:
-            // UART_PRINT("[SOCK ERROR] Recoverable error occurred during the handshake \r\n");
+            UART_PRINT("[SOCK ERROR] Recoverable error occurred during the handshake \r\n");
             break;
         case SL_OTHER_SIDE_CLOSE_SSL_DATA_NOT_ENCRYPTED:
-            // UART_PRINT("[SOCK ERROR] Other peer terminated the SSL layer.\r\n");
+            UART_PRINT("[SOCK ERROR] Other peer terminated the SSL layer.\r\n");
             break;
         case SL_SSL_NOTIFICATION_WRONG_ROOT_CA:
-            // UART_PRINT("[SOCK ERROR] Used wrong CA to verify the peer.\r\n");
+            UART_PRINT("[SOCK ERROR] Used wrong CA to verify the peer.\r\n");
             break;
         default:
             break;
@@ -351,7 +349,7 @@ void SimpleLinkSockEventHandler(SlSockEvent_t *pSock)
         break;
     }
     default:
-        // UART_PRINT("[SOCK EVENT] - Unexpected Event \n\r");
+        UART_PRINT("[SOCK EVENT] - Unexpected Event \n\r");
         break;
     }
 }
@@ -405,30 +403,30 @@ long Network_IF_InitDriver(uint32_t uiMode)
 
     if(lRetVal < 0)
     {
-        // UART_PRINT("[ERROR]: Failed to start the device \n\r");
-        // stop_all();
+        UART_PRINT("[ERROR]: Failed to start the device \n\r");
+        stop_all();
     }
 
     switch(lRetVal)
     {
     case ROLE_STA:
-        // UART_PRINT("....Device came up in Station mode\n\r");
+        UART_PRINT("....Device came up in Station mode\n\r");
         break;
     case ROLE_AP:
-        // UART_PRINT("....Device came up in Access-Point mode\n\r");
+        UART_PRINT("....Device came up in Access-Point mode\n\r");
         break;
     case ROLE_P2P:
-        // UART_PRINT("....Device came up in P2P mode\n\r");
+        UART_PRINT("....Device came up in P2P mode\n\r");
         break;
     default:
-        // UART_PRINT("[ERROR]: unknown mode\n\r");
-        // stop_all();
+        UART_PRINT("[ERROR]: unknown mode\n\r");
+        stop_all();
         break;
     }
 
     if(uiMode != lRetVal)
     {
-        // UART_PRINT("Switching Networking mode on application request\n\r");
+        UART_PRINT("Switching Networking mode on application request\n\r");
 
         /* Switch to AP role and restart                                     */
         lRetVal = sl_WlanSetMode(uiMode);
@@ -443,10 +441,10 @@ long Network_IF_InitDriver(uint32_t uiMode)
             switch(lRetVal)
             {
             case ROLE_STA:
-                // UART_PRINT("....Device came up in Station mode\n\r");
+                UART_PRINT("....Device came up in Station mode\n\r");
                 break;
             case ROLE_AP:
-                // UART_PRINT("....Device came up in Access-Point mode\n\r");
+                UART_PRINT("....Device came up in Access-Point mode\n\r");
                 /* If the device is in AP mode, we need to wait for this */
                 /* event before doing anything.                          */
                 while(!IS_IP_ACQUIRED(g_ulStatus))
@@ -455,18 +453,18 @@ long Network_IF_InitDriver(uint32_t uiMode)
                 }
                 break;
             case ROLE_P2P:
-                // UART_PRINT("....Device came up in P2P mode\n\r");
+                UART_PRINT("....Device came up in P2P mode\n\r");
                 break;
             default:
-                // UART_PRINT("[ERROR]: unknown mode\n\r");
-                //stop_all();
+                UART_PRINT("[ERROR]: unknown mode\n\r");
+                stop_all();
                 break;
             }
         }
         else
         {
-            // UART_PRINT("[ERROR]: Could not configure correct networking mode\n\r");
-            //stop_all();
+            UART_PRINT("[ERROR]: Could not configure correct networking mode\n\r");
+            stop_all();
         }
     }
     else
@@ -495,7 +493,7 @@ long Network_IF_DeInitDriver(void)
 {
     long lRetVal = -1;
 
-    // UART_PRINT("SL Disconnect...\n\r");
+    UART_PRINT("SL Disconnect...\n\r");
 
     /* Disconnect from the AP                                                */
     lRetVal = Network_IF_DisconnectFromAP();
@@ -561,7 +559,7 @@ long Network_IF_ConnectAP(char *pcSsid,
     }
     else
     {
-        // UART_PRINT("Empty SSID, Could not connect\n\r");
+        UART_PRINT("Empty SSID, Could not connect\n\r");
         return(-1);
     }
 
@@ -573,25 +571,24 @@ long Network_IF_ConnectAP(char *pcSsid,
 
         CLR_STATUS_BIT(g_ulStatus, STATUS_BIT_CONNECTION);
         CLR_STATUS_BIT(g_ulStatus, STATUS_BIT_IP_ACQUIRED);
-        // UART_PRINT("Device could not connect\n\r");
+        UART_PRINT("Device could not connect\n\r");
 
         do
         {
             ucRecvdAPDetails = 0;
 
-            /// UART_PRINT("\n\r\n\rPlease enter the AP(open) SSID name # ");
+            UART_PRINT("\n\r\n\rPlease enter the AP(open) SSID name # ");
 
             /* Get the AP name to connect over the UART                      */
-            /*
             lRetVal = GetCmd(acCmdStore, sizeof(acCmdStore));
             if(lRetVal > 0)
             {
-                // remove start/end spaces if any                            
+                /* remove start/end spaces if any                            */
                 lRetVal = TrimSpace(acCmdStore);
 
                 if(lRetVal)
                 {
-                    // Parse the AP name                                     
+                    /* Parse the AP name                                     */
                     strncpy(pcSsid, acCmdStore, lRetVal);
                     if(pcSsid != NULL)
                     {
@@ -600,7 +597,6 @@ long Network_IF_ConnectAP(char *pcSsid,
                     }
                 }
             }
-                */
         }
         while(ucRecvdAPDetails == 0);
 
@@ -609,7 +605,7 @@ long Network_IF_ConnectAP(char *pcSsid,
         SecurityParams.KeyLen = 0;
         SecurityParams.Type = SL_WLAN_SEC_TYPE_OPEN;
 
-        // UART_PRINT("\n\rTrying to connect to AP ...\n\r");
+        UART_PRINT("\n\rTrying to connect to AP ...\n\r");
 
         /* Get the current timer tick and setup the timeout accordingly.     */
         usConnTimeout = g_usConnectIndex + 15;
@@ -634,10 +630,7 @@ long Network_IF_ConnectAP(char *pcSsid,
     }
 
     /* Put message on UART                                                   */
-    // UART_PRINT("\n\rDevice has connected \n\r");
-    uart_message_t uart_msg;
-    uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\ndevice has connected");
-    xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+    UART_PRINT("\n\rDevice has connected \n\r");
 
     /* Get IP address                                                        */
     lRetVal = Network_IF_IpConfigGet(&ulIP, &ulSubMask, &ulDefGateway, &ulDns);

@@ -6,9 +6,7 @@
  */
 
 #include "mqtt_queue.h"
-#include "uart_debug.h"
-#include "queues.h"
-// #include <uart_term.h>
+#include "uart_term.h"
 
 static QueueHandle_t pubQ = (void *)0;
 static QueueHandle_t subArmQ = (void *)0;
@@ -31,23 +29,8 @@ bool createQs() {
         return false;
     }
 
-    subArmQ = xQueueCreate( qLENGTH, sizeof(struct qArmMsg));
-    if (subArmQ == (void *)0) {
-        return false;
-    }
-
-    subArmSensorQ = xQueueCreate( qLENGTH, sizeof(struct qArmSensorMsg));
-    if (subArmSensorQ == (void *)0) {
-        return false;
-    }
-
     subRoverQ = xQueueCreate( qLENGTH, sizeof(struct qRoverMsg));
     if (subRoverQ == (void *)0) {
-        return false;
-    }
-
-    subRoverSensorQ = xQueueCreate( qLENGTH, sizeof(struct qRoverSensorMsg));
-    if (subRoverSensorQ == (void *)0) {
         return false;
     }
 
@@ -97,7 +80,6 @@ int sendToSubRoverQ(struct qRoverMsg msg) {
 int sendToSubRoverSensorQ(struct qRoverSensorMsg msg) {
     return xQueueSendToBackFromISR( subRoverSensorQ, &msg, 0 );
 }
-
 /*
  *  @function   sendToSubQ
  *              Wrapper for the RTOS function to send data through

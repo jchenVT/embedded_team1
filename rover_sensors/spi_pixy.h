@@ -3,6 +3,7 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#include <timers.h>
 
 #include <stdlib.h> 
 #include <stdbool.h>
@@ -15,6 +16,7 @@
 #include <string.h>
 
 #include "debug.h"
+#include "uart_term.h"
 #include "queues.h"
 
 #define TX_MSGSIZE 6
@@ -47,6 +49,8 @@ Block_t convert_to_block_t( uint8_t block_array[] );
 
 
 void timer_spi_callback( Timer_Handle timer_handle );
+
+void timerCallbackx(TimerHandle_t xTimer);
 
 
 #endif 

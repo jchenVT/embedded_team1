@@ -55,6 +55,6 @@ void debug_init();
 // outLoc must be <= 127
 void dbgOutputLoc(unsigned int outLoc);
 
-void stop_all(unsigned int FAILURE_CODE);
+//void stop_all(unsigned int FAILURE_CODE);
 
 #endif

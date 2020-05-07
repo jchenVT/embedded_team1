@@ -48,17 +48,16 @@ void dbgOutputLoc(unsigned int outLoc)
 }
 
 
+/*
 void stop_all(unsigned int FAILURE_CODE)
 {
     //taskDISABLE_INTERRUPTS();
     //vTaskSuspendAll();
 
 
-    /*****************************
     GPIO_setConfig(CONFIG_GPIO_LED_0, GPIO_CFG_OUT_STD | GPIO_CFG_OUT_LOW);
     GPIO_write(CONFIG_GPIO_LED_0, CONFIG_GPIO_LED_ON);
     dbgOutputLoc(FAILURE_CODE);
-    *****************************/
 
     while(1)
     {
@@ -68,4 +67,5 @@ void stop_all(unsigned int FAILURE_CODE)
         for (;i<1000000;i++) ;
     }
 }
+*/
 

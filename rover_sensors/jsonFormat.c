@@ -1,7 +1,7 @@
 #include "jsonFormat.h"
 #include "mqtt_queue.h"
 #include "jsmn.h"
-// #include "uart_term.h"
+#include "uart_term.h"
 
 static jsmn_parser parser;
 

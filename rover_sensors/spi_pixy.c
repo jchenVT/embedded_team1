@@ -2,13 +2,18 @@
 
 #define CCC_MSG 0xC1AE2002FF03
 
-#define RECEIVE_LENGTH 100 
+#define RECEIVE_LENGTH 50
 
 // static SPI_Handle spi = NULL;
 static Timer_Handle timer_pixy = NULL;
-uint8_t request_packet_ccc [100] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
+uint8_t request_packet_ccc [10] = {0xc1, 0xae, 32, 2, 0xFF, 0x03};
 uint8_t request_packet_version [] = {0xc1, 0xae, 14, 0};
 uint8_t receive_buffer[RECEIVE_LENGTH];
+
+void timerCallbackx(TimerHandle_t xTimer)
+{
+    return;
+}
 
 I2C_Handle spi_pixy_init()
 {
@@ -42,7 +47,7 @@ I2C_Handle spi_pixy_init()
 
 void * spiThread(void *arg0)
 {
-    uart_message_t uart_msg;
+    char str[75];
 
     I2C_Handle i2c;
     i2c = spi_pixy_init();
@@ -75,13 +80,13 @@ void * spiThread(void *arg0)
         bool success = false;
         success =  I2C_transfer(i2c, &transaction_send);
         
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "i2c write");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+        snprintf(str, 75, "\ni2c write");
+        UART_PRINT(str);
         
         if (!success) 
         {
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "i2c write failed");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+            snprintf(str, 75, "\ni2c write failed");
+            UART_PRINT(str);
             continue;
         }
 
@@ -94,13 +99,14 @@ void * spiThread(void *arg0)
         transaction_read.readCount = RECEIVE_LENGTH;
         success =  I2C_transfer(i2c, &transaction_read);
 
-        uart_msg.array_len  = snprintf(uart_msg.msg, 100, "i2c read");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+        snprintf(str, 75, "\ni2c read");
+        UART_PRINT(str);
+
         
         if (!success) 
         {
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "i2c read failed");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+            snprintf(str, 75, " ,i2c read failed");
+            UART_PRINT(str);
             continue;
         }
         
@@ -116,7 +122,6 @@ void * spiThread(void *arg0)
             stop_all(FAIL_SPI_TRANSACTION);
         }
         */
-
           
         Block_t block;
 
@@ -130,8 +135,8 @@ void * spiThread(void *arg0)
                 check = receive_buffer[block_start+1];
                 if ( check == 0xaf )
                 {
-                    uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nfound c1af at %d", block_start );
-                    xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+                    snprintf(str, 75, "\nfound c1af at %d", block_start );
+                    UART_PRINT(str);
                     break;
                 } 
             }
@@ -140,30 +145,23 @@ void * spiThread(void *arg0)
         }
         if (block_start == RECEIVE_LENGTH)
         {
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nblock not found");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+            snprintf(str, 75, "\nblock not found");
+            UART_PRINT(str);
             continue;
         }
 
         block = convert_to_block_t(&receive_buffer[block_start]);
         bool checksum_good = checksum_check_ccc(receive_buffer + block_start);
         
-        uart_msg.array_len = 
-                            snprintf(uart_msg.msg, 100, "\npixy,sig:%u,x:%u,y:%u,w:%u,h:%u, checksum:%s",
-                            block.signature, block.x_center, block.y_center,
-                            block.width, block.height, checksum_good ? "true" : "false");
-        xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+        snprintf(str, 75, "\npixy,sig:%u,x:%u,y:%u,w:%u,h:%u, checksum:%s",
+                    block.signature, block.x_center, block.y_center,
+                    block.width, block.height, checksum_good ? "true" : "false");
+        UART_PRINT(str);
         
     }
 }
 
 
-/*
-void spi_pixy_callback(SPI_Handle handle, SPI_Transaction *transaction, bool status)
-{
-    // not used }
-}
-*/
 
 void timer_spi_callback(Timer_Handle timer_handle)
 {
@@ -221,9 +219,9 @@ bool checksum_check_ccc(uint8_t byte_arr[])
         sum += byte_arr[i];
     return checksum == sum; 
     */
+    char str[30];
     uint8_t packet_type = byte_arr[2];
-    uart_message_t uart_msg;
-    uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\npacket type:%d", packet_type);
-    xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-    return byte_arr[2] ==  33;
+    snprintf(str, 30, "\npacket type:%d", packet_type);
+    UART_PRINT(str);
+    return byte_arr[2] ==  0x33;
 }

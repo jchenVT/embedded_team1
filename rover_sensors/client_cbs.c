@@ -44,9 +44,7 @@
 #include "mqueue.h"
 
 /* Common interface includes                                                 */
-// #include "uart_term.h"
-#include "uart_debug.h"
-#include "queues.h"
+#include "uart_term.h"
 
 /* Application includes                                                      */
 #include "client_cbs.h"
@@ -104,7 +102,6 @@ void MqttClientCallback(int32_t event,
                         void *data,
                         uint32_t dataLen)
 {
-    uart_message_t uart_msg;
     switch((MQTTClient_EventCB)event)
     {
     case MQTTClient_OPERATION_CB_EVENT:
@@ -118,17 +115,13 @@ void MqttClientCallback(int32_t event,
             /* Error - Negative value                                 */
             if(0 == (MQTTClientCbs_ConnackRC(*ConnACK)))
             {
-                // APP_PRINT("....Connection Success\n\r");
-                uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nconnectin success");
-                xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+                APP_PRINT("....Connection Success\n\r");
             }
             else
             {
                 // ERROR
-                // APP_PRINT("[ERROR]: Connection Error");
-                uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nconnectin error");
-                xQueueSendToBack(uart_debug_q, &uart_msg, 0);
-                // stop_all();
+                APP_PRINT("[ERROR]: Connection Error");
+                stop_all();
             }
             break;
         }
@@ -149,20 +142,14 @@ void MqttClientCallback(int32_t event,
 
         int retVal = jsonParser(topic, JSON_STRING);
         if (retVal == 0) {
-            // APP_PRINT("[ERROR]: Queue was too full \n\r");
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nERROR queue too full");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
+            APP_PRINT("[ERROR]: Queue was too full \n\r");
         }
         else if (retVal < 0) {
             char temp[12];
             snprintf(temp, 12, "%d", retVal);
-            /*
             APP_PRINT("[ERROR]: ");
             APP_PRINT(temp);
             APP_PRINT(" : Incorrect number of tokens expected \n\r");
-            */
-            uart_msg.array_len  = snprintf(uart_msg.msg, 100, "\nERROR incorrect tokens");
-            xQueueSendToBack(uart_debug_q, &uart_msg, 0);
         }
 
         break;

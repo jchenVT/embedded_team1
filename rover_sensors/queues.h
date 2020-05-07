@@ -12,12 +12,7 @@
 
 #include "debug.h"
 
-typedef struct uart_message {
-	uint8_t array_len;
-	char msg [100];	
-} uart_message_t;
 
-extern QueueHandle_t uart_debug_q;
 extern QueueHandle_t lidar_data_q;
 extern QueueHandle_t spi_start_q;
 
