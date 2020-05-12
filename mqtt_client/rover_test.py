@@ -45,4 +45,4 @@ while True:
         
         count += 1
     
-    time.sleep(0.5)
+    time.sleep(1)

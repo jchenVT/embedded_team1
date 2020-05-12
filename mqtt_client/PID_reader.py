@@ -37,7 +37,7 @@ def on_connect(client, userdata, flags, rc):
     print("....KI: "+KI)
     client.subscribe('encoder')
     client.publish("PID_param", payload="{\"KP\": "+KP+", \"KI\": "+KI+"}", retain=True)
-    client.publish("rover_sensor", payload="{\"move_to_point\": \"0\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}", retain=True)
+    #client.publish("rover_sensor", payload="{\"move_to_point\": \"0\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 0}", retain=True)
     
 def on_message(client, userdata, msg):
     # try reading json
@@ -66,8 +66,8 @@ def on_message(client, userdata, msg):
         plt.draw()
         plt.pause(0.001)
     
-    if len(xdata) == 5:
-        client.publish("rover_sensor", payload="{\"move_to_point\": \"1\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
+    #if len(xdata) == 5:
+    #client.publish("rover_sensor", payload="{\"move_to_point\": \"1\", \"point_x\": 0, \"point_y\": 0, \"angle_rotate\": 1}")
     
     if keyboard.is_pressed('q'):
         print('Disconnecting...')
