@@ -41,5 +41,6 @@ void *readSensorsThread(void *arg0);
 void timerStartCallback(TimerHandle_t xTimer);
 void timerProxCallback(TimerHandle_t xTimer);
 void timerRGBCallback(TimerHandle_t xTimer);
+void timerDebugCallback(TimerHandle_t xTimer);
 
 #endif /* SENSOR_READ_H_ */

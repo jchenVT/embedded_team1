@@ -10,6 +10,10 @@
 
 I2C_Handle i2cHandle;
 
+static int attemptPubCount;
+static int recvSubCount;
+static bool status;
+
 /*
  *  @function   readProximitySensor
  *              Main thread that will perform a blocking read on
@@ -49,11 +53,18 @@ void *readSensorsThread(void *arg0) {
 
     }
 
+    /* Initialize debug stats */
+    attemptPubCount = 0;
+    recvSubCount = 0;
+    status = true;
+
     /* One-time initialization of software timer */
     TimerHandle_t timerStart= xTimerCreate("STRT", pdMS_TO_TICKS(50), pdTRUE, (void *)0, timerStartCallback);
     TimerHandle_t timerProx = xTimerCreate("PROX", pdMS_TO_TICKS(1000), pdTRUE, (void *)0, timerProxCallback);
     TimerHandle_t timerRGB = xTimerCreate("RGB", pdMS_TO_TICKS(2000), pdTRUE, (void *)0, timerRGBCallback);
+    TimerHandle_t timerDebug = xTimerCreate("DEBUG", pdMS_TO_TICKS(5000), pdTRUE, (void *)0, timerDebugCallback);
     xTimerStart(timerStart, 0);
+    xTimerStart(timerDebug, 0);
 
     /* Command queue data to be changed */
     struct qCommandMsg data = {0, 0, 0};
@@ -65,21 +76,22 @@ void *readSensorsThread(void *arg0) {
 
         receiveFromSubCommandQ(&data);
 
-        /* Check if recv own error report*/
-        if (data.source == 1) {
-            stop_all();
-        }
+        recvSubCount++;
 
         /* Check if there is an error */
         if (data.error == 9) {
-            xTimerStart(timerStart, 0);
             xTimerStop(timerProx, 0);
             xTimerStop(timerRGB, 0);
+            xTimerStop(timerDebug, 0);
             packageErrorJSON(3);
         }
         else if (data.error > 0) {
+            char b[50];
+            int j = snprintf(b, 50, "[ERROR] - Stopping due to server error: %d", data.error);
+            UART_PRINT(b);
             stop_all();
         }
+
 
         /* Change timer state based on the msg given */
         switch (state) {
@@ -88,7 +100,7 @@ void *readSensorsThread(void *arg0) {
             if (data.message == ON) {
                 xTimerStart(timerProx, 0);
                 xTimerStart(timerRGB, 0);
-                xTimerStop(timerStart, 0);
+                //xTimerStop(timerStart, 0);
 
                 state = ON;
             }
@@ -127,6 +139,21 @@ void timerStartCallback(TimerHandle_t xTimer) {
     /* DO NOTHING */
 }
 
+/*
+ *  @function   timerDebugCallback
+ *              Sends MQTT information periodically.
+ *
+ *  @params     xTimer
+ *  @return     void
+ */
+void timerDebugCallback(TimerHandle_t xTimer) {
+
+    /* DO NOTHING */
+    packageDebugJSON(attemptPubCount, recvSubCount, status, "command", "arm_sensor");
+
+    /* Reset status variables */
+    status = true;
+}
 
 /*
  *  @function   timerProxCallback
@@ -142,10 +169,20 @@ void timerProxCallback(TimerHandle_t xTimer) {
     int reading2 = GPIO_read(CONFIG_GPIO_PROX2);
 
     /* Send to the correct sensor queue */
-    sendProxToSensorQ(PROX1_DATA, reading1);
+    if (sendProxToSensorQ(PROX1_DATA, reading1) == 1) {
+        attemptPubCount++;
+    }
+    else {
+        status = false;
+    }
 
     /* Send to the correct sensor queue */
-    sendProxToSensorQ(PROX2_DATA, reading2);
+    if (sendProxToSensorQ(PROX2_DATA, reading2) == 1) {
+        attemptPubCount++;
+    }
+    else {
+        status = false;
+    }
 }
 
 /*
@@ -187,9 +224,15 @@ void timerRGBCallback(TimerHandle_t xTimer) {
         b = (b*256) / c;
 
         /* Send to RGB message queue */
-        sendRGBToSensorQ(r, g, b);
+        if (sendRGBToSensorQ(r, g, b) == 1) {
+            attemptPubCount++;
+        }
+        else {
+            status = false;
+        }
     }
     else {
-        stop_all();
+        status = false;
+        //stop_all();
     }
 }
