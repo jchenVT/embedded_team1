@@ -1,10 +1,7 @@
-/*
- * Copyright (c) 2016, Texas Instruments Incorporated
+/* Copyright (c) 2016, Texas Instruments Incorporated
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
  *
  * *  Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
@@ -141,9 +138,9 @@ int main(void)
     UART_PRINT("create main and star thread");
 
     retc |= pthread_create(&pmainThread, &mainAttrs, mainThread, (void*)0);
-    retc |= pthread_create(&pstarThread, &starAttrs, starThread, (void*)0);
-    // retc |= pthread_create(&plidarThread, &lidarAttrs, uartLidarThread, (void*)0);
-    // retc |= pthread_create(&pspiThread, &spiAttrs, spiThread, (void*)0);
+    // retc |= pthread_create(&pstarThread, &starAttrs, starThread, (void*)0);
+    retc |= pthread_create(&plidarThread, &lidarAttrs, uartLidarThread, (void*)0);
+    retc |= pthread_create(&pspiThread, &spiAttrs, spiThread, (void*)0);
 
     if(retc != 0)
     {
