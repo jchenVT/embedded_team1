@@ -50,7 +50,7 @@
 #define Y_MIDDLE    1500
 
 #define Z_LOW       1000
-#define Z_HIGH      2200
+#define Z_HIGH      2500
 #define Z_MIDDLE    1800
 
 typedef enum debugState {WaitingForAngles, WaitingForAck} dState;

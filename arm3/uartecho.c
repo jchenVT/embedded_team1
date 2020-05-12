@@ -48,7 +48,7 @@ static UART_Handle uart;
 static PWM_Handle pwm_x, pwm_y, pwm_z, pwm_claw;
 static TimerHandle_t timer10ms;
 
-static movqData_t off_pos = {0, 1600, 1100, 1000, 800};
+static movqData_t off_pos = {0, 1600, 1100, 1500, 800};
 static movqData_t start_pos = {0, 1600, 1500, 1800, 800};
 
 static movqData_t current_pos, goal_pos;
@@ -156,7 +156,7 @@ void arm_init() {
 
 int armDone() {
     return memcmp(&current_pos, &goal_pos, sizeof(current_pos)) == 0;
-}an
+}
 
 void movementHelper() {
     if (current_pos.yee_value < goal_pos.yee_value) {
@@ -214,13 +214,13 @@ void *mainArmThread(void *arg0) {
         receiveFromMovQ(&m);
         char buf[25];
         snprintf(buf, 25, "%d %d %d %d %d\n\r", m.type, m.yee_value, m.haw_value, m.cow_value, m.boy_value);
-//        UART_PRINT(buf);
 
         if (m.type) {
             movementHelper();
         }
         else {
             goal_pos = m;
+            UART_PRINT(buf);
             if (xTimerIsTimerActive(timer10ms) == pdFALSE) {
                 xTimerStart(timer10ms, 0);
             }
